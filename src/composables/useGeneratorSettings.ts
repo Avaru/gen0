@@ -1,7 +1,7 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { GENUS } from '@/builders/types'
-import { categories } from '@/generator/categories'
+import { categories, availableCategories, isCategoryAvailable } from '@/generator/categories'
 import { flavors, givenNameGenders, corporationSizes, normalizeSelections, type Flavor } from '@/generator/options'
 import type { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 
@@ -24,7 +24,7 @@ export function useGeneratorSettings() {
   const router = useRouter()
   const settings = computed<GeneratorSettings>(() => {
     const flavor = flavors.find((item) => item.id === route.query.flavor)?.id ?? 'cyberpunk'
-    const available = categories.filter((item) => !item.requiresFlavor || flavor !== 'cyberpunk')
+    const available = availableCategories({ flavor })
     const requested = categories.find((item) => item.id === route.query.category)
     const category =
       available.find((item) => item.id === requested?.id) ??
@@ -65,7 +65,8 @@ export function useGeneratorSettings() {
   function update(patch: Partial<GeneratorSettings>) {
     const next = { ...settings.value, ...patch }
     const category = categories.find((item) => item.id === next.category)
-    if (category?.requiresFlavor && next.flavor === 'cyberpunk') next.category = 'corporations'
+    if (category && !isCategoryAvailable(category, { flavor: next.flavor }))
+      next.category = category.requiresFlavor ? 'corporations' : 'runners'
     const selected = categories.find((item) => item.id === next.category)
     next.gender = selected?.gender ? normalizeSelections(next.gender, givenNameGenders) : []
     next.size = selected?.corporationSize ? normalizeSelections(next.size, corporationSizes) : []

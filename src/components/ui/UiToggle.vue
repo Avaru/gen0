@@ -38,14 +38,14 @@ input {
   height: 1.5rem;
   padding: 2px;
   border: 1px solid var(--color-control-border);
-  border-radius: 1rem;
+  border-radius: var(--radius-sm);
   background: var(--color-subtle);
 }
 .track::after {
   content: '';
   width: 1rem;
   height: 1rem;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   background: var(--color-muted);
 }
 input:checked + .track {

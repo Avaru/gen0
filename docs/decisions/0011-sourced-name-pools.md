@@ -9,7 +9,7 @@ Dutch, Swedish, Turkish, Ukrainian, and Hindi names use one given name and one s
 
 Korean names use surname first, then one complete given name. Vietnamese names use surname first, then one complete stored given-name phrase, which may already contain middle-name material. Do not independently shuffle syllables or insert an additional middle name. Nicknames follow the complete name in both traditions.
 
-Tamil output uses the initial of a male Tamil given name followed by the person's given name. This models one common father's-initial display, not every Tamil naming practice. Do not copy the source generator's reuse of all given names as surnames. Tamil has a given-name pool but no hereditary surname pool: Mixed can draw Tamil given names with another tradition's surnames, but cannot choose Tamil as its surname tradition. Reusable Tamil surname lookup reports an empty pool.
+Tamil output uses a male Tamil given name in full as the father's name, followed by the person's given name. Expand the father name instead of forcing every result to start with an initial, following the user's correction. Pick distinct father and personal names. This models an expanded patronymic display, not every Tamil naming practice. Do not copy the source generator's reuse of all given names as surnames. Tamil has a given-name pool but no hereditary surname pool: Mixed can draw Tamil given names with another tradition's surnames, but cannot choose Tamil as its surname tradition. Reusable Tamil surname lookup reports an empty pool.
 
 All new data is shared by the existing flavors and passes through existing exclusions and nested generation options. No additional settings, flavors, remote dependencies, import tools, or changes to pgen are introduced.
 

@@ -9,13 +9,13 @@ The counts below describe stored name parts, not generated full-name combination
 | Dutch | 502 | 1,070 | 1,572 | 1,565 |
 | Turkish | 1,507 | 60 | 1,567 | 1,552 |
 | Ukrainian | 187 | 542 | 729 | 728 |
-| Hindi-speaking Indian | 343 | 43 | 386 | 370 |
-| Tamil | 997 | 0 | 997 | 969 |
+| Hindi-speaking Indian | 341 | 43 | 384 | 368 |
+| Tamil | 992 | 0 | 992 | 964 |
 | Korean | 540 | 112 | 652 | 649 |
 | Vietnamese | 2,533 | 10 | 2,543 | 2,508 |
-| Swedish | 3,944 | 2,000 | 5,944 | 5,773 |
+| Swedish | 3,942 | 2,000 | 5,942 | 5,771 |
 
-Total additions: 14,390 entries.
+Total additions: 14,381 entries.
 
 ## Sources and reuse
 
@@ -36,9 +36,22 @@ Full MIT notices and the SCB attribution/changes notice ship in [public/name-dat
 - Ukrainian uses a positional Latin transliteration table (initial Ye/Yi/Y/Yu/Ya, internal ie/i/i/iu/ia, h for г, g for ґ, and zgh for зг). Preserve the source’s male/female surname forms and link forms actually present; the category uses given name plus surname without a patronymic.
 - Korean uses syllable-based Latin spelling with hyphens within given names and common surname spellings such as Kim, Lee, and Park. This is not a full pronunciation-based romanization engine or a claim about an individual’s passport spelling.
 - Hindi starts with ICU Latin transliteration, simplifies diacritics, removes final short inherent a where appropriate, and corrects a small set of conventional spellings such as Amit, Aditya, Akbar, Sharma, Chopra, and Tiwari. Keep only the provider’s North/Central Indian surname sections. Move its plainly feminine Akanksha entry to the feminine pool. This limited pool is not a complete regional, religious, or pronunciation audit.
-- Tamil uses ICU scholarly Latin transliteration, retaining vowel/consonant diacritics and removing transliteration separator apostrophes. It is not a list of conventional English spellings. Use only given names; the source’s reuse of given names as surnames is deliberately omitted. A father’s initial plus given name is one supported display pattern.
+- Tamil uses ICU scholarly Latin transliteration, retaining vowel/consonant diacritics and removing transliteration separator apostrophes. It is not a list of conventional English spellings. Use only given names; the source’s reuse of given names as surnames is deliberately omitted. Display the father's given name in full before the person's given name, using distinct names.
 - Vietnamese, Hindi, Turkish, and Korean surname pools are smaller than their given-name pools. The minimum of several hundred distinct names applies to each overall tradition, not to every gender or surname sublist. Tamil has no hereditary surname entries.
 - Names are sampled uniformly within each eligible part pool. Counts are used to select Swedish inventory entries, not to reproduce population frequencies. The lists include some uncommon, historical, regional, and imperfectly classified names from the documented collections. Native-speaker review could improve them.
+
+## Name-quality review
+
+Reviewed all eight added pools for abbreviation-like given names, isolated initials, malformed punctuation, suspicious consonant sequences, and visible source-script/transliteration errors. These checks identify candidates for review; unfamiliar or short real names are not automatically rejected.
+
+- Removed Swedish `Md` and `Mhd`, abbreviations rather than complete given names. Keep real short names such as `Bo` and `Lo`.
+- Removed Tamil source spellings `சத்யராஐ`, `தங்கராஐ`, `யூவராஐன்`, `வரதராஐன்`, and `கஐலட்சுமி`, which contain apparent transcription substitutions. Their imported display values were `Catyarāai`, `Taṅkarāai`, `Yūvarāaiṉ`, `Varatarāaiṉ`, and `Kaailaṭcumi`. Omit these entries instead of guessing replacements.
+- Removed Hindi source strings `िनशा` and `िकशोरी`, which start with a dependent vowel sign before a consonant and produced `Inasha` and `Ikashori`. A valid `Nisha` entry remains.
+- Corrected Hindi Latin conversion artifacts: `nyj` to `nj` in Dhananjay, Manjunath, Manju, Manjula, Manjusha, and Ranjit; restored complete conventional endings in Harendra, Indra, Jayendra, Jitendra, Manindra, Narendra, Rajendra, Surendra, Rupindra, Padma, and Ratna; use the conventional surname spelling `Singh` for `सिंह`. Native source spellings remain recorded.
+- Retained Turkish dotless-ı names, complete Korean vowel-only syllables, and Vietnamese `Ý` components. They are not initials or corrupt entries. A long, complete Dutch surname is also retained rather than shortened or discarded by a blanket length rule.
+- Expanded Tamil father names in generation. Both name parts now display in full, with no repeated father/personal name, and exclusions still apply.
+
+This is a targeted data-quality review, not a claim that every name has received a native-speaker cultural or pronunciation audit.
 
 ## Exact source snapshots
 

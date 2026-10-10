@@ -49,7 +49,11 @@ fieldset {
 legend {
   padding: 0;
   margin-bottom: var(--space-2);
-  font-weight: 650;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
 }
 .choices {
   display: flex;
@@ -69,12 +73,16 @@ label {
   font-size: 0.875rem;
   font-weight: 600;
 }
+label:has(input:checked) {
+  border-color: var(--color-signal);
+  background: var(--color-surface);
+}
 input {
   width: 1.125rem;
   height: 1.125rem;
   min-height: 0;
   margin: 0;
-  accent-color: var(--color-accent);
+  accent-color: var(--color-signal);
 }
 input:focus-visible {
   outline: 3px solid var(--color-focus);

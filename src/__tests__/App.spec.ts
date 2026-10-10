@@ -1,8 +1,16 @@
 import { describe, it, expect } from 'vitest'
+import { mockDialog } from './helpers/dialog'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import App from '../App.vue'
 import GeneratorView from '../views/GeneratorView.vue'
+
+mockDialog()
+
+async function chooseCategory(wrapper: ReturnType<typeof mount>, value: string) {
+  await wrapper.get('#category').trigger('click')
+  await wrapper.get(`[data-category="${value}"]`).trigger('click')
+}
 
 async function setup(url = '/') {
   const router = createRouter({
@@ -17,14 +25,56 @@ async function setup(url = '/') {
 }
 
 describe('name generator interface', () => {
+  it('changes the sovereignty list and selected labels with the flavor and restores history', async () => {
+    const { wrapper, router } = await setup('/?flavor=shadowrun&category=sovereignty-japan&gender=f')
+    expect(wrapper.get('#category').text()).toContain('Japanese Imperial State')
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    await wrapper.get('#category').trigger('click')
+    expect(wrapper.find('[data-category="sovereignty-ucas"]').exists()).toBe(true)
+    expect(wrapper.find('[data-category="sovereignty-nusa"]').exists()).toBe(false)
+    await wrapper.get('[aria-label="Close category picker"]').trigger('click')
+    await wrapper.get('input[name="flavor"][value="cyberpunk2020-2077"]').setValue(true)
+    await flushPromises()
+    expect(wrapper.get('#category').text()).toContain('Japan')
+    expect(router.currentRoute.value.query.category).toBe('sovereignty-japan')
+    await wrapper.get('#category').trigger('click')
+    expect(wrapper.find('[data-category="sovereignty-nusa"]').exists()).toBe(true)
+    expect(wrapper.find('[data-category="sovereignty-ucas"]').exists()).toBe(false)
+    await wrapper.get('[data-category="sovereignty-nusa"]').trigger('click')
+    await flushPromises()
+    router.back()
+    await flushPromises()
+    router.back()
+    await flushPromises()
+    expect(wrapper.get('#category').text()).toContain('Japanese Imperial State')
+    await wrapper.get('input[name="flavor"][value="cyberpunk"]').setValue(true)
+    await flushPromises()
+    expect(router.currentRoute.value.query.category).toBe('runners')
+    await wrapper.get('#category').trigger('click')
+    expect(wrapper.text()).not.toContain('Names by sovereignty')
+    wrapper.unmount()
+  })
+
+  it('explains missing pools and restores TODO entries from links', async () => {
+    const { wrapper } = await setup('/?flavor=shadowrun&category=sovereignty-native-american-nations')
+    expect(wrapper.text()).toContain('Some name pools are still TODO: Salish')
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    await chooseCategory(wrapper, 'salish')
+    await flushPromises()
+    expect(wrapper.get('#category').text()).toContain('Salish TODO')
+    expect(wrapper.get('[role="alert"]').text()).toContain('pool is empty')
+    expect(wrapper.findAll('li')).toHaveLength(0)
+    wrapper.unmount()
+  })
+
   it('restores the Mixed category and its gender selection from the URL', async () => {
     const { wrapper, router } = await setup('/?category=mixed&gender=f')
-    expect((wrapper.get('#category').element as HTMLSelectElement).value).toBe('mixed')
-    expect(wrapper.get('option[value="mixed"]').text()).toBe('Mixed')
+    expect(wrapper.get('#category').attributes('data-value')).toBe('mixed')
+    expect(wrapper.get('button[data-category="mixed"] > span').text()).toBe('Mixed')
     expect((wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked).toBe(true)
     expect(wrapper.findAll('li')).toHaveLength(10)
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)
-    await wrapper.get('#category').setValue('german')
+    await chooseCategory(wrapper, 'german')
     await flushPromises()
     router.back()
     await flushPromises()
@@ -55,16 +105,16 @@ describe('name generator interface', () => {
     expect(
       wrapper.findAll('input[name="flavor"]').map((input) => input.attributes('value')),
     ).toEqual(['cyberpunk', 'shadowrun', 'cyberpunk2020-2077'])
-    expect(wrapper.find('option[value="known-corporations"]').exists()).toBe(false)
+    expect(wrapper.find('button[data-category="known-corporations"]').exists()).toBe(false)
     await wrapper.get('input[name="flavor"][value="cyberpunk2020-2077"]').setValue(true)
     await flushPromises()
-    await wrapper.get('#category').setValue('known-corporations')
+    await chooseCategory(wrapper, 'known-corporations')
     await flushPromises()
     await wrapper.get('input[name="flavor"][value="cyberpunk"]').setValue(true)
     await flushPromises()
-    expect((wrapper.get('#category').element as HTMLSelectElement).value).toBe('corporations')
+    expect(wrapper.get('#category').attributes('data-value')).toBe('corporations')
     expect(router.currentRoute.value.query.category).toBe('corporations')
-    expect(wrapper.findAll('select')).toHaveLength(1)
+    expect(wrapper.findAll('select')).toHaveLength(0)
     wrapper.unmount()
   })
 
@@ -116,7 +166,7 @@ describe('name generator interface', () => {
     ).toBe(true)
     expect(router.currentRoute.value.query.count).toBeUndefined()
     expect(wrapper.findAll('li')).toHaveLength(10)
-    await wrapper.get('#category').setValue('corporations')
+    await chooseCategory(wrapper, 'corporations')
     await flushPromises()
     expect(wrapper.find('input[name="gender"]').exists()).toBe(false)
     expect(wrapper.find('input[name="size"]').exists()).toBe(true)
@@ -143,7 +193,7 @@ describe('name generator interface', () => {
     expect(wrapper.findAll('.name div')).toHaveLength(0)
     expect(wrapper.findAll('strong').map((item) => item.text())).toEqual(names)
     expect(router.currentRoute.value.query.details).toBe('false')
-    await wrapper.get('#category').setValue('corporations')
+    await chooseCategory(wrapper, 'corporations')
     await flushPromises()
     expect(wrapper.findAll('.name div')).toHaveLength(0)
     expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(false)
@@ -188,7 +238,7 @@ describe('name generator interface', () => {
     await flushPromises()
     expect(router.currentRoute.value.query.gender).toBe('f')
     expect(wrapper.findAll('li')).toHaveLength(10)
-    await wrapper.get('#category').setValue('corporations')
+    await chooseCategory(wrapper, 'corporations')
     await flushPromises()
     await wrapper.get('input[name="size"][value="a"]').setValue(false)
     await flushPromises()
@@ -196,7 +246,7 @@ describe('name generator interface', () => {
     await flushPromises()
     expect(router.currentRoute.value.query.size).toBe('aaa')
     expect(wrapper.findAll('li')).toHaveLength(10)
-    expect(wrapper.get('[role="status"]').text()).toBe('Names updated.')
+    expect(wrapper.get('.status').text()).toBe('Names updated.')
     expect(wrapper.text()).not.toMatch(/\d+ names(?: ready)?/)
     expect(wrapper.find('.number').exists()).toBe(false)
     wrapper.unmount()

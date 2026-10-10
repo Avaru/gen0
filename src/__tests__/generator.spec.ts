@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { categories, generateNames } from '@/generator/categories'
+import { availableCategories, generateNames } from '@/generator/categories'
 import { flavors, isFlavorEnabled } from '@/generator/options'
 import { load, RL, SHADOWRUN } from '@/load'
 import { SPECIES, pickSpecies } from '@/patterns/cyberpunk/_secondary/helpers'
@@ -35,18 +35,18 @@ describe('migrated generator', () => {
   it('generates every available category in all flavors', async () => {
     seedRandom()
     for (const { id: flavor } of flavors) {
-      for (const category of categories) {
-        if (category.requiresFlavor && flavor === 'cyberpunk') continue
+      for (const category of availableCategories({ flavor })) {
+        if (category.todo) continue
         const results = await generateNames(category.id, 20, { flavor })
         expect(results).toHaveLength(20)
         for (const result of results) {
           expect(result.primary.trim().length).toBeGreaterThan(0)
-          expect(JSON.stringify(result)).not.toMatch(/undefined|NaN|\$/)
+          expect(JSON.stringify(result)).not.toMatch(/undefined|NaN|(?<!€)\$/)
           expect(flavor === 'shadowrun' || !/\b(Norm|Elf|Dwarf|Ork|Troll)\b/.test(result.appearance ?? '')).toBe(true)
         }
       }
     }
-  }, 20000)
+  }, 60000)
 
   it('filters flavor entries and allows explicit inclusion and exclusion', () => {
     for (const list of Object.values(SHADOWRUN)) {

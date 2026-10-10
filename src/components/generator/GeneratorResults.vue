@@ -42,6 +42,8 @@ section {
   gap: var(--space-4);
   padding: var(--space-6);
   border: 1px solid var(--color-border);
+  border-top: 5px solid var(--color-signal);
+  box-shadow: var(--theme-panel-shadow);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
 }
@@ -56,8 +58,12 @@ section {
   white-space: nowrap;
 }
 h1 {
-  font-size: 1.25rem;
-  letter-spacing: normal;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: var(--color-signal);
+  overflow-wrap: anywhere;
 }
 .name div {
   color: var(--color-muted);
@@ -78,7 +84,10 @@ li {
   overflow-wrap: anywhere;
 }
 strong {
-  font-size: 1.125rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.625rem;
+  line-height: 1.15;
 }
 .name div {
   margin-top: var(--space-1);

@@ -2,9 +2,9 @@ import { GENUS } from '@/builders/types'
 import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 
 export const flavors = [
-  { id: 'cyberpunk', label: 'Generic cyberpunk' },
+  { id: 'cyberpunk', label: 'Generic' },
   { id: 'shadowrun', label: 'Shadowrun' },
-  { id: 'cyberpunk2020-2077', label: 'Cyberpunk 2020/2077' },
+  { id: 'cyberpunk2020-2077', label: 'CP 2020/77' },
 ] as const
 export type Flavor = typeof flavors[number]['id']
 

@@ -1,0 +1,27 @@
+/* Default theme for every generator flavor. Future themes override these tokens. */
+:root,
+:root[data-theme='cyberpunk'] {
+  color-scheme: dark;
+  --radius-sm: 0;
+  --radius-lg: 0;
+  --font-body: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-display: 'Barlow Condensed', Impact, sans-serif;
+  --color-page: #eeff00;
+  --color-text: #f4f5e9;
+  --color-muted: #bac5c5;
+  --color-surface: #11171b;
+  --color-subtle: #202c32;
+  --color-border: #3e5058;
+  --color-control-border: #7a9098;
+  --color-accent: #eeff00;
+  --color-accent-hover: #d5e600;
+  --color-on-accent: #11171b;
+  --color-focus: #52f4ed;
+  --color-error: #ff9291;
+  --color-signal: #52f4ed;
+  --color-hot: #ff6761;
+  --color-on-page: #11171b;
+  --theme-panel-shadow: 6px 6px 0 #11171b;
+  --theme-heading-slant: -6deg;
+  --theme-rule: repeating-linear-gradient(135deg, var(--color-on-page) 0 4px, transparent 4px 9px);
+}

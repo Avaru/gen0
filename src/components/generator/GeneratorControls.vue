@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { GENUS } from '@/builders/types'
-import { categories } from '@/generator/categories'
+import { availableCategories } from '@/generator/categories'
 import { flavors } from '@/generator/options'
 import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 import type { GeneratorSettings } from '@/composables/useGeneratorSettings'
 import UiButton from '@/components/ui/UiButton.vue'
-import UiField from '@/components/ui/UiField.vue'
+import UiCategoryPicker from '@/components/ui/UiCategoryPicker.vue'
 import UiSegments from '@/components/ui/UiSegments.vue'
 import UiChecks from '@/components/ui/UiChecks.vue'
 import UiToggle from '@/components/ui/UiToggle.vue'
@@ -16,11 +16,10 @@ const emit = defineEmits<{
   update: [patch: Partial<GeneratorSettings>]
   generate: []
 }>()
-const category = computed(() => categories.find((item) => item.id === props.settings.category))
 const available = computed(() =>
-  categories.filter((item) => !item.requiresFlavor || props.settings.flavor !== 'cyberpunk'),
+  availableCategories({ flavor: props.settings.flavor }),
 )
-const groups = [...new Set(categories.map((item) => item.group))]
+const category = computed(() => available.value.find((item) => item.id === props.settings.category))
 const flavorOptions = flavors.map((item) => ({ value: item.id, label: item.label }))
 const genderOptions = [
   { value: GENUS.M, label: 'Masculine' },
@@ -42,23 +41,14 @@ const sizeOptions = [
       :options="flavorOptions"
       @update:model-value="emit('update', { flavor: $event as GeneratorSettings['flavor'] })"
     />
-    <UiField label="Category" for-id="category">
-      <select
-        id="category"
-        :value="settings.category"
-        @change="emit('update', { category: ($event.target as HTMLSelectElement).value })"
-      >
-        <optgroup v-for="group in groups" :key="group" :label="group">
-          <option
-            v-for="item in available.filter((item) => item.group === group)"
-            :key="item.id"
-            :value="item.id"
-          >
-            {{ item.label }}
-          </option>
-        </optgroup>
-      </select>
-    </UiField>
+    <UiCategoryPicker
+      :model-value="settings.category"
+      :options="available"
+      @update:model-value="emit('update', { category: $event })"
+    />
+    <p v-if="category?.pendingPools?.length">
+      Some name pools are still TODO: {{ category.pendingPools.join(', ') }}.
+    </p>
     <UiChecks
       v-if="category?.gender"
       :model-value="settings.gender"
@@ -90,5 +80,14 @@ const sizeOptions = [
 form {
   display: grid;
   gap: var(--space-6);
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border-top: 5px solid var(--color-hot);
+  box-shadow: var(--theme-panel-shadow);
+}
+@media (max-width: 24rem) {
+  form {
+    padding: var(--space-4);
+  }
 }
 </style>

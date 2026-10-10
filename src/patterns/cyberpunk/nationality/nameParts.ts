@@ -7,7 +7,7 @@ import type { GenerationOptions } from '@/generator/options'
 import type { NamePart } from '@/data/nameTypes'
 import type { NATIONALITY } from './byNationality'
 
-export type NameNationality = NATIONALITY | 'arabic'
+export type NameNationality = `${NATIONALITY}` | 'arabic'
 
 // Display variation, not measured population frequencies.
 const westernNameRules: Partial<
@@ -37,9 +37,10 @@ function partPool(
   type: NamePart,
   genus: GENUS,
   options: GenerationOptions,
+  excludeValue?: string,
 ): Bits {
   const matching = load(RL.NAMES_MODERN, options).filter(
-    (bit) => bit.tags.includes(nation) && bit.type === type && (!bit.genus || bit.genus === genus),
+    (bit) => bit.tags.includes(nation) && bit.type === type && (!bit.genus || bit.genus === genus) && bit.value !== excludeValue,
   )
   return new Bits([...new Map(matching.map((bit) => [bit.value, bit])).values()])
 }
@@ -108,9 +109,10 @@ export function nationalName(
 ): string {
   const given = partPool(givenNation, 'given', genus, options)
   if (nation === 'tamil') {
-    // A father's initial is not a hereditary surname. Keep his pool masculine.
-    const father = nationalityGivenName(nation, GENUS.M, options)
-    const parts = [`${father[0]}.`, given.pick.value]
+    // Expand the father's name instead of forcing an abbreviated initial.
+    const personalName = given.pick.value
+    const father = partPool(nation, 'given', GENUS.M, options, personalName).pick.value
+    const parts = [father, personalName]
     if (nickname) parts.push(`'${nickname}'`)
     return parts.join(' ')
   }

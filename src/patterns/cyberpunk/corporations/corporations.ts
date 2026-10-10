@@ -24,8 +24,12 @@ export const corporations = async (
     if (p(0.4)) {
       primary.push(names.filter({ all: ['creature', 'mythological'] }).pick.uc)
     } else {
-      const tag = randomFrom(['german', 'british', 'spanish', 'japanese'])
-      primary.push(new Bits(await load(RL.NAMES_MODERN, options), { tag, type: 'family' }).pick.uc)
+      const families = load(RL.NAMES_MODERN, options).filter(bit => bit.type === 'family')
+      const preferred = ['german', 'british', 'spanish', 'japanese'].filter(tag =>
+        families.some(bit => bit.tags.includes(tag)),
+      )
+      const tag = preferred.length ? randomFrom(preferred) : undefined
+      primary.push(new Bits(families, { tag }).pick.uc)
     }
 
     if (p()) {

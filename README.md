@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Choose a category; 10 names generate automatically. Generic cyberpunk is the default flavor. Shadowrun enables its species, magic, and setting references together. Cyberpunk 2020/2077 is one combined flavor with names from both corporation lists. Known corporations selects existing setting names; Corporations composes new names. Personal names support masculine/feminine selection, and corporations support size selection.
+Choose a category; 10 names generate automatically. Generic cyberpunk is the default flavor. Shadowrun enables its species, magic, and setting references together. Cyberpunk 2020/2077 is one combined flavor with names from both corporation lists. Known corporations selects existing setting names; Corporations composes new names. Weapons, food menus, shops, and device contents are also available. Device data becomes Commlink data in Shadowrun and Shard data in Cyberpunk. Shared fragments work in every flavor; magic, metahumans, brands, and device terms follow the selected setting. Food prices are fictional: credits for Generic, ¥ for Shadowrun, and €$ for Cyberpunk. Weapons are invented products, not rules profiles or a catalogue of canon models. Personal names support masculine/feminine selection, and corporations support size selection.
 
 ```sh
 npm run build
@@ -24,7 +24,7 @@ The production output is in `dist/` and can be served by any static host. Genera
 
 ## Interface
 
-Mobile-first layout with native radio segmented controls for flavors, checkbox groups for given-name gender and corporation size, and a grouped category dropdown. All gender and size boxes start checked; the last checked box cannot be unchecked. Results randomly use one of the checked choices. Each selection change generates 10 names automatically. Settings update the URL and are restored on reload and browser Back/Forward; results remain temporary. Generate more adds another 10 names. Show details toggles all secondary information without changing names and stays selected across categories and shared links. The initial neutral design uses shared CSS variables and scoped `Ui*` components. See [UI requirements](docs/decisions/0004-mobile-first-ui.md).
+Mobile-first layout with native radio segmented controls for flavors, checkbox groups for given-name gender and corporation size, and a searchable grouped category picker. The picker opens full-screen on phones and as a centered panel on larger screens. Search matches category and group names; selecting a category closes it, while Escape or Close cancels. Enter selects when search has exactly one match. Native HTML dialog behavior keeps keyboard focus inside and returns it to the Category button on closing. See [category picker](docs/decisions/0013-searchable-category-picker.md). All gender and size boxes start checked; the last checked box cannot be unchecked. Results randomly use one of the checked choices. Each selection change generates 10 names automatically. Settings update the URL and are restored on reload and browser Back/Forward; results remain temporary. Generate more adds another 10 names. Show details toggles all secondary information without changing names and stays selected across categories and shared links. The expressive cyberpunk design uses yellow, near-black, cyan, and coral, with shared CSS variables and scoped `Ui*` components. All flavors share one CSS theme for now; future themes can override its tokens without changing generation. Google Fonts loads Barlow Condensed and IBM Plex Mono when online, with local fallbacks. See [CSS themes](docs/decisions/0012-css-themes.md). See [UI requirements](docs/decisions/0004-mobile-first-ui.md).
 
 ## Edit the generator
 
@@ -40,7 +40,8 @@ Mobile-first layout with native radio segmented controls for flavors, checkbox g
 - `src/views/GeneratorView.vue`: generation and route coordination.
 - `src/components/ui/`: shared accessible controls and layout.
 - `src/components/generator/`: settings and results presentation.
-- `src/styles/base.css`: shared CSS variables and document defaults.
+- `src/styles/base.css`: shared spacing and document defaults.
+- `src/styles/themes/cyberpunk.css`: shared visual theme, selected by `data-theme` in `index.html`.
 
 A setting-specific entry carries `shadowrun` or `cyberpunk2020-2077`. Shared entries have no flavor tag. Category tags (such as `gang` or `runner`) select pools; explicit exclusions take priority over flavor defaults and inclusions.
 
@@ -54,9 +55,11 @@ British, US, and German double surnames may use a hyphen or space. French and It
 
 Mixed combines given names and surnames from different traditions. The surname tradition sets the order and surname variation; extra given names use the first given name's tradition. Gendered surname and patronymic forms stay consistent with the selected gender. Excluded traditions are skipped; generation needs two suitable traditions. See [Mixed rules](docs/decisions/0010-mixed-personal-names.md).
 
-Dutch, Turkish, Ukrainian, Swedish, Korean, Vietnamese, Hindi-speaking Indian, and Tamil names are also available. Korean and Vietnamese names use surname-first order and complete given-name entries. Tamil uses a father's initial followed by a given name; Mixed can use Tamil given names with another tradition's surnames. The other new pools use one given name plus one surname. All display Latin spellings, including diacritics where retained.
+Dutch, Turkish, Ukrainian, Swedish, Korean, Vietnamese, Hindi-speaking Indian, and Tamil names are also available. Korean and Vietnamese names use surname-first order and complete given-name entries. Tamil uses the father's full given name followed by the person's given name, without repeating the same name; Mixed can use Tamil given names with another tradition's surnames. The other new pools use one given name plus one surname. All display Latin spellings, including diacritics where retained.
 
 Counts, exact downloaded sources, reuse terms, spelling conversions, and limits are recorded in [personal-name sources](docs/name-data-sources.md). Several sources are maintained collections rather than census lists. Required notices ship in `public/name-data-notices.txt`. See [new naming rules](docs/decisions/0011-sourced-name-pools.md).
+
+Names by sovereignty shows a compact set of states and regions for the selected flavor: UCAS and ADL in Shadowrun, NUSA in Cyberpunk, and broad choices such as Europe. Each mixes complete names from existing traditions. Missing pools appear as X TODO under Names by nationality, which is the last picker group; sovereignty settings also identify pending pools. See [sovereignty sources and limits](docs/sovereignty-name-sources.md). Edit the mixes in `src/data/sovereignties.ts` and empty pools in `src/data/names/pending.ts`.
 
 Corporation coverage and source links are recorded in [data sources](docs/data-sources.md). Structural choices are recorded under [decisions](docs/decisions/).
 

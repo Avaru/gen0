@@ -12,7 +12,12 @@ button {
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-6);
-  font-weight: 650;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  border-bottom: 4px solid var(--color-on-accent);
   overflow-wrap: anywhere;
 }
 .primary {
@@ -23,9 +28,9 @@ button {
   background: var(--color-accent-hover);
 }
 .secondary {
-  border-color: var(--color-control-border);
+  border-color: var(--color-signal);
   background: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-signal);
 }
 .secondary:hover:enabled {
   background: var(--color-subtle);

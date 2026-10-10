@@ -14,7 +14,11 @@ defineProps<{ label: string; forId: string }>()
   min-width: 0;
 }
 label {
-  font-weight: 650;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
 }
 .field :deep(select),
 .field :deep(input) {

@@ -37,8 +37,8 @@ describe('Sourced modern name additions', () => {
         const name = nationalName(nation, genus)
         let matches: boolean
         if (nation === NATIONALITY.TAMIL) {
-          const [initial, ...given] = name.split(' ')
-          matches = givens.includes(given.join(' ')) && rlNamesModern.some(bit => bit.tags.includes('tamil') && bit.type === 'given' && bit.genus === 'm' && `${bit.value[0]}.` === initial)
+          const fathers = rlNamesModern.filter(bit => bit.tags.includes('tamil') && bit.type === 'given' && bit.genus === 'm').map(bit => bit.value)
+          matches = fathers.some(father => name.startsWith(`${father} `) && givens.includes(name.slice(father.length + 1)) && father !== name.slice(father.length + 1))
         } else if (nation === NATIONALITY.KOREAN || nation === NATIONALITY.VIETNAMESE) {
           matches = surnames.some(surname => name.startsWith(`${surname} `) && givens.includes(name.slice(surname.length + 1)))
         } else {
@@ -48,6 +48,30 @@ describe('Sourced modern name additions', () => {
       }
       expect(() => nationalName(nation, genus, undefined, { excludeTags: [nation] })).toThrow('No entries match')
     }
+  })
+
+  it('omits reviewed abbreviations and corrupted source spellings while preserving valid short names', () => {
+    const newRows = rlNamesModern.filter(bit => additions.some(nation => bit.tags.includes(nation)))
+    const bad = new Set(['Md', 'Mhd', 'Catyarāai', 'Taṅkarāai', 'Yūvarāaiṉ', 'Varatarāaiṉ', 'Kaailaṭcumi', 'Inasha', 'Ikashori'])
+    expect(newRows.some(bit => bad.has(bit.value))).toBe(false)
+    expect(newRows.some(bit => bit.tags.includes('swedish') && bit.type === 'given' && bit.value === 'Bo')).toBe(true)
+    expect(newRows.some(bit => bit.tags.includes('turkish') && bit.value === 'Kırgız')).toBe(true)
+    expect(newRows.some(bit => bit.tags.includes('korean') && bit.value === 'Seo-u')).toBe(true)
+    expect(newRows.some(bit => bit.tags.includes('vietnamese') && bit.value === 'Như Ý')).toBe(true)
+  })
+
+  it('keeps complete Hindi spellings after the Latin conversion review', () => {
+    const values = rlNamesModern.filter(bit => bit.tags.includes('hindi')).map(bit => bit.value)
+    expect(values).toEqual(expect.arrayContaining(['Dhananjay', 'Manju', 'Manjula', 'Manjusha', 'Ranjit', 'Jitendra', 'Rajendra', 'Padma', 'Singh']))
+    expect(values.some(value => /nyj|^(?:Jitendr|Rajendr|Padm|Sinh)$/.test(value))).toBe(false)
+  })
+
+  it('uses full distinct Tamil father and personal names, including with a nickname', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0)
+    expect(nationalName(NATIONALITY.TAMIL, GENUS.M)).toBe('Akattiyaṉ Akaṇṭalaṉ')
+    expect(nationalName(NATIONALITY.TAMIL, GENUS.M, 'Ghost')).toBe("Akattiyaṉ Akaṇṭalaṉ 'Ghost'")
+    expect(nationalName(NATIONALITY.TAMIL, GENUS.F)).not.toContain('.')
+    expect(() => nationalName(NATIONALITY.TAMIL, GENUS.M, undefined, { excludeTags: ['tamil'] })).toThrow('No entries match')
   })
 
   it('keeps the new pools shared by flavors and honors exclusions over inclusions', () => {

@@ -1009,7 +1009,7 @@ givenNames.push(
   {"tags":["greek"],"value":"Elsa","type":"given","genus":"f"},
   {"tags":["greek"],"value":"Elpída","type":"given","genus":"f"},
   {"tags":["greek"],"value":"Emilía","type":"given","genus":"f"},
-  {"tags":["greek"],"value":"milianí","type":"given","genus":"f"},
+  {"tags":["greek"],"value":"Milianí","type":"given","genus":"f"},
   {"tags":["greek"],"value":"Mília","type":"given","genus":"f"},
   {"tags":["greek"],"value":"Éva","type":"given","genus":"f"},
   {"tags":["greek"],"value":"Evangelía","type":"given","genus":"f"},

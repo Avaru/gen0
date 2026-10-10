@@ -34,7 +34,11 @@ fieldset {
 legend {
   padding: 0;
   margin-bottom: var(--space-2);
-  font-weight: 650;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
 }
 .segments {
   display: flex;
@@ -71,11 +75,17 @@ span {
   font-weight: 600;
 }
 input:checked + span {
-  background: var(--color-accent);
+  background: var(--color-signal);
   color: var(--color-on-accent);
 }
 input:focus-visible + span {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
+}
+@media (max-width: 24rem) {
+  span {
+    padding-inline: var(--space-1);
+    font-size: 0.75rem;
+  }
 }
 </style>

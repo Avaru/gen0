@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { categories, generateNames } from '@/generator/categories'
+import { availableCategories, generateNames } from '@/generator/categories'
 import type { Generated } from '@/patterns/types'
 import { useGeneratorSettings } from '@/composables/useGeneratorSettings'
 import GeneratorControls from '@/components/generator/GeneratorControls.vue'
@@ -8,7 +8,7 @@ import GeneratorResults from '@/components/generator/GeneratorResults.vue'
 import UiWorkspace from '@/components/ui/UiWorkspace.vue'
 
 const { settings, update } = useGeneratorSettings()
-const category = computed(() => categories.find((item) => item.id === settings.value.category))
+const category = computed(() => availableCategories({ flavor: settings.value.flavor }).find((item) => item.id === settings.value.category))
 const results = ref<Generated[]>([])
 const error = ref('')
 const busy = ref(false)
