@@ -22,6 +22,8 @@ npm run lint
 
 The production output is in `dist/` and can be served by any static host. Generation happens entirely in the browser. It needs no internet connection once the app files are available; opening `index.html` directly through `file://` is not the supported launch method.
 
+The production build separates personal-name lists into individual JavaScript files and other data into a shared file, allowing them to be cached separately from app code. All lists still load on startup. See [data bundle splitting](docs/decisions/0025-data-bundle-splitting.md).
+
 ## Deploy to Vercel
 
 Import the GitHub repository with the Vite preset, the repository root as the root directory, `dist` as the output directory, Node 24.x, and `main` as the production branch. No environment variables are required.
