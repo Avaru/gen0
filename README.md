@@ -1,54 +1,41 @@
 # gen0
 
-This template should help get you started developing with Vue 3 in Vite.
+A local Vue + TypeScript cyberpunk name generator, migrated from pgen. No backend, spreadsheet connection, or remote name service is required.
 
-## Recommended IDE Setup
+## Run
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+Use Node 24, as specified in `package.json`.
 
 ```sh
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+Choose a category and number of names, then generate. Generic cyberpunk is the default flavor. Shadowrun enables its species, magic, and setting references together. Cyberpunk 2020/2077 is one combined flavor with names from both corporation lists. Known corporations selects existing setting names; Corporations composes new names. Personal names support masculine/feminine selection, and corporations support size selection.
 
 ```sh
 npm run build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
+npm run preview
+npm run test:unit -- --run
 npm run lint
 ```
+
+The production output is in `dist/` and can be served by any static host. Generation happens entirely in the browser. It needs no internet connection once the app files are available; opening `index.html` directly through `file://` is not the supported launch method.
+
+## Edit the generator
+
+- `src/data/*.ts`: all names and fragments, including preserved unused Shadowrun pools.
+- `src/patterns/cyberpunk/`: the copied and adapted generation patterns.
+- `src/builders/Bits.ts`: selection by category, type, gender, and tags.
+- `src/generator/categories.ts`: available categories and batch generation.
+- `src/generator/options.ts`: flavors and include/exclude rules.
+- `src/load.ts`: local data registry and setting filters.
+- `src/App.vue`: the unstyled interface.
+
+A setting-specific entry carries `shadowrun` or `cyberpunk2020-2077`. Shared entries have no flavor tag. Category tags (such as `gang` or `runner`) select pools; explicit exclusions take priority over flavor defaults and inclusions.
+
+Use a stable `id` for a shared concept and `flavorNames` for alternate names: Netrunner becomes Decker in Shadowrun; Job Contact becomes Johnson or Fixer. `flavorShortNames` supplies short forms such as Sam. These are useful equivalents for generation, not claims that the roles have identical lore. Technomancers are restricted to Shadowrun, and other flavors omit species labels.
+
+Corporation coverage and source links are recorded in [data sources](docs/data-sources.md). Structural choices are recorded under [decisions](docs/decisions/).
+
+The old pgen folder remains unchanged. Fantasy/DSA generators, styling, and sheet import tooling were not copied. See [the initial decision](docs/decisions/0001-local-cyberpunk-generator.md) and [working instructions](AGENTS.md).

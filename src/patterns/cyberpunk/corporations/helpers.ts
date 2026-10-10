@@ -1,0 +1,23 @@
+export enum CORPORATION_SIZE {
+  AAA = 'aaa',
+  AA = 'aa',
+  A = 'a',
+}
+
+export const CORPORATION_PARAMETERS: Record<
+  CORPORATION_SIZE,
+  { EMPLOYEES_MIN: number; EMPLOYEES_MAX: number }
+> = {
+  [CORPORATION_SIZE.AAA]: {
+    EMPLOYEES_MAX: 1000000,
+    EMPLOYEES_MIN: 50000,
+  },
+  [CORPORATION_SIZE.AA]: {
+    EMPLOYEES_MAX: 80000,
+    EMPLOYEES_MIN: 5000,
+  },
+  [CORPORATION_SIZE.A]: {
+    EMPLOYEES_MAX: 2500,
+    EMPLOYEES_MIN: 100,
+  },
+}
