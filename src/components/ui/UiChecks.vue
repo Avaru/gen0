@@ -64,6 +64,7 @@ legend {
   gap: var(--space-2);
 }
 label {
+  transition: var(--control-color-transition);
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -92,6 +93,7 @@ label:has(input:focus-visible) {
   outline-offset: 2px;
 }
 input {
+  transition: var(--control-color-transition);
   appearance: none;
   display: grid;
   place-items: center;
@@ -107,6 +109,7 @@ input {
   cursor: inherit;
 }
 input::after {
+  transition: var(--control-color-transition);
   content: '';
   width: 0.3rem;
   height: 0.6rem;

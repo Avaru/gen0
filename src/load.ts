@@ -11,6 +11,7 @@ import { weaponData } from '@/data/weapons'
 import { foodMenuData } from '@/data/food-menu'
 import { shopData } from '@/data/shops'
 import { deviceData } from '@/data/device-data'
+import { augmentationData } from '@/data/augmentations'
 
 export enum RL {
   NAMES_MODERN = 'rl-names-modern',
@@ -23,6 +24,7 @@ export enum SHADOWRUN {
 }
 export enum CONTENT {
   WEAPONS = 'weapons',
+  AUGMENTATIONS = 'augmentations',
   FOOD_MENU = 'food-menu',
   SHOPS = 'shops',
   DEVICE_DATA = 'device-data',
@@ -30,6 +32,7 @@ export enum CONTENT {
 const lists = {
   [RL.NAMES_MODERN]: rlNamesModern,
   [CONTENT.WEAPONS]: weaponData,
+  [CONTENT.AUGMENTATIONS]: augmentationData,
   [CONTENT.FOOD_MENU]: foodMenuData,
   [CONTENT.SHOPS]: shopData,
   [CONTENT.DEVICE_DATA]: deviceData,

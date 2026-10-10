@@ -13,6 +13,13 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
   --control-height: 2.75rem;
+  --control-color-transition: background-color 160ms ease-out, color 160ms ease-out,
+    border-color 160ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --control-color-transition: none;
+  }
 }
 * {
   box-sizing: border-box;

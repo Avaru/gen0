@@ -2,14 +2,15 @@ import { capitalize } from '@/helper/capitalize'
 import { isFlavorEnabled, type GenerationOptions } from '@/generator/options'
 import Bits from '@/builders/Bits'
 import { p } from '@/helper/prob'
-import { randomAge } from '@/helper/randomAge'
 import { randomFrom } from '@/helper/randomFrom'
 import { randomFromWeighted } from '@/helper/weightedRandomFrom'
 import { runnerName } from './names'
 import { load, SHADOWRUN } from '@/load'
 import type { Generated } from '@/patterns/types'
 import { dayjob } from '../_secondary/characters'
-import { pickSpecies, SPECIES_AGE } from '../_secondary/helpers'
+import { genericName } from '../_secondary/names'
+import { pickSpecies } from '../_secondary/helpers'
+import { runnerAge } from './age'
 
 export const runners = (options: GenerationOptions = {}): Generated => {
   const primary = runnerName(options)
@@ -29,7 +30,7 @@ export const runners = (options: GenerationOptions = {}): Generated => {
   const species = pickSpecies(options)
   const appearance = [
     ...(isFlavorEnabled('shadowrun', options) ? [species] : []),
-    `${randomAge({ MIN: SPECIES_AGE[species].MATURITY, MAX: SPECIES_AGE[species].MAX })} Years`,
+    `${runnerAge(species)} Years`,
     capitalize(details.type(randomFrom(['inner', 'outer'])).take().value),
   ]
   if (p()) appearance.push(details.type(randomFrom(['inner', 'outer', 'mood'])).take().value)
@@ -39,5 +40,6 @@ export const runners = (options: GenerationOptions = {}): Generated => {
     primary,
     title: title.join(' '),
     appearance: appearance.join(', '),
+    details: `Real name: ${genericName(options, false)}`,
   }
 }

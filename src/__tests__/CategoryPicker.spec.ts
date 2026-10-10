@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import UiCategoryPicker from '@/components/ui/UiCategoryPicker.vue'
 import { mockDialog } from './helpers/dialog'
+import { mockMedia } from './helpers/media'
 
 mockDialog()
+const media = mockMedia()
 const options = [
   { id: 'german', label: 'German', group: 'Names by nationality' },
   { id: 'japanese', label: 'Japanese', group: 'Names by nationality' },
@@ -16,6 +18,21 @@ function setup() {
 }
 
 describe('category picker', () => {
+  it('keeps search unfocused on phones and touch devices until it is selected', async () => {
+    media.clear()
+    const wrapper = setup()
+    await wrapper.get('#category').trigger('click')
+    expect(wrapper.get('input').attributes('autofocus')).toBeUndefined()
+    expect(document.activeElement).toBe(wrapper.get('.close').element)
+    ;(wrapper.get('input').element as HTMLInputElement).focus()
+    await wrapper.get('input').setValue('japanese')
+    expect(wrapper.findAll('[data-category]')).toHaveLength(1)
+    await wrapper.get('.close').trigger('click')
+    await wrapper.get('#category').trigger('click')
+    expect(document.activeElement).toBe(wrapper.get('.close').element)
+    wrapper.unmount()
+  })
+
   it('searches names and group words together without changing the selection', async () => {
     const wrapper = setup()
     await wrapper.get('#category').trigger('click')

@@ -1,14 +1,16 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ type?: 'button' | 'submit'; variant?: 'primary' | 'secondary' }>(), {
+withDefaults(defineProps<{ type?: 'button' | 'submit'; variant?: 'primary' | 'secondary'; activation?: number }>(), {
   type: 'button',
   variant: 'primary',
+  activation: 0,
 })
 </script>
 <template>
-  <button :type="type" :class="variant"><slot /></button>
+  <button :type="type" :class="[variant, activation ? (activation % 2 ? 'pulse-a' : 'pulse-b') : undefined]"><slot /></button>
 </template>
 <style scoped>
 button {
+  transition: var(--control-color-transition);
   position: relative;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -22,6 +24,7 @@ button {
   overflow-wrap: anywhere;
 }
 button::after {
+  transition: var(--control-color-transition);
   content: '';
   position: absolute;
   right: 3px;
@@ -33,11 +36,17 @@ button::after {
   pointer-events: none;
 }
 .primary {
+  --button-feedback-color: var(--color-signal);
+  --button-rest-color: var(--color-accent);
   background: var(--color-accent);
   color: var(--color-on-accent);
 }
 .primary:hover:enabled {
+  --button-rest-color: var(--color-accent-hover);
   background: var(--color-accent-hover);
+}
+.primary:active:enabled {
+  background: color-mix(in srgb, var(--color-accent-hover) 85%, var(--color-on-accent));
 }
 .secondary {
   border-color: var(--color-signal);
@@ -47,7 +56,12 @@ button::after {
 .secondary:hover:enabled {
   background: var(--color-subtle);
 }
+.secondary:active:enabled {
+  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
+}
 [data-theme='cyberpunk2077'] button {
+  --button-feedback-color: color-mix(in srgb, currentColor 32%, var(--color-surface));
+  --button-rest-color: color-mix(in srgb, currentColor 8%, var(--color-surface));
   isolation: isolate;
   border: 0;
   background: transparent;
@@ -60,6 +74,7 @@ button::after {
 }
 [data-theme='cyberpunk2077'] button::before,
 [data-theme='cyberpunk2077'] button::after {
+  transition: var(--control-color-transition);
   content: '';
   position: absolute;
   inset: 0;
@@ -79,10 +94,12 @@ button::after {
   left: 4px;
   background: color-mix(in srgb, currentColor 8%, var(--color-surface));
 }
-[data-theme='cyberpunk2077'] button:hover:enabled {
+[data-theme='cyberpunk2077'] button:hover:enabled,
+[data-theme='cyberpunk2077'] button:active:enabled {
   background: transparent;
 }
 [data-theme='cyberpunk2077'] button:hover:enabled::after {
+  --button-rest-color: color-mix(in srgb, currentColor 20%, var(--color-surface));
   background: color-mix(in srgb, currentColor 20%, var(--color-surface));
 }
 [data-theme='cyberpunk2077'] button:active:enabled::after {
@@ -91,6 +108,40 @@ button::after {
 [data-theme='cyberpunk2077'] button:disabled {
   color: var(--color-disabled);
   opacity: 1;
+}
+.pulse-a,
+.pulse-b {
+  animation-duration: 500ms;
+  animation-timing-function: ease-out;
+}
+.pulse-a { animation-name: button-pulse-a; }
+.pulse-b { animation-name: button-pulse-b; }
+[data-theme='cyberpunk2077'] .pulse-a,
+[data-theme='cyberpunk2077'] .pulse-b {
+  animation-name: none;
+}
+[data-theme='cyberpunk2077'] .pulse-a::after,
+[data-theme='cyberpunk2077'] .pulse-b::after {
+  animation-duration: 500ms;
+  animation-timing-function: ease-out;
+}
+[data-theme='cyberpunk2077'] .pulse-a::after { animation-name: button-pulse-a; }
+[data-theme='cyberpunk2077'] .pulse-b::after { animation-name: button-pulse-b; }
+@keyframes button-pulse-a {
+  0%, 100% { background-color: var(--button-rest-color); }
+  35% { background-color: var(--button-feedback-color); }
+}
+@keyframes button-pulse-b {
+  0%, 100% { background-color: var(--button-rest-color); }
+  35% { background-color: var(--button-feedback-color); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse-a,
+  .pulse-b,
+  [data-theme='cyberpunk2077'] .pulse-a::after,
+  [data-theme='cyberpunk2077'] .pulse-b::after {
+    animation: none;
+  }
 }
 @media (forced-colors: active) {
   [data-theme='cyberpunk2077'] button {

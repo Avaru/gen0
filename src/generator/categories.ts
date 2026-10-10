@@ -1,3 +1,4 @@
+import { augmentations } from '@/patterns/cyberpunk/augmentations/augmentations'
 import { weapons, foodMenu, shops, deviceContents } from '@/patterns/cyberpunk/content/content'
 import { corporations, knownCorporation } from '@/patterns/cyberpunk/corporations/corporations'
 import { gang } from '@/patterns/cyberpunk/gangs/gangs'
@@ -96,12 +97,14 @@ export const categories: Category[] = [
     label: 'Known corporations',
     group: 'Organizations',
     requiresFlavor: true,
+    tags: ['shadowrun', 'cyberpunk2020-2077'],
     generate: knownCorporation,
   },
   { id: 'runners', label: 'Runners', group: 'People', generate: runners },
   { id: 'gangs', label: 'Gangs', group: 'Organizations', generate: gang },
   { id: 'restaurants', label: 'Restaurants', group: 'Food and drink', generate: restaurants },
   { id: 'bars', label: 'Bars', group: 'Food and drink', generate: bars },
+  { id: 'augmentations', label: 'Augmentations', group: 'Equipment', generate: augmentations },
   { id: 'weapons', label: 'Weapons', group: 'Equipment', generate: weapons },
   { id: 'food-menu', label: 'Food menu', group: 'Food and drink', generate: foodMenu },
   { id: 'shops', label: 'Shops', group: 'Places', generate: shops },

@@ -11,7 +11,7 @@ import Bits from '@/builders/Bits'
 import { getNamePools } from '@/builders/namePools'
 
 /** A complete personal name, without generating unused character details. */
-export function genericName(options: GenerationOptions = {}): string {
+export function genericName(options: GenerationOptions = {}, includeNickname = true): string {
   const genus = randomGenus(true)
   const pools = getNamePools(options)
   // Preserve the inherited generic-name pool; Arabic remains separately available.
@@ -19,7 +19,7 @@ export function genericName(options: GenerationOptions = {}): string {
     (nation) => nation !== 'arabic' && canComposeName(pools, nation, genus),
   )
   const nation = randomFrom(available)
-  const nickname = p() ? runnerName(options) : undefined
+  const nickname = includeNickname && p() ? runnerName(options) : undefined
   return nationalName(nation, genus, nickname, options)
 }
 

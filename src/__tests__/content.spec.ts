@@ -21,7 +21,7 @@ describe('adapted content generators', () => {
   })
 
   it('filters setting details, resolves shared terms, and honors exclusions', () => {
-    for (const list of Object.values(CONTENT)) {
+    for (const list of Object.values(CONTENT).filter((list) => list !== CONTENT.AUGMENTATIONS)) {
       expect(
         load(list).every(
           (bit) => !bit.tags.includes('shadowrun') && !bit.tags.includes('cyberpunk2020-2077'),

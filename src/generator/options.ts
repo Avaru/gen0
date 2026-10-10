@@ -39,6 +39,7 @@ export interface GenerationOptions {
 export function isFlavorEnabled(flavor: Flavor, options: GenerationOptions): boolean {
   if (options.excludeTags?.includes(flavor)) return false
   return (
-    options.includeTags?.includes(flavor) === true || (options.flavor ?? 'cyberpunk') === flavor
+    options.includeTags?.includes(flavor) === true ||
+    (options.flavor ?? 'cyberpunk') === flavor
   )
 }

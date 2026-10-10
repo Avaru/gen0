@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import { GENUS } from '@/builders/types'
 import { availableCategories } from '@/generator/categories'
 import { flavors } from '@/generator/options'
@@ -10,12 +10,23 @@ import UiCategoryPicker from '@/components/ui/UiCategoryPicker.vue'
 import UiSegments from '@/components/ui/UiSegments.vue'
 import UiChecks from '@/components/ui/UiChecks.vue'
 import UiToggle from '@/components/ui/UiToggle.vue'
+import { scrollToContent } from '@/components/ui/scrollToContent'
 
 const props = defineProps<{ settings: GeneratorSettings; busy: boolean }>()
 const emit = defineEmits<{
   update: [patch: Partial<GeneratorSettings>]
   generate: []
 }>()
+const generateButton = useTemplateRef<InstanceType<typeof UiButton>>('generateButton')
+const generationClicks = ref(0)
+function generate() {
+  if (props.busy) return
+  generationClicks.value++
+  emit('generate')
+}
+defineExpose({
+  scrollToGenerate: () => scrollToContent(generateButton.value?.$el as HTMLButtonElement | undefined),
+})
 const available = computed(() => availableCategories({ flavor: props.settings.flavor }))
 const category = computed(() => available.value.find((item) => item.id === props.settings.category))
 const flavorOptions = flavors.map((item) => ({ value: item.id, label: item.label }))
@@ -31,7 +42,7 @@ const sizeOptions = [
 </script>
 
 <template>
-  <form aria-label="Generator settings" @submit.prevent="emit('generate')">
+  <form aria-label="Generator settings" @submit.prevent="generate">
     <UiSegments
       :model-value="settings.flavor"
       label="Flavor"
@@ -69,9 +80,9 @@ const sizeOptions = [
       label="Show details"
       @update:model-value="emit('update', { details: $event })"
     />
-    <UiButton type="submit" :disabled="busy">{{
-      busy ? 'Generating…' : 'Generate names'
-    }}</UiButton>
+    <UiButton ref="generateButton" type="submit" :disabled="busy" :aria-busy="busy" :activation="generationClicks">
+      Generate names
+    </UiButton>
   </form>
 </template>
 

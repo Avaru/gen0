@@ -39,6 +39,7 @@ nav {
   flex-basis: 100%;
   display: flex;
   justify-content: flex-end;
+  padding-right: calc(3rem + var(--space-3));
 }
 nav a {
   display: inline-flex;
@@ -62,7 +63,7 @@ header::after {
 header::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: calc((var(--control-height) - 0.625rem) / 2);
   right: 0;
   width: 3rem;
   height: 0.625rem;

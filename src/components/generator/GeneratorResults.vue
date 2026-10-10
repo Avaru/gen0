@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useTemplateRef } from 'vue'
 import type { Generated } from '@/patterns/types'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiScrambleText from '@/components/ui/UiScrambleText.vue'
+import { scrollToContent } from '@/components/ui/scrollToContent'
 defineProps<{
   results: Generated[]
   busy: boolean
@@ -9,6 +12,20 @@ defineProps<{
   showDetails: boolean
 }>()
 defineEmits<{ more: [] }>()
+const list = useTemplateRef<HTMLOListElement>('list')
+function revealTiming(index: number) {
+  const position = index % 10
+  return { duration: position === 0 ? 140 : 260, delay: position * 40 }
+}
+defineExpose({
+  scrollToResult: (index: number) => scrollToContent(list.value?.children[index] as HTMLElement | undefined),
+  revealFirstName() {
+    const name = list.value?.querySelector<HTMLElement>('li strong')
+    if (!name) return
+    const bounds = name.getBoundingClientRect()
+    if (bounds.top < 0 || bounds.bottom > window.innerHeight) scrollToContent(name, 'nearest')
+  },
+})
 </script>
 <template>
   <section aria-labelledby="results-heading" :aria-busy="busy">
@@ -17,16 +34,16 @@ defineEmits<{ more: [] }>()
       {{ busy ? 'Generating names…' : results.length ? 'Names updated.' : '' }}
     </p>
     <p v-if="error" class="error" role="alert">{{ error }}</p>
-    <ol v-if="results.length" role="list">
+    <ol v-if="results.length" ref="list" role="list">
       <li v-for="(result, index) in results" :key="index">
         <div class="name">
-          <strong>{{ result.primary }}</strong>
+          <strong><UiScrambleText :text="result.primary" :replay-key="result" v-bind="revealTiming(index)" /></strong>
           <template v-if="showDetails">
-            <div v-if="result.title">{{ result.title }}</div>
-            <div v-if="result.age">{{ result.age }}</div>
-            <div v-if="result.appearance">{{ result.appearance }}</div>
-            <div v-if="result.details">{{ result.details }}</div>
-            <div v-if="result.rating !== undefined">Rating: {{ result.rating.toFixed(1) }} / 5</div>
+            <div v-if="result.title"><UiScrambleText :text="result.title" :replay-key="result" v-bind="revealTiming(index)" /></div>
+            <div v-if="result.age"><UiScrambleText :text="result.age" :replay-key="result" v-bind="revealTiming(index)" /></div>
+            <div v-if="result.appearance"><UiScrambleText :text="result.appearance" :replay-key="result" v-bind="revealTiming(index)" /></div>
+            <div v-if="result.details" class="details"><UiScrambleText :text="result.details" :replay-key="result" v-bind="revealTiming(index)" /></div>
+            <div v-if="result.rating !== undefined"><UiScrambleText :text="`Rating: ${result.rating.toFixed(1)} / 5`" :replay-key="result" v-bind="revealTiming(index)" /></div>
           </template>
         </div>
       </li>
@@ -77,6 +94,9 @@ h1 {
   color: var(--theme-title-color);
   overflow-wrap: anywhere;
   text-shadow: var(--theme-heading-shadow);
+}
+.details {
+  white-space: pre-line;
 }
 .name div {
   color: var(--color-muted);

@@ -31,6 +31,7 @@ input {
   opacity: 0;
 }
 .track {
+  transition: var(--control-color-transition);
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -42,6 +43,7 @@ input {
   background: var(--color-subtle);
 }
 .track::after {
+  transition: var(--control-color-transition);
   content: '';
   width: 1rem;
   height: 1rem;
@@ -75,6 +77,7 @@ input:focus-visible + .track {
   position: relative;
 }
 [data-theme='cyberpunk2077'] .track::before {
+  transition: var(--control-color-transition);
   content: '';
   position: absolute;
   inset: 1px;

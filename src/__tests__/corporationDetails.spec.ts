@@ -1,0 +1,119 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { corporations, knownCorporation } from '@/patterns/cyberpunk/corporations/corporations'
+import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
+import { flavors } from '@/generator/options'
+import { corporationEvents } from '@/data/corporation-events'
+import { seedRandom } from './helpers/random'
+import { load, SHADOWRUN } from '@/load'
+import * as personalNames from '@/patterns/cyberpunk/_secondary/names'
+
+afterEach(() => vi.restoreAllMocks())
+
+function rows(size: CORPORATION_SIZE, flavor: typeof flavors[number]['id'] = 'cyberpunk') {
+  return corporations({ corporationSize: size, flavor }).details!.split('\n')
+}
+
+describe('generated corporation details', () => {
+  it('limits the details to the requested company sizes in every flavor', () => {
+    seedRandom()
+    for (const { id: flavor } of flavors) {
+      const small = rows(CORPORATION_SIZE.A, flavor)
+      expect(small).toHaveLength(2)
+      expect(small[1]).toMatch(/^CEO: \S/)
+      const medium = rows(CORPORATION_SIZE.AA, flavor)
+      expect(medium).toHaveLength(4)
+      expect(medium[1]).toMatch(/^CEO: \S/)
+      expect(medium[2]).toMatch(/^Founded: \d{4}$/)
+      expect(medium[3]).toMatch(/^20\d{2}: \S/)
+      expect(medium.join('\n')).not.toContain('Recent event:')
+      const large = rows(CORPORATION_SIZE.AAA, flavor)
+      expect([7, 8]).toContain(large.length)
+      expect(large[1]).toMatch(/^CEO: \S/)
+      expect(large[3]).toMatch(/^Subsidiaries: \S/)
+      expect(large[4]).toBe('Events:')
+      expect([2, 3]).toContain(large.slice(5).length)
+      expect([...small, ...medium, ...large].join('\n')).not.toMatch(/undefined|NaN|\$/)
+    }
+  })
+
+  it('keeps dates within the 2077 timeline and chooses one or two distinct subsidiaries', () => {
+    seedRandom()
+    const counts = new Set<number>()
+    const eventCounts = new Set<number>()
+    const eventYears = new Set<number>()
+    for (let i = 0; i < 50; i++) {
+      const result = corporations({ corporationSize: CORPORATION_SIZE.AAA })
+      const lines = result.details!.split('\n')
+      const founding = Number(lines[2]!.slice('Founded: '.length))
+      expect(founding).toBeGreaterThanOrEqual(2020)
+      expect(founding).toBeLessThanOrEqual(2077)
+      const subsidiaries = lines[3]!.slice('Subsidiaries: '.length).split('; ')
+      counts.add(subsidiaries.length)
+      expect([1, 2]).toContain(subsidiaries.length)
+      expect(new Set(subsidiaries).size).toBe(subsidiaries.length)
+      expect(subsidiaries).not.toContain(result.primary)
+      const years = lines.slice(5).map(line => Number(line.slice(0, 4)))
+      eventCounts.add(years.length)
+      years.forEach(year => eventYears.add(year))
+      expect([2, 3]).toContain(years.length)
+      expect(years.every(year => year >= founding && year <= 2077)).toBe(true)
+      expect(years).toEqual([...years].sort((a, b) => a - b))
+      // Rendering may add names, but each history uses different templates.
+      const templates = lines.slice(5).map(line => corporationEvents.findIndex(event => {
+        const literal = event.value.replace(/\$(people|product|corporation)\$/g, '.*')
+        return new RegExp(`^${literal}$`).test(line.slice(6))
+      }))
+      expect(templates.every(index => index >= 0)).toBe(true)
+      expect(new Set(templates).size).toBe(years.length)
+    }
+    expect([...counts].sort()).toEqual([1, 2])
+    expect([...eventCounts].sort()).toEqual([2, 3])
+    expect(eventYears.size).toBeGreaterThan(1)
+    expect([...eventYears].some(year => year < 2073)).toBe(true)
+  })
+
+  it('allows older AA events without predating the company', () => {
+    seedRandom()
+    const years = new Set<number>()
+    for (let i = 0; i < 50; i++) {
+      const lines = rows(CORPORATION_SIZE.AA)
+      const founding = Number(lines[2]!.slice('Founded: '.length))
+      const eventYear = Number(lines[3]!.slice(0, 4))
+      years.add(eventYear)
+      expect(eventYear).toBeGreaterThanOrEqual(founding)
+      expect(eventYear).toBeLessThanOrEqual(2077)
+    }
+    expect(years.size).toBeGreaterThan(1)
+    expect([...years].some(year => year < 2073)).toBe(true)
+  })
+
+  it('can generate distinct subsidiaries even with fixed random draws', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.8)
+    const result = corporations({ corporationSize: CORPORATION_SIZE.AAA })
+    const subsidiaries = result.details!.split('\n')[3]!.slice('Subsidiaries: '.length).split('; ')
+    expect(subsidiaries).toHaveLength(2)
+    expect(new Set(subsidiaries).size).toBe(2)
+    expect(subsidiaries).not.toContain(result.primary)
+  })
+
+  it('uses excluded personal-name pools and flavor rules for nested details', () => {
+    seedRandom()
+    const options = { flavor: 'cyberpunk2020-2077' as const, excludeTags: ['shadowrun', 'german', 'japanese'] }
+    const banned = load(SHADOWRUN.NAMES, { flavor: 'shadowrun' })
+      .filter(bit => bit.tags.includes('known-corporation'))
+      .map(bit => bit.value)
+    const personSpy = vi.spyOn(personalNames, 'genericName')
+    const results = Array.from({ length: 20 }, () => corporations({ ...options, corporationSize: CORPORATION_SIZE.AAA }))
+    expect(results.some(result => banned.some(name => JSON.stringify(result).includes(name)))).toBe(false)
+    expect(personSpy).toHaveBeenCalledWith(expect.objectContaining(options), false)
+    expect(personSpy.mock.calls.every(([nestedOptions, includeNickname]) =>
+      nestedOptions?.flavor === options.flavor && nestedOptions.excludeTags === options.excludeTags && includeNickname === false,
+    )).toBe(true)
+  })
+
+  it('keeps known companies as names only', () => {
+    seedRandom()
+    expect(Object.keys(knownCorporation({ flavor: 'shadowrun' }))).toEqual(['primary'])
+    expect(Object.keys(knownCorporation({ flavor: 'cyberpunk2020-2077' }))).toEqual(['primary'])
+  })
+})

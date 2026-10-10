@@ -165,7 +165,7 @@ describe('migrated generator', () => {
     const results = generateNames('corporations', 50, {
       corporationSizes: [CORPORATION_SIZE.A, CORPORATION_SIZE.AAA],
     })
-    const employees = results.map((result) => Number(result.details!.replace(/[^0-9]/g, '')))
+    const employees = results.map((result) => Number(result.details!.split('\n')[0]!.replace(/[^0-9]/g, '')))
     expect(
       employees.every(
         (count) => (count >= 100 && count <= 2500) || (count >= 50000 && count <= 1000000),

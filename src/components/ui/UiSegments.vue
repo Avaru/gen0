@@ -50,7 +50,6 @@ legend::before {
 }
 .segments {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-1);
   padding: 0;
   border: 1px solid var(--color-control-border);
@@ -61,6 +60,7 @@ label {
   position: relative;
   display: flex;
   flex: 1 1 auto;
+  min-width: 0;
   cursor: pointer;
 }
 input {
@@ -71,10 +71,13 @@ input {
   opacity: 0;
 }
 span {
+  transition: var(--control-color-transition);
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
+  min-width: 0;
+  white-space: nowrap;
   min-height: var(--control-height);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
@@ -86,6 +89,12 @@ span {
 input:checked + span {
   background: var(--color-signal);
   color: var(--color-on-accent);
+}
+label:hover input:not(:checked) + span {
+  background: var(--color-subtle);
+}
+label:active input:not(:checked) + span {
+  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
 }
 input:focus-visible + span {
   outline: 3px solid var(--color-focus);
@@ -112,7 +121,7 @@ input:focus-visible + span {
 @media (max-width: 24rem) {
   span {
     padding-inline: var(--space-1);
-    font-size: var(--font-small-control-size);
+    font-size: min(var(--font-small-control-size), 0.75rem);
   }
 }
 </style>

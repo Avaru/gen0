@@ -10,8 +10,10 @@ const id = useId()
 const dialog = ref<HTMLDialogElement>()
 const trigger = ref<HTMLButtonElement>()
 const search = ref<HTMLInputElement>()
+const closeButton = ref<HTMLButtonElement>()
 const query = ref('')
 const opened = ref(false)
+let chosen: string | undefined
 const selected = computed(() => props.options.find(option => option.id === props.modelValue))
 const filtered = computed(() => {
   const terms = query.value.trim().toLocaleLowerCase().split(/\s+/)
@@ -26,17 +28,24 @@ async function open() {
   await nextTick()
   dialog.value?.showModal()
   opened.value = true
-  search.value?.focus()
+  const initialFocus = window.matchMedia('(min-width: 40rem) and (pointer: fine)').matches
+    ? search.value
+    : closeButton.value
+  initialFocus?.focus({ preventScroll: true })
 }
 function close() {
   dialog.value?.close()
 }
 function closed() {
   opened.value = false
-  trigger.value?.focus()
+  trigger.value?.focus({ preventScroll: true })
+  if (chosen !== undefined) {
+    emit('update:modelValue', chosen)
+    chosen = undefined
+  }
 }
 function choose(value: string) {
-  emit('update:modelValue', value)
+  chosen = value
   close()
 }
 function wrapFocus(event: KeyboardEvent) {
@@ -85,7 +94,7 @@ function enter() {
       <div class="panel">
         <header>
           <h2 :id="`${id}-heading`">Choose category</h2>
-          <button class="close" type="button" aria-label="Close category picker" @click="close">✕</button>
+          <button ref="closeButton" class="close" type="button" aria-label="Close category picker" @click="close">✕</button>
         </header>
         <div class="search">
           <label :for="`${id}-search`">Search categories</label>
@@ -96,7 +105,6 @@ function enter() {
             type="search"
             placeholder="Type a name or group…"
             autocomplete="off"
-            autofocus
             :aria-controls="`${id}-choices`"
             @keydown.enter.prevent="enter"
           />
@@ -151,6 +159,7 @@ function enter() {
 }
 button,
 input {
+  transition: var(--control-color-transition);
   border: 1px solid var(--color-control-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -174,6 +183,9 @@ button:hover {
   border-color: var(--color-signal);
   background: var(--color-subtle);
 }
+button:active {
+  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
+}
 [data-theme='cyberpunk2077'] .trigger {
   position: relative;
   isolation: isolate;
@@ -185,6 +197,7 @@ button:hover {
 }
 [data-theme='cyberpunk2077'] .trigger::before,
 [data-theme='cyberpunk2077'] .trigger::after {
+  transition: var(--control-color-transition);
   content: '';
   position: absolute;
   inset: 0;
@@ -202,6 +215,9 @@ button:hover {
 }
 [data-theme='cyberpunk2077'] .trigger:hover::before {
   background: var(--color-signal);
+}
+[data-theme='cyberpunk2077'] .trigger:active::after {
+  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
 }
 @media (forced-colors: active) {
   [data-theme='cyberpunk2077'] .trigger {

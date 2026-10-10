@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, it, expect, vi } from 'vitest'
 import { mockDialog } from './helpers/dialog'
+import { mockMedia } from './helpers/media'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import App from '../App.vue'
@@ -7,6 +8,18 @@ import GeneratorView from '../views/GeneratorView.vue'
 import AboutView from '../views/AboutView.vue'
 
 mockDialog()
+const media = mockMedia()
+const scroll = vi.fn<(options?: ScrollIntoViewOptions) => void>()
+const originalScroll = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView')
+beforeAll(() => Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+  configurable: true,
+  value: scroll,
+}))
+beforeEach(() => scroll.mockClear())
+afterAll(() => {
+  if (originalScroll) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', originalScroll)
+  else Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView')
+})
 
 async function chooseCategory(wrapper: ReturnType<typeof mount>, value: string) {
   await wrapper.get('#category').trigger('click')
@@ -29,6 +42,97 @@ async function setup(url = '/') {
 }
 
 describe('name generator interface', () => {
+  it('falls back to Generic runners for a saved Birka fashion link', async () => {
+    const { wrapper, router } = await setup('/?flavor=birka&category=fashion-items')
+    expect(router.currentRoute.value.query).toEqual({ flavor: 'cyberpunk', category: 'runners' })
+    expect(wrapper.find('input[name="flavor"][value="birka"]').exists()).toBe(false)
+    expect(wrapper.find('[data-category="fashion-items"]').exists()).toBe(false)
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('reveals the first name on manual generation only when it is outside the viewport', async () => {
+    const { wrapper } = await setup('/?category=german')
+    expect(scroll).not.toHaveBeenCalled()
+    const name = wrapper.get('li strong').element
+    const bounds = vi.spyOn(name, 'getBoundingClientRect')
+    try {
+      bounds.mockReturnValue(new DOMRect(0, 100, 200, 30))
+      await wrapper.get('form').trigger('submit')
+      await flushPromises()
+      expect(scroll).not.toHaveBeenCalled()
+
+      bounds.mockReturnValue(new DOMRect(0, window.innerHeight - 10, 200, 30))
+      await wrapper.get('form').trigger('submit')
+      await flushPromises()
+      expect(scroll.mock.contexts[scroll.mock.contexts.length - 1]).toBe(name)
+      expect(scroll).toHaveBeenLastCalledWith({ block: 'nearest', behavior: 'smooth' })
+
+      media.add('(prefers-reduced-motion: reduce)')
+      bounds.mockReturnValue(new DOMRect(0, -40, 200, 30))
+      await wrapper.get('form').trigger('submit')
+      await flushPromises()
+      expect(scroll).toHaveBeenLastCalledWith({ block: 'nearest', behavior: 'instant' })
+    } finally {
+      bounds.mockRestore()
+      wrapper.unmount()
+    }
+  })
+
+  it('keeps desktop category choices in place, including choosing the current category', async () => {
+    media.add('(min-width: 56rem)')
+    const { wrapper, router } = await setup('/?category=german')
+    for (const category of ['corporations', 'corporations', 'german']) {
+      await chooseCategory(wrapper, category)
+      await flushPromises()
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+      expect(router.currentRoute.value.query.category).toBe(category)
+      expect(wrapper.findAll('li')).toHaveLength(10)
+      expect(scroll).not.toHaveBeenCalled()
+    }
+    wrapper.unmount()
+  })
+
+  it('scrolls to Generate on smaller screens after a category choice, including choosing the current category', async () => {
+    const { wrapper, router } = await setup('/?category=german')
+    expect(scroll).not.toHaveBeenCalled()
+    await wrapper.get('#category').trigger('click')
+    await wrapper.get('.close').trigger('click')
+    expect(scroll).not.toHaveBeenCalled()
+    await chooseCategory(wrapper, 'corporations')
+    await flushPromises()
+    await vi.waitFor(() => expect(scroll).toHaveBeenCalled())
+    expect(router.currentRoute.value.query.category).toBe('corporations')
+    expect(wrapper.find('input[name="size"]').exists()).toBe(true)
+    expect(scroll.mock.contexts[scroll.mock.contexts.length - 1]).toBe(wrapper.get('button[type="submit"]').element)
+    expect(scroll).toHaveBeenLastCalledWith({ block: 'start', behavior: 'smooth' })
+    scroll.mockClear()
+    router.back()
+    await flushPromises()
+    expect(scroll).not.toHaveBeenCalled()
+    media.add('(prefers-reduced-motion: reduce)')
+    await chooseCategory(wrapper, 'german')
+    await flushPromises()
+    await vi.waitFor(() => expect(scroll).toHaveBeenLastCalledWith({ block: 'start', behavior: 'instant' }))
+    wrapper.unmount()
+  })
+
+  it('scrolls to the first new name after each appended batch', async () => {
+    const { wrapper } = await setup('/?category=german&details=false')
+    const original = wrapper.findAll('li').map(item => item.text())
+    await wrapper.get('button.secondary').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAll('li').slice(0, 10).map(item => item.text())).toEqual(original)
+    expect(scroll.mock.contexts[scroll.mock.contexts.length - 1]).toBe(wrapper.findAll('li')[10]!.element)
+    expect(scroll).toHaveBeenLastCalledWith({ block: 'start', behavior: 'smooth' })
+    await wrapper.get('button.secondary').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAll('li')).toHaveLength(30)
+    expect(scroll.mock.contexts[scroll.mock.contexts.length - 1]).toBe(wrapper.findAll('li')[20]!.element)
+    wrapper.unmount()
+  })
+
   it('opens About and returns with the selected settings and theme, including a direct link', async () => {
     const { wrapper, router } = await setup('/?flavor=cyberpunk2020-2077&category=german&gender=f&details=false')
     const query = { ...router.currentRoute.value.query }
