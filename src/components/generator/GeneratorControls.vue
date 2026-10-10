@@ -49,6 +49,7 @@ const sizeOptions = [
     <p v-if="category?.pendingPools?.length">
       Some name pools are still TODO: {{ category.pendingPools.join(', ') }}.
     </p>
+    <p v-if="category?.coverage">{{ category.coverage }}</p>
     <UiChecks
       v-if="category?.gender"
       :model-value="settings.gender"

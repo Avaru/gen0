@@ -5,6 +5,7 @@ import { generateNames } from '@/generator/categories'
 import { flavors } from '@/generator/options'
 import * as nameData from '@/load'
 import { RL } from '@/load'
+import { clearNamePools } from '@/builders/namePools'
 import { NATIONALITY } from '@/patterns/cyberpunk/nationality/byNationality'
 import { nationalName } from '@/patterns/cyberpunk/nationality/nameParts'
 import { mixedName } from '@/patterns/cyberpunk/nationality/mixed'
@@ -67,6 +68,7 @@ const fixture: NameEntry[] = Object.entries(familyNames).flatMap(([nation, surna
 ])
 
 function useFixture() {
+  clearNamePools()
   const original = nameData.load
   vi.spyOn(nameData, 'load').mockImplementation((list, options = {}) =>
     list === RL.NAMES_MODERN
@@ -77,7 +79,10 @@ function useFixture() {
 function draws(values: number[]) {
   vi.spyOn(Math, 'random').mockImplementation(() => values.shift() ?? 0.99)
 }
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  clearNamePools()
+  vi.restoreAllMocks()
+})
 
 describe('Remaining national name rules', () => {
   it.each(western)(

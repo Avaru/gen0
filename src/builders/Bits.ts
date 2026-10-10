@@ -7,11 +7,11 @@ import { GENUS } from './types'
 // Each pool owns its picks; filtering never consumes the original data.
 export default class Bits {
   private bits: RawBit[]
-  constructor(bits: RawBit[], filter?: BitFilter) {
+  constructor(bits: readonly RawBit[], filter?: BitFilter) {
     this.bits = Bits.filterList(bits, filter)
   }
 
-  static filterList(list: RawBit[], filter: BitFilter = {}): RawBit[] {
+  static filterList(list: readonly RawBit[], filter: BitFilter = {}): RawBit[] {
     return list
       .filter(
         (bit) =>

@@ -21,6 +21,8 @@ import { bySovereignty, pendingSovereigntyPools } from '@/patterns/cyberpunk/nat
 import { isEntryAvailable } from '@/builders/availability'
 import { getName } from './names'
 import type { RawBit } from '@/builders/types'
+import { continents } from '@/data/continents'
+import { byContinent } from '@/patterns/cyberpunk/nationality/byContinent'
 
 export interface Category {
   id: string
@@ -33,6 +35,7 @@ export interface Category {
   flavorNames?: RawBit['flavorNames']
   todo?: boolean
   pendingPools?: string[]
+  coverage?: string
   generate: (options: GenerationOptions) => Promise<Generated>
 }
 const nationalities: [NATIONALITY, string][] = [
@@ -63,6 +66,13 @@ function selectedGender(options: GenerationOptions) {
 }
 
 const nationalityCategories: Category[] = [
+  {
+    id: 'mixed',
+    label: 'Mixed',
+    group: 'Names by nationality',
+    gender: true,
+    generate: (options) => mixed(selectedGender(options), options),
+  },
   ...nationalities.map(([nation, label]) => ({
     id: nation,
     label,
@@ -86,13 +96,6 @@ const nationalityCategories: Category[] = [
     group: 'Names by nationality',
     gender: true,
     generate: (options) => arabic(selectedGender(options), options),
-  },
-  {
-    id: 'mixed',
-    label: 'Mixed',
-    group: 'Names by nationality',
-    gender: true,
-    generate: (options) => mixed(selectedGender(options), options),
   },
 ]
 
@@ -137,6 +140,16 @@ export const categories: Category[] = [
     todo: state.mix.every(part => pendingNationalities.some(pool => pool.id === part.nationality)),
     pendingPools: pendingSovereigntyPools(state),
     generate: (options: GenerationOptions) => bySovereignty(state.id, selectedGender(options), options),
+  })),
+  ...continents.map(continent => ({
+    id: continent.id,
+    label: continent.value,
+    tags: continent.tags,
+    group: 'Names by continent',
+    gender: true,
+    pendingPools: pendingSovereigntyPools(continent),
+    coverage: continent.coverage,
+    generate: (options: GenerationOptions) => byContinent(continent.id, selectedGender(options), options),
   })),
   ...nationalityCategories,
 ]

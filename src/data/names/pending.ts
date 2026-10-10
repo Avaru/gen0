@@ -1,6 +1,6 @@
 import type { NameEntry } from '../nameTypes'
 
-// Empty, editable pools requested for traditions needed by the sovereignty mixes.
+// Empty, editable pools requested for traditions needed by regional name mixes.
 // Add sourced names AND their composition rules before removing TODO in the registry.
 export const pendingNationalities = [
   { id: 'irish', label: 'Irish', names: [] as NameEntry[] },
@@ -16,6 +16,8 @@ export const pendingNationalities = [
   { id: 'dakota', label: 'Dakota', names: [] as NameEntry[] },
   { id: 'pueblo', label: 'Pueblo', names: [] as NameEntry[] },
   { id: 'navajo', label: 'Navajo', names: [] as NameEntry[] },
+  { id: 'maori', label: 'Māori', names: [] as NameEntry[] },
+  { id: 'aboriginal-australian', label: 'Aboriginal Australian', names: [] as NameEntry[] },
 ] as const
 
 export type PendingNationality = typeof pendingNationalities[number]['id']

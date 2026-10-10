@@ -2,7 +2,7 @@ import Bits from '@/builders/Bits'
 import { GENUS } from '@/builders/types'
 import { p } from '@/helper/prob'
 import { randomGenus } from '@/helper/randomGenus'
-import { load, RL } from '@/load'
+import { getNamePools } from '@/builders/namePools'
 import type { GenerationOptions } from '@/generator/options'
 import type { NamePart } from '@/data/nameTypes'
 import type { NATIONALITY } from './byNationality'
@@ -39,10 +39,8 @@ function partPool(
   options: GenerationOptions,
   excludeValue?: string,
 ): Bits {
-  const matching = load(RL.NAMES_MODERN, options).filter(
-    (bit) => bit.tags.includes(nation) && bit.type === type && (!bit.genus || bit.genus === genus) && bit.value !== excludeValue,
-  )
-  return new Bits([...new Map(matching.map((bit) => [bit.value, bit])).values()])
+  const parts = getNamePools(options).get(nation, type, genus, true)
+  return new Bits(excludeValue === undefined ? parts : parts.filter(bit => bit.value !== excludeValue))
 }
 
 /** One given name for use in any generator. */
@@ -69,7 +67,8 @@ export function russianPatronymic(
   fatherGivenName?: string,
   options: GenerationOptions = {},
 ): string {
-  const data = load(RL.NAMES_MODERN, options).filter((bit) => bit.tags.includes('russian'))
+  const pools = getNamePools(options)
+  const data = pools.get('russian')
   const fatherIds = new Set(
     data.flatMap((bit) => (bit.type === 'patronymic' ? [bit.fatherNameId] : [])),
   )
@@ -87,7 +86,7 @@ export function russianPatronymic(
               bit.aliases?.some((alias) => alias.toLowerCase() === fatherName)),
         )
   const pool = new Bits(
-    data.filter(
+    pools.get('russian', 'patronymic', genus).filter(
       (bit) =>
         bit.type === 'patronymic' &&
         bit.genus === genus &&

@@ -34,6 +34,7 @@ Mobile-first layout with native radio segmented controls for flavors, checkbox g
 - `src/data/*.ts`: other names and fragments, including preserved unused Shadowrun pools.
 - `src/patterns/cyberpunk/`: the copied and adapted generation patterns.
 - `src/builders/Bits.ts`: selection by category, type, gender, and tags.
+- `src/builders/namePools.ts`: name pools prepared in memory and reused for matching settings.
 - `src/generator/categories.ts`: available categories and batch generation.
 - `src/generator/options.ts`: flavors and include/exclude rules.
 - `src/load.ts`: local data registry and setting filters.
@@ -44,6 +45,8 @@ Mobile-first layout with native radio segmented controls for flavors, checkbox g
 - `src/styles/themes/cyberpunk.css`: shared visual theme, selected by `data-theme` in `index.html`.
 
 A setting-specific entry carries `shadowrun` or `cyberpunk2020-2077`. Shared entries have no flavor tag. Category tags (such as `gang` or `runner`) select pools; explicit exclusions take priority over flavor defaults and inclusions.
+
+Modern-name pools are built from the TypeScript data when first needed and reused in memory for matching flavor and include/exclude settings. Every result still makes fresh random picks; source order, duplicate weights, and naming rules are preserved. Reloading rebuilds pools from the current data. See [reusable name pools](docs/decisions/0017-reusable-name-pools.md).
 
 Use a stable `id` for a shared concept and `flavorNames` for alternate names: Netrunner becomes Decker in Shadowrun; Job Contact becomes Johnson or Fixer. `flavorShortNames` supplies short forms such as Sam. These are useful equivalents for generation, not claims that the roles have identical lore. Technomancers are restricted to Shadowrun, and other flavors omit species labels.
 
@@ -59,7 +62,7 @@ Dutch, Turkish, Ukrainian, Swedish, Korean, Vietnamese, Hindi-speaking Indian, a
 
 Counts, exact downloaded sources, reuse terms, spelling conversions, and limits are recorded in [personal-name sources](docs/name-data-sources.md). Several sources are maintained collections rather than census lists. Required notices ship in `public/name-data-notices.txt`. See [new naming rules](docs/decisions/0011-sourced-name-pools.md).
 
-Names by sovereignty shows a compact set of states and regions for the selected flavor: UCAS and ADL in Shadowrun, NUSA in Cyberpunk, and broad choices such as Europe. Each mixes complete names from existing traditions. Missing pools appear as X TODO under Names by nationality, which is the last picker group; sovereignty settings also identify pending pools. See [sovereignty sources and limits](docs/sovereignty-name-sources.md). Edit the mixes in `src/data/sovereignties.ts` and empty pools in `src/data/names/pending.ts`.
+Names by sovereignty shows a compact set of states and regions for the selected flavor: UCAS and ADL in Shadowrun, NUSA in Cyberpunk, and broad choices such as Europe. Generic cyberpunk instead offers Names by continent: Africa, Asia, Europe, North America, South America and Oceania. Each mixes complete names from existing traditions. Missing pools appear as X TODO under Names by nationality, which is the last picker group with Mixed first; regional settings identify pending pools and limited coverage. See [sovereignty sources and limits](docs/sovereignty-name-sources.md) and [continent mixes](docs/decisions/0018-continent-name-mixes.md). Edit the mixes in `src/data/sovereignties.ts` / `src/data/continents.ts` and empty pools in `src/data/names/pending.ts`.
 
 Corporation coverage and source links are recorded in [data sources](docs/data-sources.md). Structural choices are recorded under [decisions](docs/decisions/).
 

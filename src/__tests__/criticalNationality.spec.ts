@@ -5,6 +5,7 @@ import { generateNames } from '@/generator/categories'
 import { flavors } from '@/generator/options'
 import * as nameData from '@/load'
 import { RL } from '@/load'
+import { clearNamePools } from '@/builders/namePools'
 import { NATIONALITY, genericNationality } from '@/patterns/cyberpunk/nationality/byNationality'
 import {
   nationalName,
@@ -40,6 +41,7 @@ const fixture: NameEntry[] = [
   ])
 
 function useFixture() {
+  clearNamePools()
   const originalLoad = nameData.load
   vi.spyOn(nameData, 'load').mockImplementation((list, options = {}) =>
     list === RL.NAMES_MODERN
@@ -48,7 +50,10 @@ function useFixture() {
   )
 }
 
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  clearNamePools()
+  vi.restoreAllMocks()
+})
 
 describe('Critical nationality construction', () => {
   it.each([NATIONALITY.CHINESE, NATIONALITY.JAPANESE])(

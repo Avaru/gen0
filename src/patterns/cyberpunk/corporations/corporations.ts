@@ -4,7 +4,8 @@ import { p } from '@/helper/prob'
 import { randomFrom } from '@/helper/randomFrom'
 import { randomFromEnum } from '@/helper/randomFromEnum'
 import { randomRounded } from '@/helper/randomRounded'
-import { load, RL, SHADOWRUN } from '@/load'
+import { load, SHADOWRUN } from '@/load'
+import { getNamePools } from '@/builders/namePools'
 import { type Generated } from '@/patterns/types'
 import { CORPORATION_SIZE, CORPORATION_PARAMETERS } from './helpers'
 
@@ -24,7 +25,7 @@ export const corporations = async (
     if (p(0.4)) {
       primary.push(names.filter({ all: ['creature', 'mythological'] }).pick.uc)
     } else {
-      const families = load(RL.NAMES_MODERN, options).filter(bit => bit.type === 'family')
+      const families = getNamePools(options).get(undefined, 'family')
       const preferred = ['german', 'british', 'spanish', 'japanese'].filter(tag =>
         families.some(bit => bit.tags.includes(tag)),
       )

@@ -3,7 +3,8 @@ import Bits from '@/builders/Bits'
 import { genitivS } from '@/helper/de/genitivS'
 import { p } from '@/helper/prob'
 import { replacePlaceholder } from '@/helper/replacePlaceholder'
-import { load, RL, SHADOWRUN } from '@/load'
+import { load, SHADOWRUN } from '@/load'
+import { getNamePools } from '@/builders/namePools'
 import type { Generated } from '@/patterns/types'
 
 export async function restaurants(options: GenerationOptions = {}): Promise<Generated> {
@@ -11,7 +12,7 @@ export async function restaurants(options: GenerationOptions = {}): Promise<Gene
 
   const pattern: string[] = []
   if (p(0.4)) {
-    const name = new Bits(await load(RL.NAMES_MODERN, options), { type: 'given' }).pick.uc
+    const name = new Bits(getNamePools(options).get(undefined, 'given')).pick.uc
     pattern.push(genitivS(name, true))
   }
 
@@ -74,7 +75,7 @@ export async function bars(options: GenerationOptions = {}): Promise<Generated> 
     primary += ' ' + bars.type('type').pick.uc
   } else {
     const owners = p(0.3)
-      ? new Bits(await load(RL.NAMES_MODERN, options), { type: 'given' })
+      ? new Bits(getNamePools(options).get(undefined, 'given'))
       : new Bits(await load(SHADOWRUN.NAMES, options), { tag: 'runner' })
     primary = genitivS(owners.pick.uc, true)
     if (p(0.25)) {

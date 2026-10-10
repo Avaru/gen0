@@ -25,6 +25,35 @@ async function setup(url = '/') {
 }
 
 describe('name generator interface', () => {
+  it('restores a continent link, switches its group with the flavor, and returns through history', async () => {
+    const { wrapper, router } = await setup('/?category=continent-oceania&gender=f')
+    expect(wrapper.get('#category').text()).toContain('Oceania')
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    expect(wrapper.text()).toContain('Some name pools are still TODO: Māori, Aboriginal Australian')
+    await wrapper.get('#category').trigger('click')
+    const groups = wrapper.findAll('h3').map(item => item.text())
+    expect(groups).toContain('Names by continent')
+    expect(groups).not.toContain('Names by sovereignty')
+    expect(groups[groups.length - 1]).toBe('Names by nationality')
+    expect(wrapper.findAll('[data-category]').filter(item =>
+      item.attributes('data-category') === 'mixed' || item.attributes('data-category') === 'us-american',
+    ).map(item => item.attributes('data-category'))).toEqual(['mixed', 'us-american'])
+    await wrapper.get('[aria-label="Close category picker"]').trigger('click')
+    await wrapper.get('input[name="flavor"][value="shadowrun"]').setValue(true)
+    await flushPromises()
+    expect(router.currentRoute.value.query.category).toBe('runners')
+    await wrapper.get('#category').trigger('click')
+    expect(wrapper.find('[data-category="continent-oceania"]').exists()).toBe(false)
+    expect(wrapper.find('[data-category="sovereignty-ucas"]').exists()).toBe(true)
+    await wrapper.get('[aria-label="Close category picker"]').trigger('click')
+    router.back()
+    await flushPromises()
+    expect(router.currentRoute.value.query.category).toBe('continent-oceania')
+    expect(router.currentRoute.value.query.gender).toBe('f')
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    wrapper.unmount()
+  })
+
   it('changes the sovereignty list and selected labels with the flavor and restores history', async () => {
     const { wrapper, router } = await setup('/?flavor=shadowrun&category=sovereignty-japan&gender=f')
     expect(wrapper.get('#category').text()).toContain('Japanese Imperial State')

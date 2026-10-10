@@ -4,10 +4,11 @@ import type { NameNationality } from '@/patterns/cyberpunk/nationality/nameParts
 
 export type SovereigntyNationality = NameNationality | PendingNationality
 export type SovereigntyMix = { nationality: SovereigntyNationality; weight: number }
-export interface Sovereignty extends RawBit {
+export interface NameRegion extends RawBit {
   id: string
   mix: SovereigntyMix[]
 }
+export type Sovereignty = NameRegion
 
 const sr = 'shadowrun'
 const cp = 'cyberpunk2020-2077'

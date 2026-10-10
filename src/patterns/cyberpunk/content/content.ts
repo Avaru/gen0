@@ -1,6 +1,7 @@
 import Bits from '@/builders/Bits'
 import { weaponManufacturers } from '@/data/weapons'
-import { load, CONTENT, SHADOWRUN, RL } from '@/load'
+import { load, CONTENT, SHADOWRUN } from '@/load'
+import { getNamePools } from '@/builders/namePools'
 import type { GenerationOptions } from '@/generator/options'
 import type { Generated } from '@/patterns/types'
 import { randomFrom } from '@/helper/randomFrom'
@@ -56,7 +57,7 @@ export async function shops(options: GenerationOptions = {}): Promise<Generated>
 
 async function address(options: GenerationOptions) {
   const data = pool(CONTENT.DEVICE_DATA, options)
-  const name = new Bits(load(RL.NAMES_MODERN, options), { type: 'family' }).pick.uc
+  const name = new Bits(getNamePools(options).get(undefined, 'family')).pick.uc
   return `${name} ${data.type('street-kind').pick.uc} ${randomRounded(1, 200)}`
 }
 

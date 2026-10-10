@@ -39,6 +39,6 @@ Each entry also carries its direct lore URL in the data file. Shared entries hav
 
 ## TODO handling
 
-The 13 empty pools are Irish, Norwegian, Danish, Finnish, Mexican, Brazilian Portuguese, Filipino, Ghanaian, Salish, Lakota, Dakota, Pueblo and Navajo. Selecting one directly shows a clear empty-pool message. Selecting a sovereignty with missing pools shows their labels beside the settings. Entirely empty Asamando remains selectable and explains that Ghanaian names are pending.
+The 13 empty pools used by sovereignties are Irish, Norwegian, Danish, Finnish, Mexican, Brazilian Portuguese, Filipino, Ghanaian, Salish, Lakota, Dakota, Pueblo and Navajo. Continent generation also reserves Māori and Aboriginal Australian pools. Selecting an empty pool directly shows a clear message. Selecting a sovereignty with missing pools shows their labels beside the settings. Entirely empty Asamando remains selectable and explains that Ghanaian names are pending.
 
 These labels reserve future work. Broad labels such as Ghanaian, Filipino, Salish and Pueblo require more specific sourced traditions and composition choices when filled. No borrowed general Native American names, fantasy syllables or guessed translations fill those gaps.
