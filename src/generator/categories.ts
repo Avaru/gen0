@@ -4,9 +4,16 @@ import { runners } from '@/patterns/cyberpunk/runners/runners'
 import { restaurants, bars } from '@/patterns/cyberpunk/food/food'
 import { movies } from '@/patterns/cyberpunk/entertainment/entertainment'
 import { arabic } from '@/patterns/cyberpunk/nationality/arabic'
+import { mixed } from '@/patterns/cyberpunk/nationality/mixed'
 import { genericNationality, NATIONALITY } from '@/patterns/cyberpunk/nationality/byNationality'
 import type { Generated } from '@/patterns/types'
-import type { GenerationOptions } from './options'
+import {
+  corporationSizes,
+  givenNameGenders,
+  normalizeSelections,
+  type GenerationOptions,
+} from './options'
+import { randomFrom } from '@/helper/randomFrom'
 
 export interface Category {
   id: string
@@ -21,15 +28,29 @@ const nationalities: [NATIONALITY, string][] = [
   [NATIONALITY.AMERICAN_US, 'US American'],
   [NATIONALITY.BRITISH, 'British'],
   [NATIONALITY.CHINESE, 'Chinese'],
+  [NATIONALITY.DUTCH, 'Dutch'],
   [NATIONALITY.GERMAN, 'German'],
   [NATIONALITY.FRENCH, 'French'],
   [NATIONALITY.GREEK, 'Greek'],
+  [NATIONALITY.HINDI, 'Hindi-speaking Indian'],
   [NATIONALITY.ITALIAN, 'Italian'],
   [NATIONALITY.JAPANESE, 'Japanese'],
+  [NATIONALITY.KOREAN, 'Korean'],
   [NATIONALITY.POLISH, 'Polish'],
   [NATIONALITY.RUSSIAN, 'Russian'],
   [NATIONALITY.SPANISH, 'Spanish'],
+  [NATIONALITY.SWEDISH, 'Swedish'],
+  [NATIONALITY.TAMIL, 'Tamil'],
+  [NATIONALITY.TURKISH, 'Turkish'],
+  [NATIONALITY.UKRAINIAN, 'Ukrainian'],
+  [NATIONALITY.VIETNAMESE, 'Vietnamese'],
 ]
+function selectedGender(options: GenerationOptions) {
+  return options.genders
+    ? randomFrom(normalizeSelections(options.genders, givenNameGenders))
+    : options.genus
+}
+
 export const categories: Category[] = [
   ...nationalities.map(([nation, label]) => ({
     id: nation,
@@ -37,23 +58,43 @@ export const categories: Category[] = [
     group: 'Names by nationality',
     gender: true,
     generate: (options: GenerationOptions) =>
-      genericNationality(nation, options.genus, undefined, options),
+      genericNationality(nation, selectedGender(options), undefined, options),
   })),
   {
     id: 'arabic',
     label: 'Arabic',
     group: 'Names by nationality',
     gender: true,
-    generate: (options) => arabic(options.genus, options),
+    generate: (options) => arabic(selectedGender(options), options),
+  },
+  {
+    id: 'mixed',
+    label: 'Mixed',
+    group: 'Names by nationality',
+    gender: true,
+    generate: (options) => mixed(selectedGender(options), options),
   },
   {
     id: 'corporations',
     label: 'Corporations',
     group: 'Organizations',
     corporationSize: true,
-    generate: (options) => corporations(options.corporationSize, false, options),
+    generate: (options) =>
+      corporations(
+        options.corporationSizes
+          ? randomFrom(normalizeSelections(options.corporationSizes, corporationSizes))
+          : options.corporationSize,
+        false,
+        options,
+      ),
   },
-  { id: 'known-corporations', label: 'Known corporations', group: 'Organizations', requiresFlavor: true, generate: knownCorporation },
+  {
+    id: 'known-corporations',
+    label: 'Known corporations',
+    group: 'Organizations',
+    requiresFlavor: true,
+    generate: knownCorporation,
+  },
   { id: 'runners', label: 'Runners', group: 'People', generate: runners },
   { id: 'gangs', label: 'Gangs', group: 'Organizations', generate: gang },
   { id: 'restaurants', label: 'Restaurants', group: 'Food and drink', generate: restaurants },

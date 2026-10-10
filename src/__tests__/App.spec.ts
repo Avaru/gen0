@@ -1,50 +1,204 @@
 import { describe, it, expect } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
+import { createRouter, createMemoryHistory } from 'vue-router'
 import App from '../App.vue'
+import GeneratorView from '../views/GeneratorView.vue'
+
+async function setup(url = '/') {
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: '/', component: GeneratorView }],
+  })
+  await router.push(url)
+  await router.isReady()
+  const wrapper = mount(App, { global: { plugins: [router] } })
+  await flushPromises()
+  return { wrapper, router }
+}
 
 describe('name generator interface', () => {
-  it('generates and appends names, then clears results when settings change', async () => {
-    const wrapper = mount(App)
-    await wrapper.get('#count').setValue(2)
-    await wrapper.get('form').trigger('submit')
-    await flushPromises()
-    expect(wrapper.findAll('li')).toHaveLength(2)
+  it('restores the Mixed category and its gender selection from the URL', async () => {
+    const { wrapper, router } = await setup('/?category=mixed&gender=f')
+    expect((wrapper.get('#category').element as HTMLSelectElement).value).toBe('mixed')
+    expect(wrapper.get('option[value="mixed"]').text()).toBe('Mixed')
+    expect((wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked).toBe(true)
+    expect(wrapper.findAll('li')).toHaveLength(10)
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)
-    await wrapper.get('button[type="button"]').trigger('click')
+    await wrapper.get('#category').setValue('german')
     await flushPromises()
-    expect(wrapper.findAll('li')).toHaveLength(4)
-    await wrapper.get('#flavor').setValue('shadowrun')
-    expect(wrapper.findAll('li')).toHaveLength(0)
-    expect(wrapper.findAll('input[type="checkbox"]')).toHaveLength(0)
-    await wrapper.get('#flavor').setValue('cyberpunk')
-    expect(wrapper.findAll('input[type="checkbox"]')).toHaveLength(0)
+    router.back()
+    await flushPromises()
+    expect(router.currentRoute.value.query.category).toBe('mixed')
+    expect(router.currentRoute.value.query.gender).toBe('f')
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    wrapper.unmount()
+  })
+
+  it('generates ten names immediately, appends ten, and replaces them when settings change', async () => {
+    const { wrapper, router } = await setup()
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    expect(wrapper.find('#count').exists()).toBe(false)
+    expect(router.currentRoute.value.query.count).toBeUndefined()
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+    await wrapper.get('button.secondary').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAll('li')).toHaveLength(20)
+    await wrapper.get('input[name="flavor"][value="shadowrun"]').setValue(true)
+    await flushPromises()
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    expect(router.currentRoute.value.query.flavor).toBe('shadowrun')
+    wrapper.unmount()
   })
 
   it('offers one combined Cyberpunk setting and resets unavailable categories', async () => {
-    const wrapper = mount(App)
-    expect(wrapper.findAll('#flavor option').map(option => option.text())).toEqual(['Generic cyberpunk', 'Shadowrun', 'Cyberpunk 2020/2077'])
+    const { wrapper, router } = await setup()
+    expect(
+      wrapper.findAll('input[name="flavor"]').map((input) => input.attributes('value')),
+    ).toEqual(['cyberpunk', 'shadowrun', 'cyberpunk2020-2077'])
     expect(wrapper.find('option[value="known-corporations"]').exists()).toBe(false)
-    await wrapper.get('#flavor').setValue('cyberpunk2020-2077')
-    await wrapper.get('#category').setValue('known-corporations')
-    await wrapper.get('#count').setValue(2)
-    await wrapper.get('form').trigger('submit')
+    await wrapper.get('input[name="flavor"][value="cyberpunk2020-2077"]').setValue(true)
     await flushPromises()
-    expect(wrapper.findAll('li')).toHaveLength(2)
-    await wrapper.get('#flavor').setValue('cyberpunk')
+    await wrapper.get('#category').setValue('known-corporations')
+    await flushPromises()
+    await wrapper.get('input[name="flavor"][value="cyberpunk"]').setValue(true)
+    await flushPromises()
     expect((wrapper.get('#category').element as HTMLSelectElement).value).toBe('corporations')
-    expect(wrapper.findAll('li')).toHaveLength(0)
+    expect(router.currentRoute.value.query.category).toBe('corporations')
+    expect(wrapper.findAll('select')).toHaveLength(1)
+    wrapper.unmount()
   })
 
-  it('exposes category options and reports invalid batch sizes', async () => {
-    const wrapper = mount(App)
-    await wrapper.get('#category').setValue('german')
-    expect(wrapper.find('#gender').exists()).toBe(true)
-    await wrapper.get('#category').setValue('corporations')
-    expect(wrapper.find('#size').exists()).toBe(true)
-    await wrapper.get('#count').setValue(0)
-    await wrapper.get('form').trigger('submit')
+  it('checks every option by default, removes Any, and prevents clearing the last choice', async () => {
+    const { wrapper, router } = await setup('/?category=german')
+    expect(wrapper.findAll('input[name="gender"]')).toHaveLength(2)
+    expect(wrapper.findAll('input[name="gender"]').every(input =>
+      (input.element as HTMLInputElement).checked)).toBe(true)
+    expect(wrapper.text()).not.toContain('Any')
+    await wrapper.get('input[name="gender"][value="m"]').setValue(false)
     await flushPromises()
-    expect(wrapper.get('[role="alert"]').text()).toContain('between 1 and 100')
-    expect(wrapper.findAll('li')).toHaveLength(0)
+    expect(router.currentRoute.value.query.gender).toBe('f')
+    expect((wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).disabled).toBe(true)
+    await wrapper.get('input[name="gender"][value="f"]').trigger('click')
+    await flushPromises()
+    expect((wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked).toBe(true)
+    await wrapper.get('input[name="gender"][value="m"]').setValue(true)
+    await flushPromises()
+    expect(router.currentRoute.value.query.gender).toBeUndefined()
+    expect((wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).disabled).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('restores multiple sizes, normalizes duplicates and invalid values, and preserves history', async () => {
+    const { wrapper, router } = await setup('/?category=corporations&size=aaa,a,a,invalid')
+    expect(router.currentRoute.value.query.size).toBe('a,aaa')
+    expect((wrapper.get('input[name="size"][value="aa"]').element as HTMLInputElement).checked).toBe(false)
+    await wrapper.get('input[name="size"][value="a"]').setValue(false)
+    await flushPromises()
+    expect(router.currentRoute.value.query.size).toBe('aaa')
+    expect((wrapper.get('input[name="size"][value="aaa"]').element as HTMLInputElement).disabled).toBe(true)
+    router.back()
+    await flushPromises()
+    expect(router.currentRoute.value.query.size).toBe('a,aaa')
+    router.forward()
+    await flushPromises()
+    expect(router.currentRoute.value.query.size).toBe('aaa')
+    wrapper.unmount()
+    const restored = await setup('/?category=corporations&size=aaa')
+    expect((restored.wrapper.get('input[name="size"][value="aaa"]').element as HTMLInputElement).checked).toBe(true)
+    expect((restored.wrapper.get('input[name="size"][value="a"]').element as HTMLInputElement).checked).toBe(false)
+    restored.wrapper.unmount()
+  })
+
+  it('restores links and history, and removes irrelevant options', async () => {
+    const { wrapper, router } = await setup('/?flavor=shadowrun&category=german&gender=f&count=3')
+    expect(
+      (wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked,
+    ).toBe(true)
+    expect(router.currentRoute.value.query.count).toBeUndefined()
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    await wrapper.get('#category').setValue('corporations')
+    await flushPromises()
+    expect(wrapper.find('input[name="gender"]').exists()).toBe(false)
+    expect(wrapper.find('input[name="size"]').exists()).toBe(true)
+    expect(router.currentRoute.value.query.gender).toBeUndefined()
+    router.back()
+    await flushPromises()
+    expect(router.currentRoute.value.query.category).toBe('german')
+    expect(
+      (wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked,
+    ).toBe(true)
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    router.forward()
+    await flushPromises()
+    expect(router.currentRoute.value.query.category).toBe('corporations')
+    wrapper.unmount()
+  })
+
+  it('toggles details without changing names and keeps the choice across categories and history', async () => {
+    const { wrapper, router } = await setup('/?category=german')
+    const names = wrapper.findAll('strong').map((item) => item.text())
+    expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
+    await wrapper.get('input[type="checkbox"]:not([name])').setValue(false)
+    await flushPromises()
+    expect(wrapper.findAll('.name div')).toHaveLength(0)
+    expect(wrapper.findAll('strong').map((item) => item.text())).toEqual(names)
+    expect(router.currentRoute.value.query.details).toBe('false')
+    await wrapper.get('#category').setValue('corporations')
+    await flushPromises()
+    expect(wrapper.findAll('.name div')).toHaveLength(0)
+    expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(false)
+    const corporationNames = wrapper.findAll('strong').map((item) => item.text())
+    await wrapper.get('input[type="checkbox"]:not([name])').setValue(true)
+    await flushPromises()
+    expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
+    expect(wrapper.findAll('strong').map((item) => item.text())).toEqual(corporationNames)
+    router.back()
+    await flushPromises()
+    expect(wrapper.findAll('.name div')).toHaveLength(0)
+    expect(wrapper.findAll('strong').map((item) => item.text())).toEqual(corporationNames)
+    wrapper.unmount()
+  })
+
+  it('restores hidden details from a link', async () => {
+    const { wrapper } = await setup('/?category=german&details=false')
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    expect(wrapper.findAll('.name div')).toHaveLength(0)
+    expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('normalizes unsupported links and ignores legacy batch sizes', async () => {
+    const { wrapper, router } = await setup(
+      '/?flavor=unknown&category=known-corporations&size=invalid&count=1000',
+    )
+    expect(router.currentRoute.value.query).toEqual({
+      flavor: 'cyberpunk',
+      category: 'corporations',
+    })
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    expect(wrapper.find('#count').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('regenerates when gender or size changes and keeps status announcements out of the visible layout', async () => {
+    const { wrapper, router } = await setup('/?category=german')
+    expect(wrapper.get('fieldset legend').text()).toBe('Flavor')
+    expect(wrapper.get('a[href="#main"]').text()).toBe('Skip to generator')
+    await wrapper.get('input[name="gender"][value="m"]').setValue(false)
+    await flushPromises()
+    expect(router.currentRoute.value.query.gender).toBe('f')
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    await wrapper.get('#category').setValue('corporations')
+    await flushPromises()
+    await wrapper.get('input[name="size"][value="a"]').setValue(false)
+    await flushPromises()
+    await wrapper.get('input[name="size"][value="aa"]').setValue(false)
+    await flushPromises()
+    expect(router.currentRoute.value.query.size).toBe('aaa')
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    expect(wrapper.get('[role="status"]').text()).toBe('Names updated.')
+    expect(wrapper.text()).not.toMatch(/\d+ names(?: ready)?/)
+    expect(wrapper.find('.number').exists()).toBe(false)
+    wrapper.unmount()
   })
 })

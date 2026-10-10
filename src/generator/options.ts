@@ -1,5 +1,5 @@
-import type { GENUS } from '@/builders/types'
-import type { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
+import { GENUS } from '@/builders/types'
+import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 
 export const flavors = [
   { id: 'cyberpunk', label: 'Generic cyberpunk' },
@@ -8,11 +8,25 @@ export const flavors = [
 ] as const
 export type Flavor = typeof flavors[number]['id']
 
+export const givenNameGenders = [GENUS.M, GENUS.F] as const
+export const corporationSizes = [CORPORATION_SIZE.A, CORPORATION_SIZE.AA, CORPORATION_SIZE.AAA] as const
+
+/** Keep supported selections in a stable order; an empty selection means all. */
+export function normalizeSelections<T extends string>(
+  values: readonly string[] | undefined,
+  available: readonly T[],
+): T[] {
+  const selected = available.filter((value) => values?.includes(value))
+  return selected.length ? selected : [...available]
+}
+
 export interface GenerationOptions {
   flavor?: Flavor
   // Overrides take priority over a flavor; exclusion takes priority over inclusion.
   includeTags?: string[]
   excludeTags?: string[]
+  genders?: readonly GENUS[]
+  corporationSizes?: readonly CORPORATION_SIZE[]
   genus?: GENUS
   corporationSize?: CORPORATION_SIZE
 }

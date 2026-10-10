@@ -1,4 +1,5 @@
 import type { RawBit } from '@/builders/types'
+import type { NameEntry } from '@/data/nameTypes'
 import { rlNamesModern } from '@/data/rl-names-modern'
 import { shadowrunNames } from '@/data/shadowrun-names'
 import { shadowrunCharacters } from '@/data/shadowrun-characters'
@@ -26,6 +27,9 @@ const lists: Record<RL | SHADOWRUN, RawBit[]> = {
 }
 
 // Static TypeScript data ships with the SPA; no fetch or spreadsheet connection.
+export function load(list: RL, options?: GenerationOptions): NameEntry[]
+export function load(list: SHADOWRUN, options?: GenerationOptions): RawBit[]
+export function load(list: RL | SHADOWRUN, options?: GenerationOptions): RawBit[]
 export function load(list: RL | SHADOWRUN, options: GenerationOptions = {}): RawBit[] {
   return lists[list].filter(
     (bit) =>

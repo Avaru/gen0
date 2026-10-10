@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Choose a category and number of names, then generate. Generic cyberpunk is the default flavor. Shadowrun enables its species, magic, and setting references together. Cyberpunk 2020/2077 is one combined flavor with names from both corporation lists. Known corporations selects existing setting names; Corporations composes new names. Personal names support masculine/feminine selection, and corporations support size selection.
+Choose a category; 10 names generate automatically. Generic cyberpunk is the default flavor. Shadowrun enables its species, magic, and setting references together. Cyberpunk 2020/2077 is one combined flavor with names from both corporation lists. Known corporations selects existing setting names; Corporations composes new names. Personal names support masculine/feminine selection, and corporations support size selection.
 
 ```sh
 npm run build
@@ -22,20 +22,42 @@ npm run lint
 
 The production output is in `dist/` and can be served by any static host. Generation happens entirely in the browser. It needs no internet connection once the app files are available; opening `index.html` directly through `file://` is not the supported launch method.
 
+## Interface
+
+Mobile-first layout with native radio segmented controls for flavors, checkbox groups for given-name gender and corporation size, and a grouped category dropdown. All gender and size boxes start checked; the last checked box cannot be unchecked. Results randomly use one of the checked choices. Each selection change generates 10 names automatically. Settings update the URL and are restored on reload and browser Back/Forward; results remain temporary. Generate more adds another 10 names. Show details toggles all secondary information without changing names and stays selected across categories and shared links. The initial neutral design uses shared CSS variables and scoped `Ui*` components. See [UI requirements](docs/decisions/0004-mobile-first-ui.md).
+
 ## Edit the generator
 
-- `src/data/*.ts`: all names and fragments, including preserved unused Shadowrun pools.
+- `src/data/names/*.ts`: personal names grouped by naming tradition.
+- `src/data/nameTypes.ts`: personal-name definitions and relationship fields.
+- `src/data/rl-names-modern.ts`: combines personal-name lists for the generators.
+- `src/data/*.ts`: other names and fragments, including preserved unused Shadowrun pools.
 - `src/patterns/cyberpunk/`: the copied and adapted generation patterns.
 - `src/builders/Bits.ts`: selection by category, type, gender, and tags.
 - `src/generator/categories.ts`: available categories and batch generation.
 - `src/generator/options.ts`: flavors and include/exclude rules.
 - `src/load.ts`: local data registry and setting filters.
-- `src/App.vue`: the unstyled interface.
+- `src/views/GeneratorView.vue`: generation and route coordination.
+- `src/components/ui/`: shared accessible controls and layout.
+- `src/components/generator/`: settings and results presentation.
+- `src/styles/base.css`: shared CSS variables and document defaults.
 
 A setting-specific entry carries `shadowrun` or `cyberpunk2020-2077`. Shared entries have no flavor tag. Category tags (such as `gang` or `runner`) select pools; explicit exclusions take priority over flavor defaults and inclusions.
 
 Use a stable `id` for a shared concept and `flavorNames` for alternate names: Netrunner becomes Decker in Shadowrun; Job Contact becomes Johnson or Fixer. `flavorShortNames` supplies short forms such as Sam. These are useful equivalents for generation, not claims that the roles have identical lore. Technomancers are restricted to Shadowrun, and other flavors omit species labels.
 
+Personal names only need an `id` when another entry references them; keep those IDs when correcting spellings. Related male/female surname forms share a `formGroupId`; ordinary surnames need no group ID. A patronymic uses `fatherNameId` to reference a male given name, whose `aliases` hold supported alternative spellings. Optional `givenNameIds` connect reviewed nicknames to formal names. Keep existing `father:*` tags when editing patronymics so exclusions continue to work. Composition rules remain in the nationality functions. See [linked name data](docs/decisions/0006-linked-name-data.md).
+
+Chinese and Japanese names use surname-first order without random extra names. Spanish names include two surnames and may have a second given name. Arabic names may include the father's given name, with an optional `ibn`/`bin` or `bint`; surname prefixes come from the stored entry. Given names and surnames, including Arabic parts, remain separately reusable through `nationalityGivenName` and `nationalitySurname`. See [construction rules and limits](docs/decisions/0007-critical-national-name-construction.md).
+
+British, US, and German double surnames may use a hyphen or space. French and Italian doubles use a space, with fewer extra French given names and mostly single Italian surnames. All nationality categories share the same reusable name-part selection. See [remaining nationality rules](docs/decisions/0009-remaining-national-name-construction.md).
+
+Mixed combines given names and surnames from different traditions. The surname tradition sets the order and surname variation; extra given names use the first given name's tradition. Gendered surname and patronymic forms stay consistent with the selected gender. Excluded traditions are skipped; generation needs two suitable traditions. See [Mixed rules](docs/decisions/0010-mixed-personal-names.md).
+
+Dutch, Turkish, Ukrainian, Swedish, Korean, Vietnamese, Hindi-speaking Indian, and Tamil names are also available. Korean and Vietnamese names use surname-first order and complete given-name entries. Tamil uses a father's initial followed by a given name; Mixed can use Tamil given names with another tradition's surnames. The other new pools use one given name plus one surname. All display Latin spellings, including diacritics where retained.
+
+Counts, exact downloaded sources, reuse terms, spelling conversions, and limits are recorded in [personal-name sources](docs/name-data-sources.md). Several sources are maintained collections rather than census lists. Required notices ship in `public/name-data-notices.txt`. See [new naming rules](docs/decisions/0011-sourced-name-pools.md).
+
 Corporation coverage and source links are recorded in [data sources](docs/data-sources.md). Structural choices are recorded under [decisions](docs/decisions/).
 
-The old pgen folder remains unchanged. Fantasy/DSA generators, styling, and sheet import tooling were not copied. See [the initial decision](docs/decisions/0001-local-cyberpunk-generator.md) and [working instructions](AGENTS.md).
+The old pgen folder remains unchanged. Fantasy/DSA generators, old themes, and sheet import tooling were not copied. See [the initial decision](docs/decisions/0001-local-cyberpunk-generator.md) and [working instructions](AGENTS.md).

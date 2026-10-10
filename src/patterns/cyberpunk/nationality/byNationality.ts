@@ -1,10 +1,8 @@
 import type { GenerationOptions } from '@/generator/options'
-import Bits from '@/builders/Bits'
-import { p } from '@/helper/prob'
 import { randomGenus } from '@/helper/randomGenus'
-import { load, RL } from '@/load'
 import { type Generated } from '@/patterns/types'
 import { characters } from '../_secondary/charakters'
+import { nationalName } from './nameParts'
 
 export enum NATIONALITY {
   GERMAN = 'german',
@@ -18,6 +16,14 @@ export enum NATIONALITY {
   POLISH = 'polish',
   CHINESE = 'chinese',
   GREEK = 'greek',
+  DUTCH = 'dutch',
+  TURKISH = 'turkish',
+  UKRAINIAN = 'ukrainian',
+  SWEDISH = 'swedish',
+  KOREAN = 'korean',
+  VIETNAMESE = 'vietnamese',
+  HINDI = 'hindi',
+  TAMIL = 'tamil',
 }
 export async function genericNationality(
   nation: NATIONALITY,
@@ -25,24 +31,8 @@ export async function genericNationality(
   nickname?: string,
   options: GenerationOptions = {},
 ): Promise<Generated> {
-  const names = new Bits(await load(RL.NAMES_MODERN, options), { tag: nation })
-
-  const pattern = [names.filter({ genus, type: 'given' }).pick.uc, ' ']
-  if (p(0.15)) {
-    pattern.push(names.filter({ genus, type: 'given' }).pick.uc, ' ')
-  }
-
-  if (nickname) {
-    pattern.push(" '" + nickname + "' ")
-  }
-
-  pattern.push(names.type('family').pick.uc)
-  if (p(0.15)) {
-    pattern.push(nation === NATIONALITY.GERMAN ? '-' : ' ', names.type('family').pick.uc)
-  }
-
   return {
-    primary: pattern.join(''),
+    primary: nationalName(nation, genus, nickname, options),
     ...(await characters(true, undefined, options)),
   }
 }

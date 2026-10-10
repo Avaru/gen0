@@ -6,6 +6,7 @@ import { SPECIES, pickSpecies } from '@/patterns/cyberpunk/_secondary/helpers'
 import { corporations } from '@/patterns/cyberpunk/corporations/corporations'
 import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 import { randomRounded } from '@/helper/randomRounded'
+import { GENUS } from '@/builders/types'
 import Bits from '@/builders/Bits'
 import { getName } from '@/generator/names'
 import { shadowrunCharacters } from '@/data/shadowrun-characters'
@@ -23,7 +24,8 @@ afterEach(() => vi.restoreAllMocks())
 describe('migrated generator', () => {
   it('retains the migrated lists with duplicate role spellings merged', () => {
     const options = { flavor: 'shadowrun' as const }
-    expect(load(RL.NAMES_MODERN, options)).toHaveLength(19042)
+    const additions = ['dutch', 'turkish', 'ukrainian', 'swedish', 'korean', 'vietnamese', 'hindi', 'tamil']
+    expect(load(RL.NAMES_MODERN, options).filter(bit => !bit.tags.some(tag => additions.includes(tag)))).toHaveLength(19478)
     expect(load(SHADOWRUN.NAMES, options)).toHaveLength(2179)
     expect(load(SHADOWRUN.CHARACTERS, options)).toHaveLength(373)
     expect(load(SHADOWRUN.FOOD, options)).toHaveLength(611)
@@ -107,6 +109,44 @@ describe('migrated generator', () => {
       .map((bit) => bit.value)
     expect(knownNames.some((name) => shadowrun.title?.includes(name))).toBe(true)
     expect(knownNames.some((name) => generic.title?.includes(name))).toBe(false)
+  })
+
+  it('generates only selected genders and keeps Russian name parts consistent', async () => {
+    seedRandom()
+    const data = load(RL.NAMES_MODERN).filter(bit => bit.tags.includes('russian'))
+    for (const genders of [[GENUS.F], [GENUS.M], [GENUS.M, GENUS.F]]) {
+      const seen = new Set<GENUS>()
+      const results = await generateNames('russian', 50, { genders })
+      for (const result of results) {
+        const words = result.primary.split(' ')
+        const given = data.find(bit => bit.type === 'given' && bit.value === words[0])!
+        const genus = given.genus as GENUS
+        seen.add(genus)
+        expect(genders).toContain(genus)
+        expect(data.some(bit => bit.type === 'family' && bit.value === words[words.length - 1] &&
+          (!bit.genus || bit.genus === genus))).toBe(true)
+        expect(words.length !== 3 || data.some(bit => bit.type === 'patronymic' &&
+          bit.value === words[1] && bit.genus === genus)).toBe(true)
+      }
+      expect([...seen].sort()).toEqual([...genders].sort())
+    }
+  })
+
+  it('uses selected corporation sizes and preserves nested mega corporations', async () => {
+    seedRandom()
+    const results = await generateNames('corporations', 50, {
+      corporationSizes: [CORPORATION_SIZE.A, CORPORATION_SIZE.AAA],
+    })
+    const employees = results.map(result => Number(result.details!.replace(/[^0-9]/g, '')))
+    expect(employees.every(count => (count >= 100 && count <= 2500) ||
+      (count >= 50000 && count <= 1000000))).toBe(true)
+    expect(employees.some(count => count <= 2500)).toBe(true)
+    expect(employees.some(count => count >= 50000)).toBe(true)
+    vi.mocked(Math.random).mockReturnValue(0.45)
+    const [minor] = await generateNames('corporations', 1, {
+      flavor: 'shadowrun', corporationSizes: [CORPORATION_SIZE.A],
+    })
+    expect(minor!.title).toContain(' of ')
   })
 
   it('keeps pools independent and rejects empty selections and invalid requests', async () => {

@@ -8,7 +8,9 @@
 ## Product and structure
 
 - gen0 is a Vue + TypeScript single-page cyberpunk name generator. It must run without a backend, account, spreadsheet service, or remote data connection.
-- Keep the interface functional with native HTML controls. No custom styling until requested.
+- Keep the interface accessible and mobile-first, including 320px phones and current browsers. Use native HTML behavior, short-list segmented controls, and a grouped category select.
+- Use shared `Ui*` components, scoped component CSS, and central CSS variables. Keep pages/layouts light on CSS. Use VueUse when needed; no setting-specific themes or dark/light mode yet.
+- Keep generator settings in the route, including Back/Forward and reload behavior. Follow `docs/decisions/0004-mobile-first-ui.md`.
 - Keep all names and name fragments in editable TypeScript files under `src/data/`. Do not restore JSON name lists or sheet import scripts.
 - Preserve the migrated Shadowrun lists and generation patterns. Keep DSA/fantasy generators out of this app.
 - Generic cyberpunk is the base. Shadowrun and Cyberpunk 2020/2077 are whole flavors, not separate copies of the generator. Do not split a flavor into feature checkboxes or split Cyberpunk 2020 and 2077 into separate flavors.
