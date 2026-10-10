@@ -10,7 +10,9 @@
     "test:unit": "vitest",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
+    "check": "run-s lint:check \"test:unit -- --run\" build",
     "lint": "run-s \"lint:*\"",
+    "lint:check": "oxlint . && eslint .",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
     "format": "oxfmt src/"

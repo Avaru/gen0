@@ -22,6 +22,14 @@ npm run lint
 
 The production output is in `dist/` and can be served by any static host. Generation happens entirely in the browser. It needs no internet connection once the app files are available; opening `index.html` directly through `file://` is not the supported launch method.
 
+## Deploy to Vercel
+
+Import the GitHub repository with the Vite preset, the repository root as the root directory, `dist` as the output directory, Node 24.x, and `main` as the production branch. No environment variables are required.
+
+The root `vercel.json` sets the build command to `npm run check`, which runs lint without changing files, unit tests once, and the production build with TypeScript checks. A failed check stops deployment. Leave the dashboard build-command override disabled so this configuration applies. Run the same checks locally with `npm run check`.
+
+The routing rule serves `index.html` for application URLs, including direct visits and refreshes of `/about`. After deployment, check `/` and a direct visit to `/about`.
+
 ## Interface
 
 The top-right About link opens a short introduction and author credit. Back to generator keeps the selected settings; returning generates a fresh batch of names. Static hosts must serve `index.html` for both `/` and `/about`.
