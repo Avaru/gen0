@@ -60,4 +60,39 @@ input:focus-visible + .track {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
+[data-theme='cyberpunk2077'] label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+[data-theme='cyberpunk2077'] .track {
+  width: 3rem;
+  height: 1.125rem;
+  padding: 0;
+  border: 0;
+  background: var(--color-control-border);
+  clip-path: var(--theme-check-shape);
+  position: relative;
+}
+[data-theme='cyberpunk2077'] .track::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  background: var(--color-surface);
+  clip-path: var(--theme-check-shape);
+}
+[data-theme='cyberpunk2077'] .track::after {
+  position: relative;
+  width: 50%;
+  height: 100%;
+  background: var(--color-hot);
+  clip-path: var(--theme-check-shape);
+}
+[data-theme='cyberpunk2077'] input:checked + .track::after {
+  background: var(--color-signal);
+}
+[data-theme='cyberpunk2077'] input:focus-visible ~ span:last-child {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
 </style>

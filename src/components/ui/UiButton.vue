@@ -47,4 +47,54 @@ button::after {
 .secondary:hover:enabled {
   background: var(--color-subtle);
 }
+[data-theme='cyberpunk2077'] button {
+  isolation: isolate;
+  border: 0;
+  background: transparent;
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  color: var(--color-hot);
+}
+[data-theme='cyberpunk2077'] .secondary {
+  color: var(--color-signal);
+}
+[data-theme='cyberpunk2077'] button::before,
+[data-theme='cyberpunk2077'] button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  opacity: 1;
+  pointer-events: none;
+  clip-path: var(--theme-action-shape);
+}
+[data-theme='cyberpunk2077'] button::before {
+  z-index: -2;
+  background: currentColor;
+}
+[data-theme='cyberpunk2077'] button::after {
+  z-index: -1;
+  inset: 1px;
+  left: 4px;
+  background: color-mix(in srgb, currentColor 8%, var(--color-surface));
+}
+[data-theme='cyberpunk2077'] button:hover:enabled {
+  background: transparent;
+}
+[data-theme='cyberpunk2077'] button:hover:enabled::after {
+  background: color-mix(in srgb, currentColor 20%, var(--color-surface));
+}
+[data-theme='cyberpunk2077'] button:active:enabled::after {
+  background: color-mix(in srgb, currentColor 30%, var(--color-surface));
+}
+[data-theme='cyberpunk2077'] button:disabled {
+  color: var(--color-disabled);
+  opacity: 1;
+}
+@media (forced-colors: active) {
+  [data-theme='cyberpunk2077'] button {
+    border: 1px solid ButtonText;
+  }
+}
 </style>

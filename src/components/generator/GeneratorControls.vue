@@ -81,9 +81,9 @@ form {
   display: grid;
   gap: var(--space-6);
   padding: var(--space-6);
-  background: var(--color-surface);
+  background: var(--theme-panel-fill);
   background-image: var(--theme-panel-texture);
-  border-top: 5px solid var(--color-hot);
+  border-top: var(--theme-panel-rule-width) solid var(--color-hot);
   box-shadow: var(--theme-panel-shadow);
 }
 form::after {

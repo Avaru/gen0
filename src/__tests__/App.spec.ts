@@ -4,6 +4,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import App from '../App.vue'
 import GeneratorView from '../views/GeneratorView.vue'
+import AboutView from '../views/AboutView.vue'
 
 mockDialog()
 
@@ -15,7 +16,10 @@ async function chooseCategory(wrapper: ReturnType<typeof mount>, value: string) 
 async function setup(url = '/') {
   const router = createRouter({
     history: createMemoryHistory(),
-    routes: [{ path: '/', component: GeneratorView }],
+    routes: [
+      { path: '/', component: GeneratorView },
+      { path: '/about', component: AboutView },
+    ],
   })
   await router.push(url)
   await router.isReady()
@@ -25,6 +29,29 @@ async function setup(url = '/') {
 }
 
 describe('name generator interface', () => {
+  it('opens About and returns with the selected settings and theme, including a direct link', async () => {
+    const { wrapper, router } = await setup('/?flavor=cyberpunk2020-2077&category=german&gender=f&details=false')
+    const query = { ...router.currentRoute.value.query }
+    await wrapper.get('nav a').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/about')
+    expect(wrapper.get('h1').text()).toBe('About gen 0')
+    expect(wrapper.text()).toContain('Anton Katzer')
+    expect(wrapper.get('.shell').attributes('data-theme')).toBe('cyberpunk2077')
+    expect(wrapper.find('#category').exists()).toBe(false)
+    await wrapper.get('nav a').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/')
+    expect(router.currentRoute.value.query).toEqual(query)
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    wrapper.unmount()
+
+    const direct = await setup('/about')
+    expect(direct.wrapper.text()).toContain('Anton Katzer')
+    expect(direct.wrapper.get('nav a').attributes('href')).toBe('/')
+    direct.wrapper.unmount()
+  })
+
   it('restores flavor themes from links, selection changes, and Back/Forward', async () => {
     const { wrapper, router } = await setup('/?flavor=cyberpunk2020-2077&category=runners')
     const theme = () => wrapper.get('.shell').attributes('data-theme')

@@ -42,11 +42,11 @@ section {
   display: grid;
   gap: var(--space-4);
   padding: var(--space-6);
-  border: 1px solid var(--color-border);
-  border-top: 5px solid var(--color-signal);
+  border: var(--theme-panel-border-width) solid var(--color-border);
+  border-top: var(--theme-panel-rule-width) solid var(--color-signal);
   box-shadow: var(--theme-panel-shadow);
   border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  background: var(--theme-panel-fill);
   background-image: var(--theme-panel-texture);
 }
 section::after {
@@ -71,10 +71,10 @@ section::after {
 }
 h1 {
   font-size: clamp(2rem, 6vw, 3.5rem);
-  font-weight: 800;
+  font-weight: var(--theme-heading-weight);
   text-transform: uppercase;
   letter-spacing: -0.02em;
-  color: var(--color-signal);
+  color: var(--theme-title-color);
   overflow-wrap: anywhere;
   text-shadow: var(--theme-heading-shadow);
 }
@@ -110,7 +110,8 @@ li::after {
 }
 strong {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: var(--theme-name-weight);
+  color: var(--theme-name-color);
   font-size: 1.625rem;
   line-height: 1.15;
 }

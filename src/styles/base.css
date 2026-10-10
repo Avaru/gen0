@@ -19,7 +19,7 @@
 }
 body {
   margin: 0;
-  min-width: 20rem;
+  min-width: min(20rem, 100%);
 }
 button,
 input,

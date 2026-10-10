@@ -174,6 +174,40 @@ button:hover {
   border-color: var(--color-signal);
   background: var(--color-subtle);
 }
+[data-theme='cyberpunk2077'] .trigger {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  background: transparent;
+  color: var(--color-hot);
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+[data-theme='cyberpunk2077'] .trigger::before,
+[data-theme='cyberpunk2077'] .trigger::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  clip-path: var(--theme-action-shape);
+}
+[data-theme='cyberpunk2077'] .trigger::before {
+  z-index: -2;
+  background: var(--color-control-border);
+}
+[data-theme='cyberpunk2077'] .trigger::after {
+  z-index: -1;
+  inset: 1px 1px 1px 4px;
+  background: var(--color-surface);
+}
+[data-theme='cyberpunk2077'] .trigger:hover::before {
+  background: var(--color-signal);
+}
+@media (forced-colors: active) {
+  [data-theme='cyberpunk2077'] .trigger {
+    border: 1px solid ButtonText;
+  }
+}
 dialog {
   position: fixed;
   inset: 0;

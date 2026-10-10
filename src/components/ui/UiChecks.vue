@@ -80,15 +80,107 @@ label:has(input:checked) {
   border-color: var(--color-signal);
   background: var(--color-surface);
 }
+label:has(input:disabled) {
+  color: var(--color-disabled);
+  border-color: var(--color-disabled);
+  border-style: dashed;
+  background: var(--color-disabled-fill);
+  cursor: not-allowed;
+}
+label:has(input:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
 input {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
   width: 1.125rem;
   height: 1.125rem;
   min-height: 0;
   margin: 0;
-  accent-color: var(--color-signal);
+  border: 1px solid var(--color-control-border);
+  border-radius: 0;
+  background: var(--color-surface);
+  clip-path: var(--theme-check-shape);
+  cursor: inherit;
 }
-input:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
+input::after {
+  content: '';
+  width: 0.3rem;
+  height: 0.6rem;
+  margin-top: -2px;
+  border: solid var(--color-on-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  visibility: hidden;
+}
+input:checked {
+  border-color: var(--color-signal);
+  background: var(--color-signal);
+}
+input:checked::after {
+  visibility: visible;
+}
+input:disabled {
+  border-color: var(--color-disabled);
+  background: var(--color-disabled-fill);
+}
+input:disabled::after {
+  border-color: var(--color-disabled);
+}
+[data-theme='cyberpunk2077'] .choices {
+  gap: var(--space-4);
+}
+[data-theme='cyberpunk2077'] label,
+[data-theme='cyberpunk2077'] label:has(input:checked),
+[data-theme='cyberpunk2077'] label:has(input:disabled) {
+  border: 0;
+  background: transparent;
+  padding-inline: 0;
+  gap: var(--space-3);
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+[data-theme='cyberpunk2077'] input {
+  width: 2rem;
+  background: var(--color-surface);
+}
+[data-theme='cyberpunk2077'] input::after {
+  width: 50%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  transform: none;
+  visibility: visible;
+  justify-self: start;
+  background: var(--color-hot);
+  clip-path: var(--theme-check-shape);
+}
+[data-theme='cyberpunk2077'] input:checked {
+  border-color: var(--color-control-border);
+}
+[data-theme='cyberpunk2077'] input:checked::after {
+  justify-self: end;
+  background: var(--color-signal);
+}
+[data-theme='cyberpunk2077'] input:disabled {
+  border-color: var(--color-disabled);
+  background: var(--color-disabled-fill);
+}
+[data-theme='cyberpunk2077'] input:disabled::after {
+  background: var(--color-disabled);
+}
+@media (forced-colors: active) {
+  input,
+  [data-theme='cyberpunk2077'] input {
+    appearance: auto;
+    clip-path: none;
+  }
+  input::after,
+  [data-theme='cyberpunk2077'] input::after {
+    display: none;
+  }
 }
 </style>

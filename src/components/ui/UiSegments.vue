@@ -52,9 +52,9 @@ legend::before {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
-  padding: var(--space-1);
+  padding: 0;
   border: 1px solid var(--color-control-border);
-  background: var(--color-subtle);
+  background: transparent;
   border-radius: var(--radius-sm);
 }
 label {
@@ -77,7 +77,8 @@ span {
   width: 100%;
   min-height: var(--control-height);
   padding: var(--space-2) var(--space-3);
-  border-radius: calc(var(--radius-sm) - var(--space-1));
+  border-radius: var(--radius-sm);
+  border-bottom: 2px solid transparent;
   text-align: center;
   font-size: var(--font-control-size);
   font-weight: 600;
@@ -89,6 +90,24 @@ input:checked + span {
 input:focus-visible + span {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
+}
+[data-theme='cyberpunk2077'] span {
+  text-transform: uppercase;
+  color: var(--color-hot);
+  border-bottom-color: var(--color-hot);
+}
+[data-theme='cyberpunk2077'] .segments {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+[data-theme='cyberpunk2077'] input:checked + span {
+  color: var(--color-signal);
+  background: transparent;
+  border-bottom-color: var(--color-signal);
+}
+[data-theme='cyberpunk2077'] label:hover span {
+  background: var(--color-subtle);
 }
 @media (max-width: 24rem) {
   span {
