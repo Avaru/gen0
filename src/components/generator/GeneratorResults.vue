@@ -38,6 +38,7 @@ defineEmits<{ more: [] }>()
 </template>
 <style scoped>
 section {
+  position: relative;
   display: grid;
   gap: var(--space-4);
   padding: var(--space-6);
@@ -46,6 +47,17 @@ section {
   box-shadow: var(--theme-panel-shadow);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+  background-image: var(--theme-panel-texture);
+}
+section::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: var(--space-3);
+  width: 3rem;
+  height: 5px;
+  background: var(--theme-panel-edge);
+  pointer-events: none;
 }
 .status {
   position: absolute;
@@ -64,6 +76,7 @@ h1 {
   letter-spacing: -0.02em;
   color: var(--color-signal);
   overflow-wrap: anywhere;
+  text-shadow: var(--theme-heading-shadow);
 }
 .name div {
   color: var(--color-muted);
@@ -74,10 +87,22 @@ ol {
   list-style: none;
 }
 li {
+  position: relative;
   display: flex;
   gap: var(--space-4);
   padding-block: var(--space-4);
   border-top: 1px solid var(--color-border);
+}
+li::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: 0;
+  width: 1.75rem;
+  height: 3px;
+  background: var(--theme-row-mark);
+  opacity: 0.55;
+  pointer-events: none;
 }
 .name {
   min-width: 0;

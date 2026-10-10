@@ -1,13 +1,13 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="Value extends string">
 const props = defineProps<{
-  modelValue: readonly string[]
+  modelValue: readonly Value[]
   label: string
   name: string
-  options: readonly { value: string; label: string }[]
+  options: readonly { value: Value; label: string }[]
 }>()
-const emit = defineEmits<{ 'update:modelValue': [value: string[]] }>()
+const emit = defineEmits<{ 'update:modelValue': [value: Value[]] }>()
 
-function change(value: string, event: Event) {
+function change(value: Value, event: Event) {
   const input = event.target as HTMLInputElement
   const selected = new Set(props.modelValue)
   if (input.checked) selected.add(value)
@@ -16,7 +16,10 @@ function change(value: string, event: Event) {
     input.checked = true
     return
   }
-  emit('update:modelValue', props.options.filter((option) => selected.has(option.value)).map((option) => option.value))
+  emit(
+    'update:modelValue',
+    props.options.filter((option) => selected.has(option.value)).map((option) => option.value),
+  )
 }
 </script>
 
@@ -70,7 +73,7 @@ label {
   border-radius: var(--radius-sm);
   background: var(--color-subtle);
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: var(--font-control-size);
   font-weight: 600;
 }
 label:has(input:checked) {

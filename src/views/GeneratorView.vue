@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { availableCategories, generateNames } from '@/generator/categories'
 import type { Generated } from '@/patterns/types'
 import { useGeneratorSettings } from '@/composables/useGeneratorSettings'
@@ -8,19 +8,22 @@ import GeneratorResults from '@/components/generator/GeneratorResults.vue'
 import UiWorkspace from '@/components/ui/UiWorkspace.vue'
 
 const { settings, update } = useGeneratorSettings()
-const category = computed(() => availableCategories({ flavor: settings.value.flavor }).find((item) => item.id === settings.value.category))
+const category = computed(() =>
+  availableCategories({ flavor: settings.value.flavor }).find(
+    (item) => item.id === settings.value.category,
+  ),
+)
 const results = ref<Generated[]>([])
 const error = ref('')
 const busy = ref(false)
 let request = 0
 watch(
-  () =>
-    JSON.stringify([
-      settings.value.flavor,
-      settings.value.category,
-      settings.value.gender,
-      settings.value.size,
-    ]),
+  [
+    () => settings.value.flavor,
+    () => settings.value.category,
+    () => settings.value.gender.join(','),
+    () => settings.value.size.join(','),
+  ],
   () => {
     request++
     results.value = []
@@ -37,7 +40,10 @@ async function generate(append = false) {
   error.value = ''
   const selection = settings.value
   try {
-    const generated = await generateNames(selection.category, 10, {
+    // Flush the busy state before local calculation.
+    await nextTick()
+    if (current !== request) return
+    const generated = generateNames(selection.category, 10, {
       flavor: selection.flavor,
       genders: selection.gender,
       corporationSizes: selection.size,

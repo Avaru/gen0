@@ -1,7 +1,7 @@
 # 0012: Shared cyberpunk CSS theme
 
 Date: 2026-10-10
-Status: Accepted
+Status: Accepted; flavor selection and styling extended by decision 0020
 
 ## Reason
 

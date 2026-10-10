@@ -6,7 +6,7 @@ import { flavors } from '@/generator/options'
 import * as nameData from '@/load'
 import { RL } from '@/load'
 import { clearNamePools } from '@/builders/namePools'
-import { NATIONALITY, genericNationality } from '@/patterns/cyberpunk/nationality/byNationality'
+import { genericNationality } from '@/patterns/cyberpunk/nationality/byNationality'
 import {
   nationalName,
   nationalityGivenName,
@@ -14,31 +14,31 @@ import {
 } from '@/patterns/cyberpunk/nationality/nameParts'
 
 const fixture: NameEntry[] = [
-    ['chinese', 'Mei Lan', 'Li Hua', 'Wei', 'Jun', 'Au Yeung', 'Wang'],
-    ['japanese', 'Haruka', 'Yui', 'Hiroshi', 'Kenji', 'Sato', 'Tanaka'],
-    ['spanish', 'María José', 'Elena', 'Juan', 'Carlos', 'de la Cruz', 'Santos'],
-    ['arabic', 'Layla', 'Aisha', 'Ahmed', 'Omar', 'Haddad', 'Masri'],
-  ].flatMap(([nation, female, female2, male, male2, family, family2]) => [
-    ...[
-      [female, GENUS.F],
-      [female2, GENUS.F],
-      [male, GENUS.M],
-      [male2, GENUS.M],
-    ].map(([value, genus]) => ({
-      id: `${nation}-${value}`,
-      tags: [nation!],
-      value: value!,
-      type: 'given' as const,
-      genus: genus as GENUS.F | GENUS.M,
-    })),
-    ...[family, family2].map((value) => ({
-      id: `${nation}-${value}`,
-      tags: [nation!],
-      value: value!,
-      type: 'family' as const,
-      formGroupId: `${nation}-${value}`,
-    })),
-  ])
+  ['chinese', 'Mei Lan', 'Li Hua', 'Wei', 'Jun', 'Au Yeung', 'Wang'],
+  ['japanese', 'Haruka', 'Yui', 'Hiroshi', 'Kenji', 'Sato', 'Tanaka'],
+  ['spanish', 'María José', 'Elena', 'Juan', 'Carlos', 'de la Cruz', 'Santos'],
+  ['arabic', 'Layla', 'Aisha', 'Ahmed', 'Omar', 'Haddad', 'Masri'],
+].flatMap(([nation, female, female2, male, male2, family, family2]) => [
+  ...[
+    [female, GENUS.F],
+    [female2, GENUS.F],
+    [male, GENUS.M],
+    [male2, GENUS.M],
+  ].map(([value, genus]) => ({
+    id: `${nation}-${value}`,
+    tags: [nation!],
+    value: value!,
+    type: 'given' as const,
+    genus: genus as GENUS.F | GENUS.M,
+  })),
+  ...[family, family2].map((value) => ({
+    id: `${nation}-${value}`,
+    tags: [nation!],
+    value: value!,
+    type: 'family' as const,
+    formGroupId: `${nation}-${value}`,
+  })),
+])
 
 function useFixture() {
   clearNamePools()
@@ -56,19 +56,17 @@ afterEach(() => {
 })
 
 describe('Critical nationality construction', () => {
-  it.each([NATIONALITY.CHINESE, NATIONALITY.JAPANESE])(
+  it.each(['chinese', 'japanese'] as const)(
     'keeps %s family first with no random extra names',
-    async (nation) => {
+    (nation) => {
       useFixture()
-      const expected = nation === NATIONALITY.CHINESE ? 'Au Yeung Mei Lan' : 'Sato Haruka'
+      const expected = nation === 'chinese' ? 'Au Yeung Mei Lan' : 'Sato Haruka'
       vi.spyOn(Math, 'random').mockReturnValue(0)
       expect(nationalName(nation, GENUS.F)).toBe(expected)
-      expect((await genericNationality(nation, GENUS.F, 'Ghost')).primary).toBe(
-        `${expected} 'Ghost'`,
-      )
+      expect(genericNationality(nation, GENUS.F, 'Ghost').primary).toBe(`${expected} 'Ghost'`)
       vi.mocked(Math.random).mockReturnValue(0.99)
       expect(nationalName(nation, GENUS.F)).toBe(
-        nation === NATIONALITY.CHINESE ? 'Wang Li Hua' : 'Tanaka Yui',
+        nation === 'chinese' ? 'Wang Li Hua' : 'Tanaka Yui',
       )
     },
   )
@@ -76,11 +74,11 @@ describe('Critical nationality construction', () => {
   it('uses two Spanish surnames and preserves optional second given names and compound parts', () => {
     useFixture()
     vi.spyOn(Math, 'random').mockReturnValue(0)
-    expect(nationalName(NATIONALITY.SPANISH, GENUS.F, 'Ghost')).toBe(
+    expect(nationalName('spanish', GENUS.F, 'Ghost')).toBe(
       "María José Elena 'Ghost' de la Cruz Santos",
     )
     vi.mocked(Math.random).mockReturnValue(0.99)
-    expect(nationalName(NATIONALITY.SPANISH, GENUS.F)).toBe('Elena Santos de la Cruz')
+    expect(nationalName('spanish', GENUS.F)).toBe('Elena Santos de la Cruz')
   })
 
   it('uses bint with a male given name for a daughter and ibn/bin for a son', () => {
@@ -123,12 +121,12 @@ describe('Critical nationality construction', () => {
 
   it.each(['chinese', 'japanese', 'spanish', 'arabic'])(
     'uses the new %s rules through the category entry point in every flavor',
-    async (category) => {
+    (category) => {
       useFixture()
       vi.spyOn(Math, 'random').mockReturnValue(0)
       for (const flavor of flavors) {
-        for (const genus of [GENUS.F, GENUS.M]) {
-          const [name] = await generateNames(category, 1, { genus, flavor: flavor.id })
+        for (const genus of [GENUS.F, GENUS.M] as const) {
+          const [name] = generateNames(category, 1, { genus, flavor: flavor.id })
           const expected: Record<string, string[]> = {
             chinese: ['Au Yeung Mei Lan', 'Au Yeung Wei'],
             japanese: ['Sato Haruka', 'Sato Hiroshi'],
@@ -138,17 +136,17 @@ describe('Critical nationality construction', () => {
           expect(name!.primary).toBe(expected[category]![genus === GENUS.F ? 0 : 1])
         }
       }
-      await expect(
-        generateNames(category, 1, { genus: GENUS.F, excludeTags: [category] }),
-      ).rejects.toThrow('No entries match')
+      expect(() => generateNames(category, 1, { genus: GENUS.F, excludeTags: [category] })).toThrow(
+        'No entries match',
+      )
     },
   )
 
   it.each(['chinese', 'japanese', 'spanish', 'arabic'])(
     'generates %s names using the shipped lists',
-    async (category) => {
-      for (const genus of [GENUS.F, GENUS.M]) {
-        const names = await generateNames(category, 20, { genus })
+    (category) => {
+      for (const genus of [GENUS.F, GENUS.M] as const) {
+        const names = generateNames(category, 20, { genus })
         expect(names).toHaveLength(20)
         expect(
           names.every((name) => name.primary.length > 0 && !/undefined|sint/.test(name.primary)),

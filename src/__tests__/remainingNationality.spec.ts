@@ -1,3 +1,4 @@
+import { seedRandom } from './helpers/random'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { GENUS } from '@/builders/types'
 import type { NameEntry } from '@/data/nameTypes'
@@ -6,17 +7,10 @@ import { flavors } from '@/generator/options'
 import * as nameData from '@/load'
 import { RL } from '@/load'
 import { clearNamePools } from '@/builders/namePools'
-import { NATIONALITY } from '@/patterns/cyberpunk/nationality/byNationality'
 import { nationalName } from '@/patterns/cyberpunk/nationality/nameParts'
 import { mixedName } from '@/patterns/cyberpunk/nationality/mixed'
 
-const western = [
-  NATIONALITY.GERMAN,
-  NATIONALITY.BRITISH,
-  NATIONALITY.AMERICAN_US,
-  NATIONALITY.FRENCH,
-  NATIONALITY.ITALIAN,
-]
+const western = ['german', 'british', 'us-american', 'french', 'italian'] as const
 const familyNames: Record<string, string[]> = {
   german: ['Müller', 'Schmidt'],
   british: ['Smith', 'Jones'],
@@ -101,7 +95,7 @@ describe('Remaining national name rules', () => {
     },
   )
 
-  it.each([NATIONALITY.GERMAN, NATIONALITY.BRITISH, NATIONALITY.AMERICAN_US])(
+  it.each(['german', 'british', 'us-american'] as const)(
     'also allows a space in a %s double surname',
     (nation) => {
       useFixture()
@@ -115,26 +109,26 @@ describe('Remaining national name rules', () => {
   it('uses fewer extra French given names and mostly single Italian surnames', () => {
     useFixture()
     vi.spyOn(Math, 'random').mockReturnValue(0.12)
-    expect(nationalName(NATIONALITY.FRENCH, GENUS.F)).toBe('Annafrench Le Goff Martin')
-    expect(nationalName(NATIONALITY.ITALIAN, GENUS.F)).toBe('Annaitalian Mariaitalian Di Martino')
+    expect(nationalName('french', GENUS.F)).toBe('Annafrench Le Goff Martin')
+    expect(nationalName('italian', GENUS.F)).toBe('Annaitalian Mariaitalian Di Martino')
   })
 
   it.each(western)(
     'uses %s rules through the category entry point with genders, flavors, and exclusions',
-    async (nation) => {
+    (nation) => {
       useFixture()
       vi.spyOn(Math, 'random').mockReturnValue(0.99)
       for (const flavor of flavors) {
-        for (const genus of [GENUS.F, GENUS.M]) {
-          const [name] = await generateNames(nation, 1, { genders: [genus], flavor: flavor.id })
+        for (const genus of [GENUS.F, GENUS.M] as const) {
+          const [name] = generateNames(nation, 1, { genders: [genus], flavor: flavor.id })
           expect(name!.primary).toBe(
             `${genus === GENUS.F ? 'Maria' : 'Pyotr'}${nation} ${familyNames[nation]![1]}`,
           )
         }
       }
-      await expect(
-        generateNames(nation, 1, { genus: GENUS.F, excludeTags: [nation] }),
-      ).rejects.toThrow('No entries match')
+      expect(() => generateNames(nation, 1, { genus: GENUS.F, excludeTags: [nation] })).toThrow(
+        'No entries match',
+      )
     },
   )
 })
@@ -143,23 +137,21 @@ describe('Mixed personal names', () => {
   it('mixes different traditions and keeps additional given names together', () => {
     useFixture()
     vi.spyOn(Math, 'random').mockReturnValue(0)
-    expect(mixedName(GENUS.F)).toBe('Annabritish Mariabritish Müller-Schmidt')
+    expect(mixedName(GENUS.F)).toBe('Annabritish Mariabritish Brown-Wilson')
   })
 
   it.each([
-    [NATIONALITY.CHINESE, 'Wang Annagerman'],
-    [NATIONALITY.JAPANESE, 'Sato Annagerman'],
-    [NATIONALITY.SPANISH, 'Annagerman Mariagerman García Pérez'],
-    [NATIONALITY.RUSSIAN, 'Annagerman Ivanovna Ivanova'],
+    ['chinese', 'Wang Annagerman'],
+    ['japanese', 'Sato Annagerman'],
+    ['spanish', 'Annagerman Mariagerman García Pérez'],
+    ['russian', 'Annagerman Ivanovna Ivanova'],
     ['arabic', 'Annagerman bint Ivanarabic Haddad'],
   ] as const)(
     'keeps the %s structure and gender forms with foreign given names',
     (nation, expected) => {
       useFixture()
       vi.spyOn(Math, 'random').mockReturnValue(0)
-      expect(
-        nationalName(nation as NATIONALITY | 'arabic', GENUS.F, undefined, {}, NATIONALITY.GERMAN),
-      ).toBe(expected)
+      expect(nationalName(nation, GENUS.F, undefined, {}, 'german')).toBe(expected)
     },
   )
 
@@ -168,30 +160,26 @@ describe('Mixed personal names', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0)
     const keep = ['french', 'italian']
     const excludeTags = Object.keys(familyNames).filter((nation) => !keep.includes(nation))
-    expect(mixedName(GENUS.F, { excludeTags })).toBe('Annafrench Mariafrench Di Martino Rossi')
+    expect(mixedName(GENUS.F, { excludeTags })).toBe('Annaitalian Mariaitalian Le Goff Martin')
     expect(() => mixedName(GENUS.F, { excludeTags: [...excludeTags, 'italian'] })).toThrow(
       'two different traditions',
     )
   })
 
-  it('runs the Mixed category in every flavor with the selected gender', async () => {
+  it('runs the Mixed category in every flavor with the selected gender', () => {
     useFixture()
     vi.spyOn(Math, 'random').mockReturnValue(0.99)
     for (const flavor of flavors) {
-      const [name] = await generateNames('mixed', 1, { genders: [GENUS.F], flavor: flavor.id })
-      expect(name!.primary).toBe('Mariagreek Masri')
+      const [name] = generateNames('mixed', 1, { genders: [GENUS.F], flavor: flavor.id })
+      expect(name!.primary).toBe('Mariaspanish Masri')
     }
   })
 
-  it('generates the remaining categories and Mixed using shipped data', async () => {
-    let state = 421
-    vi.spyOn(Math, 'random').mockImplementation(() => {
-      state = (Math.imul(state, 1664525) + 1013904223) >>> 0
-      return state / 4294967296
-    })
+  it('generates the remaining categories and Mixed using shipped data', () => {
+    seedRandom()
     for (const category of [...western, 'mixed']) {
-      for (const genus of [GENUS.F, GENUS.M]) {
-        const names = await generateNames(category, 10, { genders: [genus] })
+      for (const genus of [GENUS.F, GENUS.M] as const) {
+        const names = generateNames(category, 10, { genders: [genus] })
         expect(names).toHaveLength(10)
         expect(
           names.every((name) => name.primary.length > 0 && !name.primary.includes('undefined')),

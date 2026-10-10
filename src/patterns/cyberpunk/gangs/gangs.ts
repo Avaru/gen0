@@ -1,3 +1,4 @@
+import { capitalize } from '@/helper/capitalize'
 import type { GenerationOptions } from '@/generator/options'
 import Bits from '@/builders/Bits'
 import { p } from '@/helper/prob'
@@ -7,23 +8,23 @@ import { load, SHADOWRUN } from '@/load'
 import { type Generated } from '@/patterns/types'
 import { genericName } from '../_secondary/names'
 
-export const gang = async (options: GenerationOptions = {}): Promise<Generated> => {
-  const names = new Bits(await load(SHADOWRUN.NAMES, options), { tag: 'gang' })
+export const gang = (options: GenerationOptions = {}): Generated => {
+  const names = new Bits(load(SHADOWRUN.NAMES, options), { tag: 'gang' })
 
   let primary = p() ? 'The ' : ''
 
-  primary += p(0.8) ? names.type('prefix').pick.uc + ' ' : ''
-  primary += p(0.5) ? names.type('prefix').pick.uc + ' ' : ''
+  primary += p(0.8) ? capitalize(names.type('prefix').take().value) + ' ' : ''
+  primary += p(0.5) ? capitalize(names.type('prefix').take().value) + ' ' : ''
 
-  primary += names.type('main').pick.uc
-  primary += p(0.3) ? ' of ' + names.type('suffix').pick.uc + ' ' : ''
+  primary += capitalize(names.type('main').take().value)
+  primary += p(0.3) ? ' of ' + capitalize(names.type('suffix').take().value) + ' ' : ''
 
-  const details = [names.type('attribute').pick.uc]
-  if (p(0.1)) details.push(names.type('attribute').pick.uc)
+  const details = [capitalize(names.type('attribute').take().value)]
+  if (p(0.1)) details.push(capitalize(names.type('attribute').take().value))
 
   const leadership = ['lead by', 'following', 'paid by', 'controlled by', 'revering']
 
-  details.push(randomFromWeighted(leadership) + ' ' + (await genericName(options)).primary)
+  details.push(randomFromWeighted(leadership) + ' ' + genericName(options))
 
   details.push(`${randomRounded(7, 200)} members`)
 

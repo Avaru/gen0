@@ -1,21 +1,22 @@
+import { capitalize } from '@/helper/capitalize'
 import { isFlavorEnabled, type GenerationOptions } from '@/generator/options'
 import Bits from '@/builders/Bits'
 import { p } from '@/helper/prob'
 import { randomAge } from '@/helper/randomAge'
 import { load, SHADOWRUN } from '@/load'
 import type { GeneratedAttributes } from '@/patterns/types'
-import { corporations } from '../corporations/corporations'
-import { runners } from '../runners/runners'
+import { corporationName } from '../corporations/corporations'
+import { runnerName } from '../runners/names'
 import { pickSpecies, SPECIES, SPECIES_AGE } from './helpers'
 
-export const characters = async (
+export const characters = (
   allowRunners = true,
   species: SPECIES | undefined = undefined,
   options: GenerationOptions = {},
-): Promise<GeneratedAttributes> => {
+): GeneratedAttributes => {
   species ??= pickSpecies(options)
   const character: GeneratedAttributes = {}
-  const data = new Bits(await load(SHADOWRUN.CHARACTERS, options))
+  const data = new Bits(load(SHADOWRUN.CHARACTERS, options))
 
   const age = randomAge(SPECIES_AGE[species])
 
@@ -26,10 +27,10 @@ export const characters = async (
   if (age > SPECIES_AGE[species].MATURITY) {
     const title = []
     if (allowRunners && p(0.1)) {
-      title.push('"' + (await runners(options)).primary + '", ')
-      title.push(data.tag('runner').type('profession').pick.uc)
+      title.push('"' + runnerName(options) + '", ')
+      title.push(capitalize(data.tag('runner').type('profession').take().value))
     } else {
-      title.push(await dayjob(options))
+      title.push(dayjob(options))
     }
     character.title = title.join('')
   }
@@ -37,19 +38,19 @@ export const characters = async (
   return character
 }
 
-export const dayjob = async (options: GenerationOptions = {}): Promise<string> => {
+export const dayjob = (options: GenerationOptions = {}): string => {
   const title = []
-  const data = new Bits(await load(SHADOWRUN.CHARACTERS, options))
+  const data = new Bits(load(SHADOWRUN.CHARACTERS, options))
   const jobs = data.tag('job')
   if (p()) {
-    if (p(0.1)) title.push(jobs.type('level').pick.uc)
-    if (p(0.7)) title.push(jobs.type('branch').pick.uc)
-    title.push(jobs.type('position').pick.uc)
+    if (p(0.1)) title.push(capitalize(jobs.type('level').take().value))
+    if (p(0.7)) title.push(capitalize(jobs.type('branch').take().value))
+    title.push(capitalize(jobs.type('position').take().value))
   } else {
-    title.push(jobs.type('description').pick.uc)
+    title.push(capitalize(jobs.type('description').take().value))
   }
   if (p(0.75)) {
-    title.push('at', (await corporations(undefined, false, options)).primary)
+    title.push('at', corporationName(options))
   }
 
   return title.join(' ')

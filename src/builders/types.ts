@@ -7,26 +7,26 @@ export enum GENUS {
   P = 'p',
 }
 
-export type RawBit = {
+export type RawBit<Type extends string = string> = {
   id?: string
   value: string
   shortValue?: string
   flavorNames?: Partial<Record<Flavor, string>>
   flavorShortNames?: Partial<Record<Flavor, string>>
   tags: string[]
-  type?: string
-  genus?: GENUS | string
+  type?: Type
+  genus?: `${GENUS}`
   source?: string
   details?: string
 }
 
-export interface BitFilter {
+export interface BitFilter<Entry extends RawBit = RawBit> {
   tag?: string
   not?: string
   one?: string[]
   all?: string[]
   none?: string[]
-  type?: string
+  type?: Entry['type']
   genus?: GENUS
-  required?: (keyof RawBit)[]
+  required?: (keyof Entry)[]
 }

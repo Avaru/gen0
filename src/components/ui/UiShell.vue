@@ -1,6 +1,10 @@
+<script setup lang="ts">
+import type { Theme } from '@/styles/themes'
+defineProps<{ theme: Theme }>()
+</script>
 <template>
   <a class="skip" href="#main">Skip to generator</a>
-  <div class="shell">
+  <div class="shell" :data-theme="theme">
     <header>
       <span class="brand">gen 0</span
       ><span class="caption">Cyberpunk name generator</span>
@@ -35,6 +39,16 @@ header::after {
   background: var(--theme-rule);
   background-color: var(--color-page);
 }
+header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 3rem;
+  height: 0.625rem;
+  background: var(--theme-panel-edge);
+  pointer-events: none;
+}
 .brand {
   font-size: clamp(5rem, 16vw, 9rem);
   font-family: var(--font-display);
@@ -43,6 +57,7 @@ header::after {
   text-transform: uppercase;
   transform: skew(var(--theme-heading-slant));
   letter-spacing: -0.06em;
+  text-shadow: var(--theme-brand-shadow);
 }
 .caption {
   max-width: 15rem;

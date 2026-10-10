@@ -1,11 +1,11 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="Value extends string">
 defineProps<{
-  modelValue: string
+  modelValue: Value
   label: string
   name: string
-  options: readonly { value: string; label: string }[]
+  options: readonly { value: Value; label: string }[]
 }>()
-defineEmits<{ 'update:modelValue': [value: string] }>()
+defineEmits<{ 'update:modelValue': [value: Value] }>()
 </script>
 <template>
   <fieldset>
@@ -40,6 +40,14 @@ legend {
   letter-spacing: 0.08em;
   font-weight: 600;
 }
+legend::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: var(--space-2);
+  background: var(--theme-label-mark);
+}
 .segments {
   display: flex;
   flex-wrap: wrap;
@@ -71,7 +79,7 @@ span {
   padding: var(--space-2) var(--space-3);
   border-radius: calc(var(--radius-sm) - var(--space-1));
   text-align: center;
-  font-size: 0.875rem;
+  font-size: var(--font-control-size);
   font-weight: 600;
 }
 input:checked + span {
@@ -85,7 +93,7 @@ input:focus-visible + span {
 @media (max-width: 24rem) {
   span {
     padding-inline: var(--space-1);
-    font-size: 0.75rem;
+    font-size: var(--font-small-control-size);
   }
 }
 </style>

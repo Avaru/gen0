@@ -1,7 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { GENUS } from '@/builders/types'
 import { load, RL } from '@/load'
-import { NATIONALITY } from '@/patterns/cyberpunk/nationality/byNationality'
 import { nationalName } from '@/patterns/cyberpunk/nationality/nameParts'
 
 afterEach(() => vi.restoreAllMocks())
@@ -32,7 +31,7 @@ it('displays the corrected Greek given name through the full name builder', () =
   vi.spyOn(Math, 'random')
     .mockReturnValue(0.99)
     .mockReturnValueOnce((index + 0.5) / given.length)
-  expect(nationalName(NATIONALITY.GREEK, GENUS.F)).toMatch(/^Milianí /)
+  expect(nationalName('greek', GENUS.F)).toMatch(/^Milianí /)
 })
 
 it('preserves a lowercase Dutch surname particle after the given name', () => {
@@ -55,5 +54,5 @@ it('preserves a lowercase Dutch surname particle after the given name', () => {
     .mockReturnValueOnce(0)
     .mockReturnValueOnce(0.99)
     .mockReturnValueOnce((index + 0.5) / family.length)
-  expect(nationalName(NATIONALITY.DUTCH, GENUS.F)).toMatch(/ de Boer$/)
+  expect(nationalName('dutch', GENUS.F)).toMatch(/ de Boer$/)
 })

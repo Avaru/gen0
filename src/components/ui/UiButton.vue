@@ -9,6 +9,7 @@ withDefaults(defineProps<{ type?: 'button' | 'submit'; variant?: 'primary' | 'se
 </template>
 <style scoped>
 button {
+  position: relative;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-6);
@@ -19,6 +20,17 @@ button {
   font-weight: 700;
   border-bottom: 4px solid var(--color-on-accent);
   overflow-wrap: anywhere;
+}
+button::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 0.625rem;
+  height: 0.625rem;
+  background: var(--theme-button-detail);
+  opacity: 0.65;
+  pointer-events: none;
 }
 .primary {
   background: var(--color-accent);

@@ -18,9 +18,13 @@ describe('Reusable name pools', () => {
   it('loads once for equivalent settings and reuses smaller pools across gender selections', () => {
     const load = vi.spyOn(nameData, 'load')
     const pools = getNamePools({ excludeTags: ['greek', 'russian'] })
-    expect(getNamePools({
-      flavor: 'cyberpunk', excludeTags: ['russian', 'greek', 'greek'], genders: [GENUS.F],
-    })).toBe(pools)
+    expect(
+      getNamePools({
+        flavor: 'cyberpunk',
+        excludeTags: ['russian', 'greek', 'greek'],
+        genders: [GENUS.F],
+      }),
+    ).toBe(pools)
     const female = pools.get('german', 'given', GENUS.F, true)
     expect(pools.get('german', 'given', GENUS.F, true)).toBe(female)
     expect(pools.get('german', 'given', GENUS.M, true)).not.toBe(female)
@@ -45,13 +49,17 @@ describe('Reusable name pools', () => {
     for (const { id: flavor } of flavors) {
       const data = nameData.load(RL.NAMES_MODERN, { flavor })
       const pools = getNamePools({ flavor })
-      expect(pools.get(undefined, 'family')).toEqual(data.filter(bit => bit.type === 'family'))
-      for (const genus of [GENUS.F, GENUS.M]) {
-        const matching = data.filter(bit => bit.tags.includes('russian') && bit.type === 'family' &&
-          (!bit.genus || bit.genus === genus))
-        expect(pools.get('russian', 'family', genus, true)).toEqual(
-          [...new Map(matching.map(bit => [bit.value, bit])).values()],
+      expect(pools.get(undefined, 'family')).toEqual(data.filter((bit) => bit.type === 'family'))
+      for (const genus of [GENUS.F, GENUS.M] as const) {
+        const matching = data.filter(
+          (bit) =>
+            bit.tags.includes('russian') &&
+            bit.type === 'family' &&
+            (!bit.genus || bit.genus === genus),
         )
+        expect(pools.get('russian', 'family', genus, true)).toEqual([
+          ...new Map(matching.map((bit) => [bit.value, bit])).values(),
+        ])
       }
     }
   })
@@ -65,16 +73,16 @@ describe('Reusable name pools', () => {
     const pools = new NamePools(source)
     expect(pools.get('test', 'family')).toHaveLength(3)
     const pool = pools.get('test', 'family', GENUS.F, true)
-    expect(pool.map(bit => bit.value)).toEqual(['One', 'Two'])
+    expect(pool.map((bit) => bit.value)).toEqual(['One', 'Two'])
     expect(pool[0]?.id).toBe('last')
     vi.spyOn(Math, 'random').mockReturnValue(0)
     const first = new Bits(pool)
-    expect(first.pick.value).toBe('One')
-    expect(first.pick.value).toBe('Two')
-    expect(new Bits(pool).pick.value).toBe('One')
-    const selected = new Bits(pool).pick
+    expect(first.take().value).toBe('One')
+    expect(first.take().value).toBe('Two')
+    expect(new Bits(pool).take().value).toBe('One')
+    const selected = new Bits(pool).take()
     selected.tags.push('changed')
-    selected.pick.value = 'Changed'
+    selected.value = 'Changed'
     expect(pool[0]?.value).toBe('One')
     expect(pool[0]?.tags).toEqual(['test'])
     expect(source).toHaveLength(3)
@@ -93,12 +101,14 @@ describe('Reusable name pools', () => {
   })
 
   it('keeps mixed eligibility separate when settings or gender change', () => {
-    const excludeTags = [...new Set(nameData.load(RL.NAMES_MODERN).flatMap(bit => bit.tags))]
-      .filter(tag => tag !== 'dutch' && tag !== 'tamil')
+    const excludeTags = [
+      ...new Set(nameData.load(RL.NAMES_MODERN).flatMap((bit) => bit.tags)),
+    ].filter((tag) => tag !== 'dutch' && tag !== 'tamil')
     expect(mixedName(GENUS.F, { excludeTags })).toBeTruthy()
     expect(mixedName(GENUS.M, { excludeTags })).toBeTruthy()
-    expect(() => mixedName(GENUS.F, { excludeTags: [...excludeTags, 'dutch'] }))
-      .toThrow('two different traditions')
+    expect(() => mixedName(GENUS.F, { excludeTags: [...excludeTags, 'dutch'] })).toThrow(
+      'two different traditions',
+    )
     expect(mixedName(GENUS.F, { excludeTags })).toBeTruthy()
   })
 

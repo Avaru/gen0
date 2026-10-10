@@ -1,6 +1,6 @@
 import type { RawBit } from "@/builders/types"
 
-export const shadowrunCharacters: RawBit[] = [
+export const shadowrunCharacters: RawBit<'branch' | 'description' | 'inner' | 'level' | 'mood' | 'outer' | 'position' | 'profession'>[] = [
   {"tags": ["character"], "value": "eccentric", "type": "inner"},
   {"tags": ["character", "shadowrun"], "value": "BTL addict", "type": "inner"},
   {"tags": ["character"], "value": "gesturing to AR apps", "type": "inner"},

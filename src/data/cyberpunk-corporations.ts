@@ -1,7 +1,7 @@
 import type { RawBit } from "@/builders/types"
 
 // Corporation category indexes inspected 2026-10-10. See docs/data-sources.md.
-export const cyberpunkCorporations: RawBit[] = [
+export const cyberpunkCorporations: RawBit<'name'>[] = [
   {"id": "corp-1st_night_city_bank", "value": "1st Night City Bank", "type": "name", "tags": ["corporation", "known-corporation", "cyberpunk2020-2077"], "source": "https://cyberpunk.fandom.com/wiki/1st_Night_City_Bank"},
   {"id": "corp-adrek_robotics", "value": "Adrek Robotics", "type": "name", "tags": ["corporation", "known-corporation", "cyberpunk2020-2077"], "source": "https://cyberpunk.fandom.com/wiki/Adrek_Robotics"},
   {"id": "corp-aerocab", "value": "Aerocab", "type": "name", "tags": ["corporation", "known-corporation", "cyberpunk2020-2077"], "source": "https://cyberpunk.fandom.com/wiki/Aerocab"},

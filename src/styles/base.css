@@ -2,6 +2,8 @@
   font-family: var(--font-body);
   color: var(--color-text);
   background: var(--color-page);
+  background-image: var(--theme-page-texture);
+  background-size: var(--theme-page-texture-size);
   font-synthesis: none;
   line-height: 1.5;
   --space-1: 0.25rem;

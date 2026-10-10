@@ -141,6 +141,14 @@ function enter() {
   letter-spacing: 0.08em;
   font-weight: 600;
 }
+.label::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: var(--space-2);
+  background: var(--theme-label-mark);
+}
 button,
 input {
   border: 1px solid var(--color-control-border);
@@ -179,6 +187,7 @@ dialog {
   border: 0;
   border-top: 5px solid var(--color-signal);
   background: var(--color-surface);
+  background-image: var(--theme-panel-texture);
   color: var(--color-text);
 }
 dialog::backdrop {

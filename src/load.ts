@@ -1,5 +1,3 @@
-import type { RawBit } from '@/builders/types'
-import type { NameEntry } from '@/data/nameTypes'
 import { rlNamesModern } from '@/data/rl-names-modern'
 import { shadowrunNames } from '@/data/shadowrun-names'
 import { shadowrunCharacters } from '@/data/shadowrun-characters'
@@ -29,7 +27,7 @@ export enum CONTENT {
   SHOPS = 'shops',
   DEVICE_DATA = 'device-data',
 }
-const lists: Record<RL | SHADOWRUN | CONTENT, RawBit[]> = {
+const lists = {
   [RL.NAMES_MODERN]: rlNamesModern,
   [CONTENT.WEAPONS]: weaponData,
   [CONTENT.FOOD_MENU]: foodMenuData,
@@ -41,15 +39,21 @@ const lists: Record<RL | SHADOWRUN | CONTENT, RawBit[]> = {
   [SHADOWRUN.MOVIE]: shadowrunMovie,
 }
 
-// Static TypeScript data ships with the SPA; no fetch or spreadsheet connection.
-export function load(list: RL, options?: GenerationOptions): NameEntry[]
-export function load(list: SHADOWRUN | CONTENT, options?: GenerationOptions): RawBit[]
-export function load(list: RL | SHADOWRUN | CONTENT, options?: GenerationOptions): RawBit[]
-export function load(list: RL | SHADOWRUN | CONTENT, options: GenerationOptions = {}): RawBit[] {
-  return lists[list].filter(bit => isEntryAvailable(bit, options)).map(bit => ({
-    ...bit,
-    tags: [...bit.tags],
-    value: getName(bit, options.flavor),
-    shortValue: getName(bit, options.flavor, 'short'),
-  }))
+export type DataList = keyof typeof lists
+export type ListEntry<List extends DataList> = (typeof lists)[List][number]
+
+// Preserve each dataset's fragment types through filtering and flavor spelling.
+export function load<List extends DataList>(
+  list: List,
+  options: GenerationOptions = {},
+): ListEntry<List>[] {
+  const source: readonly ListEntry<List>[] = lists[list]
+  return source
+    .filter((bit) => isEntryAvailable(bit, options))
+    .map((bit) => ({
+      ...bit,
+      tags: [...bit.tags],
+      value: getName(bit, options.flavor),
+      shortValue: getName(bit, options.flavor, 'short'),
+    }))
 }

@@ -4,7 +4,7 @@ import { GENUS } from '@/builders/types'
 import { availableCategories } from '@/generator/categories'
 import { flavors } from '@/generator/options'
 import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
-import type { GeneratorSettings } from '@/composables/useGeneratorSettings'
+import type { GeneratorSettings } from '@/generator/settings'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiCategoryPicker from '@/components/ui/UiCategoryPicker.vue'
 import UiSegments from '@/components/ui/UiSegments.vue'
@@ -16,15 +16,13 @@ const emit = defineEmits<{
   update: [patch: Partial<GeneratorSettings>]
   generate: []
 }>()
-const available = computed(() =>
-  availableCategories({ flavor: props.settings.flavor }),
-)
+const available = computed(() => availableCategories({ flavor: props.settings.flavor }))
 const category = computed(() => available.value.find((item) => item.id === props.settings.category))
 const flavorOptions = flavors.map((item) => ({ value: item.id, label: item.label }))
 const genderOptions = [
   { value: GENUS.M, label: 'Masculine' },
   { value: GENUS.F, label: 'Feminine' },
-]
+] as const
 const sizeOptions = [
   { value: CORPORATION_SIZE.A, label: 'Minor' },
   { value: CORPORATION_SIZE.AA, label: 'Large (AA)' },
@@ -39,7 +37,7 @@ const sizeOptions = [
       label="Flavor"
       name="flavor"
       :options="flavorOptions"
-      @update:model-value="emit('update', { flavor: $event as GeneratorSettings['flavor'] })"
+      @update:model-value="emit('update', { flavor: $event })"
     />
     <UiCategoryPicker
       :model-value="settings.category"
@@ -56,7 +54,7 @@ const sizeOptions = [
       label="Given names"
       name="gender"
       :options="genderOptions"
-      @update:model-value="emit('update', { gender: $event as GeneratorSettings['gender'] })"
+      @update:model-value="emit('update', { gender: $event })"
     />
     <UiChecks
       v-if="category?.corporationSize"
@@ -64,7 +62,7 @@ const sizeOptions = [
       label="Corporation size"
       name="size"
       :options="sizeOptions"
-      @update:model-value="emit('update', { size: $event as GeneratorSettings['size'] })"
+      @update:model-value="emit('update', { size: $event })"
     />
     <UiToggle
       :model-value="settings.details"
@@ -79,12 +77,24 @@ const sizeOptions = [
 
 <style scoped>
 form {
+  position: relative;
   display: grid;
   gap: var(--space-6);
   padding: var(--space-6);
   background: var(--color-surface);
+  background-image: var(--theme-panel-texture);
   border-top: 5px solid var(--color-hot);
   box-shadow: var(--theme-panel-shadow);
+}
+form::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: var(--space-3);
+  width: 3rem;
+  height: 5px;
+  background: var(--theme-panel-edge);
+  pointer-events: none;
 }
 @media (max-width: 24rem) {
   form {

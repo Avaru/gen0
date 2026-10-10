@@ -1,7 +1,7 @@
 import type { RawBit } from '@/builders/types'
 
 // Adapted from namegenerator's saved cyberpunk data; see docs/decisions/0016-content-generators.md.
-export const weaponData: RawBit[] = [
+export const weaponData: RawBit<'kind' | 'model' | 'modification' | 'series'>[] = [
   {"value": "AV-7000", "type": "model", "tags": [], "id": "weapons-model-1"},
   {"value": "Carbine", "type": "model", "tags": [], "id": "weapons-model-2"},
   {"value": "CP3", "type": "model", "tags": [], "id": "weapons-model-3"},

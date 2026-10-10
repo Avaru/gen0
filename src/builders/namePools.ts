@@ -10,11 +10,13 @@ export class NamePools {
   private readonly parts = new Map<string, readonly NameEntry[]>()
 
   constructor(entries: readonly NameEntry[]) {
-    this.entries = Object.freeze(entries.map(entry => {
-      const copy = { ...entry, tags: [...entry.tags] }
-      Object.freeze(copy.tags)
-      return Object.freeze(copy)
-    }))
+    this.entries = Object.freeze(
+      entries.map((entry) => {
+        const copy = { ...entry, tags: [...entry.tags] }
+        Object.freeze(copy.tags)
+        return Object.freeze(copy)
+      }),
+    )
     for (const entry of this.entries) {
       for (const tag of new Set(entry.tags)) {
         const pool = this.byTag.get(tag) ?? []
@@ -24,18 +26,24 @@ export class NamePools {
     }
   }
 
-  get(nation?: string, type?: NamePart, genus?: GENUS, distinct = false): readonly NameEntry[] {
+  get(
+    nation?: string,
+    type?: NamePart,
+    genus?: `${GENUS}`,
+    distinct = false,
+  ): readonly NameEntry[] {
     const key = JSON.stringify([nation, type, genus, distinct])
     const cached = this.parts.get(key)
     if (cached) return cached
-    const source = nation === undefined ? this.entries : this.byTag.get(nation) ?? []
-    const matching = source.filter(entry =>
-      (!type || entry.type === type) && (!genus || !entry.genus || entry.genus === genus),
+    const source = nation === undefined ? this.entries : (this.byTag.get(nation) ?? [])
+    const matching = source.filter(
+      (entry) =>
+        (!type || entry.type === type) && (!genus || !entry.genus || entry.genus === genus),
     )
     // Keep the existing order and last entry for duplicate spellings.
-    const pool = Object.freeze(distinct
-      ? [...new Map(matching.map(entry => [entry.value, entry])).values()]
-      : matching)
+    const pool = Object.freeze(
+      distinct ? [...new Map(matching.map((entry) => [entry.value, entry])).values()] : matching,
+    )
     this.parts.set(key, pool)
     return pool
   }

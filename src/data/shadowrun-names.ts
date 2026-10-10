@@ -1,6 +1,8 @@
 import type { RawBit } from "@/builders/types"
 
-export const shadowrunNames: RawBit[] = [
+export type ShadowrunName = RawBit<'appearance' | 'attribute' | 'branch' | 'business' | 'main' | 'model' | 'name' | 'origin' | 'people' | 'prefix' | 'quality' | 'relation' | 'series' | 'suffix' | 'type' | 'wares'>
+
+const barNames: ShadowrunName[] = [
   {"tags": ["bar"], "value": "Ace of Clubs", "type": "name"},
   {"tags": ["bar"], "value": "The Admiral's Arms", "type": "name"},
   {"tags": ["bar"], "value": "The Admiral Benbow Inn", "type": "name"},
@@ -404,6 +406,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["bar"], "value": "watering hole", "type": "type"},
   {"tags": ["bar"], "value": "exit", "type": "type"},
   {"tags": ["bar"], "value": "end", "type": "type"},
+]
+
+const businessNames: ShadowrunName[] = [
   {"tags": ["business"], "value": "Drinks", "type": "branch"},
   {"tags": ["business"], "value": "Drones", "type": "branch"},
   {"tags": ["business"], "value": "Talisman", "type": "branch"},
@@ -448,6 +453,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["business"], "value": "Toys", "type": "branch"},
   {"tags": ["business"], "value": "Underwear", "type": "branch"},
   {"tags": ["business"], "value": "Vacuum", "type": "branch"},
+]
+
+const cityNames: ShadowrunName[] = [
   {"tags": ["city"], "value": "Outpost", "type": "suffix"},
   {"tags": ["city"], "value": "Expedition", "type": "suffix"},
   {"tags": ["city"], "value": "Block", "type": "suffix"},
@@ -519,8 +527,14 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["city"], "value": "toxic air", "type": "attribute"},
   {"tags": ["city"], "value": "corporate property", "type": "attribute"},
   {"tags": ["city"], "value": "near highway crossing", "type": "attribute"},
+]
+
+const commlinkPictureNames: ShadowrunName[] = [
   {"tags": ["commlink-picture", "general", ""], "value": "commlink"},
   {"tags": ["commlink-picture", "general", "", "shadowrun"], "value": "totem"},
+]
+
+const corporationNames: ShadowrunName[] = [
   {"tags": ["corporation"], "value": "Aerospatiale", "type": "name"},
   {"tags": ["corporation"], "value": "Chalmers", "type": "name"},
   {"tags": ["corporation"], "value": "Citigroup", "type": "name"},
@@ -699,6 +713,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["corporation", "aaa", "shadowrun", "known-corporation"], "value": "Wuxing", "type": "name"},
   {"tags": ["corporation", "aaa", "shadowrun", "known-corporation"], "value": "Saeder Krupp", "type": "name"},
   {"tags": ["corporation", "aaa", "shadowrun", "known-corporation"], "value": "Evo", "type": "name"},
+]
+
+const creatureNames: ShadowrunName[] = [
   {"tags": ["creature", "mythological"], "value": "Gagana"},
   {"tags": ["creature", "mythological"], "value": "Fylgja"},
   {"tags": ["creature", "mythological"], "value": "Fext"},
@@ -739,6 +756,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["creature", "mythological"], "value": "Adaro"},
   {"tags": ["creature", "mythological"], "value": "Acheri"},
   {"tags": ["creature", "mythological"], "value": "Acephali"},
+]
+
+const deviceNames: ShadowrunName[] = [
   {"tags": ["device"], "value": "new", "type": "attribute"},
   {"tags": ["device"], "value": "experimental", "type": "attribute"},
   {"tags": ["device"], "value": "unstable", "type": "attribute"},
@@ -768,6 +788,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["device"], "value": "missile", "type": "type"},
   {"tags": ["device"], "value": "security system", "type": "type"},
   {"tags": ["device"], "value": "nanite", "type": "type"},
+]
+
+const gangNames: ShadowrunName[] = [
   {"tags": ["gang"], "value": "Angels", "type": "main"},
   {"tags": ["gang"], "value": "Arguments", "type": "main"},
   {"tags": ["gang"], "value": "Atheists", "type": "main"},
@@ -1010,6 +1033,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["gang"], "value": "Wearing baseball caps", "type": "attribute"},
   {"tags": ["gang"], "value": "Shaved heads", "type": "attribute"},
   {"tags": ["gang"], "value": "Colorful clothes", "type": "attribute"},
+]
+
+const locationNames: ShadowrunName[] = [
   {"tags": ["location"], "value": "New", "type": "prefix"},
   {"tags": ["location"], "value": "West", "type": "prefix"},
   {"tags": ["location"], "value": "East", "type": "prefix"},
@@ -1024,6 +1050,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["location"], "value": "Southwest", "type": "prefix"},
   {"tags": ["location"], "value": "Central", "type": "prefix"},
   {"tags": ["location"], "value": "First", "type": "prefix"},
+]
+
+const pictureNames: ShadowrunName[] = [
   {"tags": ["picture"], "value": "Distorted", "type": "quality"},
   {"tags": ["picture"], "value": "Un-deleted", "type": "quality"},
   {"tags": ["picture"], "value": "blurry", "type": "quality"},
@@ -1062,6 +1091,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["picture"], "value": "charismatic", "type": "people"},
   {"tags": ["picture"], "value": "familiar", "type": "people"},
   {"tags": ["picture"], "value": "eating", "type": "people"},
+]
+
+const restaurantNames: ShadowrunName[] = [
   {"tags": ["restaurant"], "value": "frequented by gangers", "type": "attribute"},
   {"tags": ["restaurant"], "value": "runner hub", "type": "attribute"},
   {"tags": ["restaurant"], "value": "Mr. Johnsons's favorite", "type": "attribute"},
@@ -1107,6 +1139,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["restaurant"], "value": "home-grown ingredients", "type": "attribute"},
   {"tags": ["restaurant"], "value": "hand-picked ingredients", "type": "attribute"},
   {"tags": ["restaurant"], "value": "grandma's recipes", "type": "attribute"},
+]
+
+const runnerNames: ShadowrunName[] = [
   {"tags": ["runner"], "value": "Ace", "type": "name"},
   {"tags": ["runner"], "value": "Aero", "type": "name"},
   {"tags": ["runner"], "value": "Agent", "type": "name"},
@@ -1653,6 +1688,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["runner", "gang"], "value": "Pink", "type": "prefix"},
   {"tags": ["runner", "gang"], "value": "Silver", "type": "prefix"},
   {"tags": ["runner", "gang"], "value": "Mad", "type": "prefix"},
+]
+
+const shopNames: ShadowrunName[] = [
   {"tags": ["shop"], "value": "Elusive", "type": "attribute"},
   {"tags": ["shop"], "value": "Tasteful", "type": "attribute"},
   {"tags": ["shop"], "value": "Bombastic", "type": "attribute"},
@@ -1978,6 +2016,9 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["shop"], "value": "Sex toy", "type": "wares"},
   {"tags": ["shop"], "value": "Housewares", "type": "wares"},
   {"tags": ["shop"], "value": "General commodity", "type": "wares"},
+]
+
+const weaponNames: ShadowrunName[] = [
   {"tags": ["weapon"], "value": "AV-7000", "type": "model"},
   {"tags": ["weapon"], "value": "Carbine", "type": "model"},
   {"tags": ["weapon"], "value": "CP3", "type": "model"},
@@ -2180,4 +2221,21 @@ export const shadowrunNames: RawBit[] = [
   {"tags": ["weapon"], "value": "Shotgun", "type": "type"},
   {"tags": ["weapon"], "value": "Pistol", "type": "type"},
   {"tags": ["weapon"], "value": "Katana", "type": "type"},
+]
+
+export const shadowrunNames: ShadowrunName[] = [
+  ...barNames,
+  ...businessNames,
+  ...cityNames,
+  ...commlinkPictureNames,
+  ...corporationNames,
+  ...creatureNames,
+  ...deviceNames,
+  ...gangNames,
+  ...locationNames,
+  ...pictureNames,
+  ...restaurantNames,
+  ...runnerNames,
+  ...shopNames,
+  ...weaponNames,
 ]

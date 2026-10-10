@@ -1,17 +1,18 @@
-import { capitalize } from '@/helper/capitalize'
-import { randomGenus } from '@/helper/randomGenus'
 import { randomFrom } from '@/helper/randomFrom'
-import type { BitFilter, RawBit } from './types'
-import { GENUS } from './types'
+import type { BitFilter, RawBit, GENUS } from './types'
 
-// Each pool owns its picks; filtering never consumes the original data.
-export default class Bits {
-  private bits: RawBit[]
-  constructor(bits: readonly RawBit[], filter?: BitFilter) {
+/** An independent selection pool. Filtering creates another independent pool. */
+export default class Bits<Entry extends RawBit = RawBit> {
+  private bits: Entry[]
+
+  constructor(bits: readonly Entry[], filter: BitFilter<Entry> = {}) {
     this.bits = Bits.filterList(bits, filter)
   }
 
-  static filterList(list: readonly RawBit[], filter: BitFilter = {}): RawBit[] {
+  static filterList<Entry extends RawBit>(
+    list: readonly Entry[],
+    filter: BitFilter<Entry> = {},
+  ): Entry[] {
     return list
       .filter(
         (bit) =>
@@ -27,16 +28,16 @@ export default class Bits {
       .map((bit) => ({ ...bit, tags: [...bit.tags] }))
   }
 
-  filter(filter: BitFilter): Bits {
+  filter(filter: BitFilter<Entry>): Bits<Entry> {
     return new Bits(this.bits, filter)
   }
-  tag(tag: string): Bits {
+  tag(tag: string): Bits<Entry> {
     return this.filter({ tag })
   }
-  genus(genus: GENUS): Bits {
+  genus(genus: GENUS): Bits<Entry> {
     return this.filter({ genus })
   }
-  type(type: string): Bits {
+  type(type: NonNullable<Entry['type']>): Bits<Entry> {
     return this.filter({ type })
   }
   get count(): number {
@@ -45,31 +46,11 @@ export default class Bits {
   get values(): string[] {
     return this.bits.map((bit) => bit.value)
   }
-  get pick(): Pick {
+
+  /** Select and remove one entry from this pool, leaving its source untouched. */
+  take(): Entry {
     const bit = randomFrom(this.bits)
     this.bits.splice(this.bits.indexOf(bit), 1)
-    return new Pick(bit)
-  }
-}
-
-export class Pick {
-  constructor(public pick: RawBit) {}
-  get uc(): string {
-    return capitalize(this.pick.value)
-  }
-  get lc(): string {
-    return this.pick.value.charAt(0).toLowerCase() + this.pick.value.substring(1)
-  }
-  get value(): string {
-    return this.pick.value
-  }
-  get shortValue(): string {
-    return this.pick.shortValue ?? this.pick.value
-  }
-  get genus(): GENUS {
-    return (this.pick.genus as GENUS) ?? randomGenus()
-  }
-  get tags(): string[] {
-    return this.pick.tags
+    return bit
   }
 }

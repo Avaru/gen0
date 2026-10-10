@@ -1,11 +1,13 @@
-/* Default theme for every generator flavor. Future themes override these tokens. */
+/* Default for Generic and Shadowrun; appearance follows Vue's shell attribute. */
 :root,
-:root[data-theme='cyberpunk'] {
+:root:has([data-theme='cyberpunk']) {
   color-scheme: dark;
   --radius-sm: 0;
   --radius-lg: 0;
   --font-body: 'IBM Plex Mono', ui-monospace, monospace;
   --font-display: 'Barlow Condensed', Impact, sans-serif;
+  --font-control-size: 0.875rem;
+  --font-small-control-size: 0.75rem;
   --color-page: #eeff00;
   --color-text: #f4f5e9;
   --color-muted: #bac5c5;
@@ -23,5 +25,16 @@
   --color-on-page: #11171b;
   --theme-panel-shadow: 6px 6px 0 #11171b;
   --theme-heading-slant: -6deg;
+  --theme-brand-shadow: 2px 0 var(--color-page), 4px 0 var(--color-hot), -3px 2px var(--color-signal);
+  --theme-heading-shadow: 2px 1px 0 #254448;
   --theme-rule: repeating-linear-gradient(135deg, var(--color-on-page) 0 4px, transparent 4px 9px);
+  --theme-page-texture:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23000' opacity='.13' filter='url(%23n)' d='M0 0h160v160H0z'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 1px 1px, #11171b26 1px, transparent 1.5px);
+  --theme-page-texture-size: 160px 160px, 7px 7px;
+  --theme-panel-texture: repeating-linear-gradient(0deg, #ffffff03 0 1px, transparent 1px 4px);
+  --theme-panel-edge: repeating-linear-gradient(90deg, var(--color-hot) 0 2px, transparent 2px 5px, var(--color-signal) 5px 6px, transparent 6px 12px);
+  --theme-label-mark: linear-gradient(90deg, var(--color-hot) 0 3px, transparent 3px 5px, var(--color-signal) 5px 7px);
+  --theme-row-mark: repeating-linear-gradient(90deg, var(--color-muted) 0 1px, transparent 1px 4px, var(--color-muted) 4px 6px, transparent 6px 9px);
+  --theme-button-detail: repeating-linear-gradient(135deg, currentColor 0 1px, transparent 1px 4px);
 }

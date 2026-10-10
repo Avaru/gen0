@@ -1,0 +1,34 @@
+/* CP 2020/77: red frames, cyan signals, narrow screen typography. */
+:root:has([data-theme='cyberpunk2077']) {
+  --font-body: 'Rajdhani', 'Arial Narrow', sans-serif;
+  --font-display: 'Rajdhani', 'Arial Narrow', Impact, sans-serif;
+  --font-control-size: 1rem;
+  --font-small-control-size: 0.9375rem;
+  --color-page: #080c13;
+  --color-text: #edf7fa;
+  --color-muted: #a6b9c7;
+  --color-surface: #10151e;
+  --color-subtle: #1b2330;
+  --color-border: #51303a;
+  --color-control-border: #b7616d;
+  --color-accent: #ff6574;
+  --color-accent-hover: #ff8590;
+  --color-on-accent: #080c13;
+  --color-focus: #61f5ef;
+  --color-error: #ff9aa5;
+  --color-signal: #61f5ef;
+  --color-hot: #ff6574;
+  --color-on-page: #ff6574;
+  --theme-panel-shadow: 3px 3px 0 #ff657426;
+  --theme-heading-slant: 0deg;
+  --theme-brand-shadow: 2px 0 0 #61f5ef70;
+  --theme-heading-shadow: none;
+  --theme-rule: repeating-linear-gradient(90deg, var(--color-hot) 0 1px, transparent 1px 6px);
+  --theme-page-texture: radial-gradient(ellipse at 85% 0, #ff657410, transparent 60%);
+  --theme-page-texture-size: 100% 100%;
+  --theme-panel-texture: linear-gradient(135deg, #61f5ef05, transparent 50%);
+  --theme-panel-edge: linear-gradient(90deg, transparent 0 65%, var(--color-hot) 65% 68%, transparent 68% 75%, var(--color-signal) 75%);
+  --theme-label-mark: linear-gradient(var(--color-hot), var(--color-hot));
+  --theme-row-mark: linear-gradient(90deg, transparent 0 75%, var(--color-hot) 75% 80%, transparent 80%);
+  --theme-button-detail: linear-gradient(135deg, transparent 0 50%, currentColor 50%);
+}

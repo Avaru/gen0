@@ -24,7 +24,7 @@ The production output is in `dist/` and can be served by any static host. Genera
 
 ## Interface
 
-Mobile-first layout with native radio segmented controls for flavors, checkbox groups for given-name gender and corporation size, and a searchable grouped category picker. The picker opens full-screen on phones and as a centered panel on larger screens. Search matches category and group names; selecting a category closes it, while Escape or Close cancels. Enter selects when search has exactly one match. Native HTML dialog behavior keeps keyboard focus inside and returns it to the Category button on closing. See [category picker](docs/decisions/0013-searchable-category-picker.md). All gender and size boxes start checked; the last checked box cannot be unchecked. Results randomly use one of the checked choices. Each selection change generates 10 names automatically. Settings update the URL and are restored on reload and browser Back/Forward; results remain temporary. Generate more adds another 10 names. Show details toggles all secondary information without changing names and stays selected across categories and shared links. The expressive cyberpunk design uses yellow, near-black, cyan, and coral, with shared CSS variables and scoped `Ui*` components. All flavors share one CSS theme for now; future themes can override its tokens without changing generation. Google Fonts loads Barlow Condensed and IBM Plex Mono when online, with local fallbacks. See [CSS themes](docs/decisions/0012-css-themes.md). See [UI requirements](docs/decisions/0004-mobile-first-ui.md).
+Mobile-first layout with native radio segmented controls for flavors, checkbox groups for given-name gender and corporation size, and a searchable grouped category picker. The picker opens full-screen on phones and as a centered panel on larger screens. Search matches category and group names; selecting a category closes it, while Escape or Close cancels. Enter selects when search has exactly one match. Native HTML dialog behavior keeps keyboard focus inside and returns it to the Category button on closing. See [category picker](docs/decisions/0013-searchable-category-picker.md). All gender and size boxes start checked; the last checked box cannot be unchecked. Results randomly use one of the checked choices. Each selection change generates 10 names automatically. Settings update the URL and are restored on reload and browser Back/Forward; results remain temporary. Generate more adds another 10 names. Show details toggles all secondary information without changing names and stays selected across categories and shared links. Themes follow the selected flavor automatically, including links, reload and Back/Forward. Generic and Shadowrun share the expressive default: yellow, near-black, cyan and coral with grain, halftone dots and small print marks inspired by CBR+PNK. CP 2020/77 uses a dark red/cyan theme with narrower typography inspired by the game UI. The layout and controls stay the same. Shared CSS variables and scoped `Ui*` components keep styling separate from generation. Vue binds the theme reactively; CSS `:has()` applies document colors without direct browser API calls. Google Fonts loads Barlow Condensed, IBM Plex Mono and Rajdhani when online, with local fallbacks. See [flavor themes](docs/decisions/0020-flavor-themes.md). See [UI requirements](docs/decisions/0004-mobile-first-ui.md).
 
 ## Edit the generator
 
@@ -33,16 +33,23 @@ Mobile-first layout with native radio segmented controls for flavors, checkbox g
 - `src/data/rl-names-modern.ts`: combines personal-name lists for the generators.
 - `src/data/*.ts`: other names and fragments, including preserved unused Shadowrun pools.
 - `src/patterns/cyberpunk/`: the copied and adapted generation patterns.
-- `src/builders/Bits.ts`: selection by category, type, gender, and tags.
+- `src/builders/Bits.ts`: typed, independent selection pools; `take()` selects and removes one entry. Filtering creates another independent pool.
 - `src/builders/namePools.ts`: name pools prepared in memory and reused for matching settings.
-- `src/generator/categories.ts`: available categories and batch generation.
+- `src/generator/categories.ts`: available categories and synchronous batch generation.
+- `src/patterns/cyberpunk/nationality/traditions.ts`: nationality IDs, labels, and naming rules in one definition per tradition.
+- `src/patterns/cyberpunk/nationality/availability.ts`: shared checks that a tradition has every name part its rules may request.
+- `src/generator/settings.ts`: shared normalization of links and control changes.
 - `src/generator/options.ts`: flavors and include/exclude rules.
 - `src/load.ts`: local data registry and setting filters.
 - `src/views/GeneratorView.vue`: generation and route coordination.
 - `src/components/ui/`: shared accessible controls and layout.
 - `src/components/generator/`: settings and results presentation.
 - `src/styles/base.css`: shared spacing and document defaults.
-- `src/styles/themes/cyberpunk.css`: shared visual theme, selected by `data-theme` in `index.html`.
+- `src/styles/themes/index.ts`: flavor-to-theme mapping, bound reactively on `UiShell`.
+- `src/styles/themes/cyberpunk.css`: default appearance for Generic and Shadowrun.
+- `src/styles/themes/cyberpunk2077.css`: CP 2020/77 appearance.
+
+Generator functions return results directly. Name-only helpers compose personal names, runner handles, and company names without generating unused descriptions. See [generator structure](docs/decisions/0019-synchronous-generator-structure.md).
 
 A setting-specific entry carries `shadowrun` or `cyberpunk2020-2077`. Shared entries have no flavor tag. Category tags (such as `gang` or `runner`) select pools; explicit exclusions take priority over flavor defaults and inclusions.
 

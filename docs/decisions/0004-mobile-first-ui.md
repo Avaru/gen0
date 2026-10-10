@@ -8,7 +8,7 @@ Status: Accepted
 - Design for small phones first, including 320 CSS pixels wide. Use a single column on phones and a settings/results split when there is room. Support zoom and long generated names without horizontal page scrolling.
 - Accessibility is a core requirement. Aim for WCAG 2.2 AA: visible keyboard focus, readable contrast, explicit labels, semantic headings and lists, native keyboard behavior, and at least 44px touch targets. Announce generation status to screen readers and show errors without reading the entire results list or moving focus unexpectedly.
 - Support current evergreen browsers. Older browsers are not a target.
-- Use the expressive shared cyberpunk theme described in decision 0012. Setting-specific themes come later; no dark/light switch is required.
+- Use the expressive cyberpunk themes described in decisions 0012 and 0020. Appearance follows the selected flavor; no dark/light switch is required.
 - Use reusable Vue components with the `Ui` prefix, such as `UiButton`. Keep page/layout CSS minimal; put presentation in components with scoped CSS.
 - Centralize repeated colors, spacing, radii, and control sizes in CSS custom properties. Global CSS covers tokens and basic document defaults.
 - Use VueUse when a behavior needs it. Do not add it merely to wrap behavior already covered by Vue, Vue Router, or native HTML.

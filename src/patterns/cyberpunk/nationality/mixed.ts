@@ -3,48 +3,46 @@ import { randomFrom } from '@/helper/randomFrom'
 import type { GenerationOptions } from '@/generator/options'
 import type { Generated } from '@/patterns/types'
 import { getNamePools, type NamePools } from '@/builders/namePools'
-import type { GENUS } from '@/builders/types'
-import { characters } from '../_secondary/charakters'
-import { NATIONALITY } from './byNationality'
-import { nationalName, type NameNationality } from './nameParts'
+import type { NameGender } from '@/data/nameTypes'
+import { characters } from '../_secondary/characters'
+import { nationalName } from './nameParts'
+import { traditionIds, type NameNationality } from './traditions'
+import { canComposeName } from './availability'
 
-const traditions: NameNationality[] = [...Object.values(NATIONALITY), 'arabic']
-type MixedSources = {
-  given: NameNationality[]
-  family: NameNationality[]
-}
-const sources = new WeakMap<NamePools, Map<GENUS, MixedSources>>()
+type MixedSource = { family: NameNationality; given: NameNationality[] }
+const sources = new WeakMap<NamePools, Map<NameGender, MixedSource[]>>()
 
-/** Mix two naming traditions while keeping one coherent surname structure. */
-export function mixedName(genus = randomGenus(true), options: GenerationOptions = {}): string {
+/** Choose a surname tradition uniformly, then a compatible different given tradition. */
+export function mixedName(
+  genus: NameGender = randomGenus(true),
+  options: GenerationOptions = {},
+): string {
   const pools = getNamePools(options)
-  const byGender = sources.get(pools) ?? new Map<GENUS, MixedSources>()
+  const byGender = sources.get(pools) ?? new Map<NameGender, MixedSource[]>()
   let available = byGender.get(genus)
   if (!available) {
-    const given = traditions.filter(nation => pools.get(nation, 'given', genus).length)
-    const family = traditions.filter(nation =>
-      pools.get(nation, 'family', genus).length && given.some(other => other !== nation),
-    )
-    available = { given, family }
+    available = traditionIds
+      .map((family) => ({
+        family,
+        given: traditionIds.filter(
+          (given) => given !== family && canComposeName(pools, family, genus, given),
+        ),
+      }))
+      .filter((source) => source.given.length > 0)
     byGender.set(genus, available)
     sources.set(pools, byGender)
   }
-  const { given: givenSources, family: familySources } = available
-  if (!familySources.length)
+  if (!available.length)
     throw new Error(
       'Mixed names need given names and surnames from two different traditions. Adjust the excluded tags or name lists.',
     )
-  const familyNation = randomFrom(familySources)
-  const givenNation = randomFrom(givenSources.filter((nation) => nation !== familyNation))
-  return nationalName(familyNation, genus, undefined, options, givenNation)
+  const source = randomFrom(available)
+  return nationalName(source.family, genus, undefined, options, randomFrom(source.given))
 }
 
-export async function mixed(
-  genus = randomGenus(true),
+export function mixed(
+  genus: NameGender = randomGenus(true),
   options: GenerationOptions = {},
-): Promise<Generated> {
-  return {
-    primary: mixedName(genus, options),
-    ...(await characters(true, undefined, options)),
-  }
+): Generated {
+  return { primary: mixedName(genus, options), ...characters(true, undefined, options) }
 }

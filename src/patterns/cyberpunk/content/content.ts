@@ -1,3 +1,4 @@
+import { capitalize } from '@/helper/capitalize'
 import Bits from '@/builders/Bits'
 import { weaponManufacturers } from '@/data/weapons'
 import { load, CONTENT, SHADOWRUN } from '@/load'
@@ -7,88 +8,93 @@ import type { Generated } from '@/patterns/types'
 import { randomFrom } from '@/helper/randomFrom'
 import { randomRounded } from '@/helper/randomRounded'
 import { p } from '@/helper/prob'
-import { corporations } from '../corporations/corporations'
+import { corporationName } from '../corporations/corporations'
 import { givenName } from '../_secondary/names'
 
-function pool(list: CONTENT, options: GenerationOptions) {
+function pool<List extends CONTENT>(list: List, options: GenerationOptions) {
   return new Bits(load(list, options))
 }
 
-async function company(options: GenerationOptions, manufacturersOnly = false) {
+function company(options: GenerationOptions, manufacturersOnly = false) {
   const known = new Bits(load(SHADOWRUN.NAMES, options), { tag: 'known-corporation' })
-  const manufacturers = known.values.filter(name =>
-    weaponManufacturers.includes(name),
-  )
+  const manufacturers = known.values.filter((name) => weaponManufacturers.includes(name))
   const available = manufacturersOnly ? manufacturers : known.values
   if (available.length && p(0.5)) return randomFrom(available)
-  return (await corporations(undefined, false, options)).primary
+  return corporationName(options)
 }
 
-export async function weapons(options: GenerationOptions = {}): Promise<Generated> {
+export function weapons(options: GenerationOptions = {}): Generated {
   const data = pool(CONTENT.WEAPONS, options)
-  const kind = data.type('kind').pick
-  const name = [await company(options, true), data.type('model').pick.value]
-  if (p(0.6)) name.push(`“${data.type('series').pick.value}”`)
-  const modifications = data.type('modification').filter({ none: kind.tags.includes('melee') ? ['firearm'] : [] })
+  const kind = data.type('kind').take()
+  const name = [company(options, true), data.type('model').take().value]
+  if (p(0.6)) name.push(`“${data.type('series').take().value}”`)
+  const modifications = data
+    .type('modification')
+    .filter({ none: kind.tags.includes('melee') ? ['firearm'] : [] })
   const details = [kind.value]
-  if (p(0.6) && modifications.count) details.push(modifications.pick.value)
-  if (p(0.3) && modifications.count) details.push(modifications.pick.value)
+  if (p(0.6) && modifications.count) details.push(modifications.take().value)
+  if (p(0.3) && modifications.count) details.push(modifications.take().value)
   return { primary: name.join(' '), details: details.join(', ') }
 }
 
-export async function foodMenu(options: GenerationOptions = {}): Promise<Generated> {
+export function foodMenu(options: GenerationOptions = {}): Generated {
   const data = pool(CONTENT.FOOD_MENU, options)
-  const name = [data.type('preparation').pick.uc, data.type('dish').pick.value]
-  if (p(0.33)) name.push(data.type('extra').pick.value)
-  const details = [data.type('detail').pick.uc, `${randomRounded(1, 30)} ${data.type('currency').pick.value}`]
+  const name = [capitalize(data.type('preparation').take().value), data.type('dish').take().value]
+  if (p(0.33)) name.push(data.type('extra').take().value)
+  const details = [
+    capitalize(data.type('detail').take().value),
+    `${randomRounded(1, 30)} ${data.type('currency').take().value}`,
+  ]
   return { primary: name.join(' '), details: details.join(', ') }
 }
 
-export async function shops(options: GenerationOptions = {}): Promise<Generated> {
+export function shops(options: GenerationOptions = {}): Generated {
   const data = pool(CONTENT.SHOPS, options)
-  const owner = p(0.5) ? await company(options) : `${await givenName(options)}’s`
+  const owner = p(0.5) ? company(options) : `${givenName(options)}’s`
   const name = [owner]
-  if (p(0.33)) name.push(data.type('description').pick.uc)
-  name.push(data.type('wares').pick.uc, data.type('kind').pick.uc)
-  const details = [data.type('outer').pick.uc]
-  if (p(0.5)) details.push(data.type('inner').pick.value)
+  if (p(0.33)) name.push(capitalize(data.type('description').take().value))
+  name.push(capitalize(data.type('wares').take().value), capitalize(data.type('kind').take().value))
+  const details = [capitalize(data.type('outer').take().value)]
+  if (p(0.5)) details.push(data.type('inner').take().value)
   return { primary: name.join(' '), details: details.join(', ') }
 }
 
-async function address(options: GenerationOptions) {
+function address(options: GenerationOptions) {
   const data = pool(CONTENT.DEVICE_DATA, options)
-  const name = new Bits(getNamePools(options).get(undefined, 'family')).pick.uc
-  return `${name} ${data.type('street-kind').pick.uc} ${randomRounded(1, 200)}`
+  const name = capitalize(new Bits(getNamePools(options).get(undefined, 'family')).take().value)
+  return `${name} ${capitalize(data.type('street-kind').take().value)} ${randomRounded(1, 200)}`
 }
 
-export async function deviceContents(options: GenerationOptions = {}): Promise<Generated> {
+export function deviceContents(options: GenerationOptions = {}): Generated {
   const data = pool(CONTENT.DEVICE_DATA, options)
-  const storage = data.type('storage').pick.uc
+  const storage = capitalize(data.type('storage').take().value)
   switch (randomFrom(['picture', 'access', 'file', 'journey', 'map'])) {
     case 'picture': {
-      const subject = data.type('subject').pick
-      const description = subject.tags.includes('people') ? `${data.type('person-description').pick.value} ` : ''
+      const subject = data.type('subject').take()
+      const description = subject.tags.includes('people')
+        ? `${data.type('person-description').take().value} `
+        : ''
       return {
-        primary: `${data.type('quality').pick.uc} ${data.type('recording').pick.value} of ${description}${subject.value}`,
-        details: `${storage}, labeled ${await givenName(options)}`,
+        primary: `${capitalize(data.type('quality').take().value)} ${data.type('recording').take().value} of ${description}${subject.value}`,
+        details: `${storage}, labeled ${givenName(options)}`,
       }
     }
     case 'access':
       return {
-        primary: `${data.type('access').pick.uc} for ${data.type('target').pick.value}`,
-        details: `${storage}, ${await company(options)}, ${await address(options)}`,
+        primary: `${capitalize(data.type('access').take().value)} for ${data.type('target').take().value}`,
+        details: `${storage}, ${company(options)}, ${address(options)}`,
       }
     case 'file':
       return {
-        primary: `${data.type('file').pick.uc} of ${data.type('device-description').pick.value} ${data.type('device').pick.value}`,
-        details: `${storage}, ${data.type('origin').pick.value} ${await company(options)}`,
+        primary: `${capitalize(data.type('file').take().value)} of ${data.type('device-description').take().value} ${data.type('device').take().value}`,
+        details: `${storage}, ${data.type('origin').take().value} ${company(options)}`,
       }
     case 'journey':
       return {
-        primary: `${data.type('journey').pick.uc} from ${await address(options)} to ${await address(options)}`,
+        primary: `${capitalize(data.type('journey').take().value)} from ${address(options)} to ${address(options)}`,
         details: storage,
       }
     default:
-      return { primary: `Map of ${await address(options)}`, details: storage }
+      return { primary: `Map of ${address(options)}`, details: storage }
   }
 }

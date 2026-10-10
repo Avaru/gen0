@@ -25,6 +25,29 @@ async function setup(url = '/') {
 }
 
 describe('name generator interface', () => {
+  it('restores flavor themes from links, selection changes, and Back/Forward', async () => {
+    const { wrapper, router } = await setup('/?flavor=cyberpunk2020-2077&category=runners')
+    const theme = () => wrapper.get('.shell').attributes('data-theme')
+    expect(theme()).toBe('cyberpunk2077')
+    await wrapper.get('input[name="flavor"][value="shadowrun"]').setValue(true)
+    await flushPromises()
+    expect(theme()).toBe('cyberpunk')
+    router.back()
+    await flushPromises()
+    expect(theme()).toBe('cyberpunk2077')
+    router.forward()
+    await flushPromises()
+    expect(theme()).toBe('cyberpunk')
+    await wrapper.get('input[name="flavor"][value="cyberpunk"]').setValue(true)
+    await flushPromises()
+    expect(theme()).toBe('cyberpunk')
+    wrapper.unmount()
+
+    const restored = await setup('/?flavor=unknown&category=runners')
+    expect(restored.wrapper.get('.shell').attributes('data-theme')).toBe('cyberpunk')
+    restored.wrapper.unmount()
+  })
+
   it('restores a continent link, switches its group with the flavor, and returns through history', async () => {
     const { wrapper, router } = await setup('/?category=continent-oceania&gender=f')
     expect(wrapper.get('#category').text()).toContain('Oceania')

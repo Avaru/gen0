@@ -1,7 +1,7 @@
 import type { RawBit } from '@/builders/types'
 
 // Adapted from namegenerator's saved cyberpunk data; see docs/decisions/0016-content-generators.md.
-export const foodMenuData: RawBit[] = [
+export const foodMenuData: RawBit<'currency' | 'detail' | 'dish' | 'extra' | 'preparation'>[] = [
   {"value": "Bacon", "type": "dish", "tags": [], "id": "food-menu-dish-1"},
   {"value": "Baguettes", "type": "dish", "tags": [], "id": "food-menu-dish-2"},
   {"value": "Beans", "type": "dish", "tags": [], "id": "food-menu-dish-3"},

@@ -4,9 +4,8 @@ import { gang } from '@/patterns/cyberpunk/gangs/gangs'
 import { runners } from '@/patterns/cyberpunk/runners/runners'
 import { restaurants, bars } from '@/patterns/cyberpunk/food/food'
 import { movies } from '@/patterns/cyberpunk/entertainment/entertainment'
-import { arabic } from '@/patterns/cyberpunk/nationality/arabic'
 import { mixed } from '@/patterns/cyberpunk/nationality/mixed'
-import { genericNationality, NATIONALITY } from '@/patterns/cyberpunk/nationality/byNationality'
+import { genericNationality } from '@/patterns/cyberpunk/nationality/byNationality'
 import type { Generated } from '@/patterns/types'
 import {
   corporationSizes,
@@ -17,12 +16,16 @@ import {
 import { randomFrom } from '@/helper/randomFrom'
 import { sovereignties } from '@/data/sovereignties'
 import { pendingNationalities } from '@/data/names/pending'
-import { bySovereignty, pendingSovereigntyPools } from '@/patterns/cyberpunk/nationality/bySovereignty'
+import {
+  bySovereignty,
+  pendingSovereigntyPools,
+} from '@/patterns/cyberpunk/nationality/bySovereignty'
 import { isEntryAvailable } from '@/builders/availability'
 import { getName } from './names'
 import type { RawBit } from '@/builders/types'
 import { continents } from '@/data/continents'
 import { byContinent } from '@/patterns/cyberpunk/nationality/byContinent'
+import { namingTraditions, traditionIds } from '@/patterns/cyberpunk/nationality/traditions'
 
 export interface Category {
   id: string
@@ -36,34 +39,22 @@ export interface Category {
   todo?: boolean
   pendingPools?: string[]
   coverage?: string
-  generate: (options: GenerationOptions) => Promise<Generated>
+  generate: (options: GenerationOptions) => Generated
 }
-const nationalities: [NATIONALITY, string][] = [
-  [NATIONALITY.AMERICAN_US, 'US American'],
-  [NATIONALITY.BRITISH, 'British'],
-  [NATIONALITY.CHINESE, 'Chinese'],
-  [NATIONALITY.DUTCH, 'Dutch'],
-  [NATIONALITY.GERMAN, 'German'],
-  [NATIONALITY.FRENCH, 'French'],
-  [NATIONALITY.GREEK, 'Greek'],
-  [NATIONALITY.HINDI, 'Hindi-speaking Indian'],
-  [NATIONALITY.ITALIAN, 'Italian'],
-  [NATIONALITY.JAPANESE, 'Japanese'],
-  [NATIONALITY.KOREAN, 'Korean'],
-  [NATIONALITY.POLISH, 'Polish'],
-  [NATIONALITY.RUSSIAN, 'Russian'],
-  [NATIONALITY.SPANISH, 'Spanish'],
-  [NATIONALITY.SWEDISH, 'Swedish'],
-  [NATIONALITY.TAMIL, 'Tamil'],
-  [NATIONALITY.TURKISH, 'Turkish'],
-  [NATIONALITY.UKRAINIAN, 'Ukrainian'],
-  [NATIONALITY.VIETNAMESE, 'Vietnamese'],
-]
 function selectedGender(options: GenerationOptions) {
   return options.genders
     ? randomFrom(normalizeSelections(options.genders, givenNameGenders))
     : options.genus
 }
+
+const traditionCategories: Category[] = traditionIds.map((nation) => ({
+  id: nation,
+  label: namingTraditions[nation].label,
+  group: 'Names by nationality',
+  gender: true,
+  generate: (options: GenerationOptions) =>
+    genericNationality(nation, selectedGender(options), undefined, options),
+}))
 
 const nationalityCategories: Category[] = [
   {
@@ -73,30 +64,17 @@ const nationalityCategories: Category[] = [
     gender: true,
     generate: (options) => mixed(selectedGender(options), options),
   },
-  ...nationalities.map(([nation, label]) => ({
-    id: nation,
-    label,
-    group: 'Names by nationality',
-    gender: true,
-    generate: (options: GenerationOptions) =>
-      genericNationality(nation, selectedGender(options), undefined, options),
-  })),
-  ...pendingNationalities.map(pool => ({
+  ...traditionCategories.filter((category) => category.id !== 'arabic'),
+  ...pendingNationalities.map((pool) => ({
     id: pool.id,
     label: `${pool.label} TODO`,
     group: 'Names by nationality',
     todo: true,
-    generate: async (): Promise<Generated> => {
+    generate: (): Generated => {
       throw new Error(`${pool.label} names are TODO. This name pool is empty.`)
     },
   })),
-  {
-    id: 'arabic',
-    label: 'Arabic',
-    group: 'Names by nationality',
-    gender: true,
-    generate: (options) => arabic(selectedGender(options), options),
-  },
+  ...traditionCategories.filter((category) => category.id === 'arabic'),
 ]
 
 export const categories: Category[] = [
@@ -106,13 +84,12 @@ export const categories: Category[] = [
     group: 'Organizations',
     corporationSize: true,
     generate: (options) =>
-      corporations(
-        options.corporationSizes
+      corporations({
+        ...options,
+        corporationSize: options.corporationSizes
           ? randomFrom(normalizeSelections(options.corporationSizes, corporationSizes))
           : options.corporationSize,
-        false,
-        options,
-      ),
+      }),
   },
   {
     id: 'known-corporations',
@@ -128,20 +105,29 @@ export const categories: Category[] = [
   { id: 'weapons', label: 'Weapons', group: 'Equipment', generate: weapons },
   { id: 'food-menu', label: 'Food menu', group: 'Food and drink', generate: foodMenu },
   { id: 'shops', label: 'Shops', group: 'Places', generate: shops },
-  { id: 'device-data', label: 'Device data', flavorNames: { shadowrun: 'Commlink data', 'cyberpunk2020-2077': 'Shard data' }, group: 'Equipment', generate: deviceContents },
+  {
+    id: 'device-data',
+    label: 'Device data',
+    flavorNames: { shadowrun: 'Commlink data', 'cyberpunk2020-2077': 'Shard data' },
+    group: 'Equipment',
+    generate: deviceContents,
+  },
   { id: 'movies', label: 'Movies', group: 'Entertainment', generate: movies },
-  ...sovereignties.map(state => ({
+  ...sovereignties.map((state) => ({
     id: `sovereignty-${state.id}`,
     label: state.value,
     flavorNames: state.flavorNames,
     tags: state.tags,
     group: 'Names by sovereignty',
     gender: true,
-    todo: state.mix.every(part => pendingNationalities.some(pool => pool.id === part.nationality)),
+    todo: state.mix.every((part) =>
+      pendingNationalities.some((pool) => pool.id === part.nationality),
+    ),
     pendingPools: pendingSovereigntyPools(state),
-    generate: (options: GenerationOptions) => bySovereignty(state.id, selectedGender(options), options),
+    generate: (options: GenerationOptions) =>
+      bySovereignty(state.id, selectedGender(options), options),
   })),
-  ...continents.map(continent => ({
+  ...continents.map((continent) => ({
     id: continent.id,
     label: continent.value,
     tags: continent.tags,
@@ -149,28 +135,36 @@ export const categories: Category[] = [
     gender: true,
     pendingPools: pendingSovereigntyPools(continent),
     coverage: continent.coverage,
-    generate: (options: GenerationOptions) => byContinent(continent.id, selectedGender(options), options),
+    generate: (options: GenerationOptions) =>
+      byContinent(continent.id, selectedGender(options), options),
   })),
   ...nationalityCategories,
 ]
 
 export function isCategoryAvailable(category: Category, options: GenerationOptions = {}): boolean {
-  return (!category.requiresFlavor || !!options.flavor && options.flavor !== 'cyberpunk') &&
+  return (
+    (!category.requiresFlavor || (!!options.flavor && options.flavor !== 'cyberpunk')) &&
     isEntryAvailable({ tags: category.tags ?? [] }, options)
+  )
 }
 
 export function availableCategories(options: GenerationOptions = {}): Category[] {
-  return categories.filter(category => isCategoryAvailable(category, options)).map(category => ({
-    ...category,
-    label: getName({ value: category.label, tags: category.tags ?? [], flavorNames: category.flavorNames }, options.flavor),
-  }))
+  return categories
+    .filter((category) => isCategoryAvailable(category, options))
+    .map((category) => ({
+      ...category,
+      label: getName(
+        { value: category.label, tags: category.tags ?? [], flavorNames: category.flavorNames },
+        options.flavor,
+      ),
+    }))
 }
 
-export async function generateNames(
+export function generateNames(
   categoryId: string,
   count: number,
   options: GenerationOptions = {},
-): Promise<Generated[]> {
+): Generated[] {
   const category = categories.find((item) => item.id === categoryId)
   if (!category) throw new Error('Choose an available category.')
   if (!isCategoryAvailable(category, options))
@@ -179,7 +173,7 @@ export async function generateNames(
     throw new Error('Choose between 1 and 100 names.')
   const results: Generated[] = []
   for (let i = 0; i < count; i++) {
-    const result = await category.generate(options)
+    const result = category.generate(options)
     result.primary = result.primary.replace(/\s+/g, ' ').trim()
     results.push(result)
   }
