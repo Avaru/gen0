@@ -62,6 +62,8 @@ label {
   flex: 1 1 auto;
   min-width: 0;
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 input {
   position: absolute;

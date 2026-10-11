@@ -85,12 +85,19 @@ label {
   border-radius: var(--radius-sm);
   background: var(--color-subtle);
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
   font-size: var(--font-control-size);
   font-weight: 600;
 }
 label:has(input:checked) {
   border-color: var(--color-signal);
   background: var(--color-surface);
+}
+label:hover:has(input:not(:disabled)) {
+  color: var(--color-signal);
+  border-color: var(--color-signal);
+  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
 }
 label:has(input:disabled) {
   color: var(--color-disabled);
@@ -185,6 +192,13 @@ input:disabled::after {
 }
 [data-theme='cyberpunk2077'] input:disabled::after {
   background: var(--color-disabled);
+}
+[data-theme='cyberpunk2077'] label:hover:has(input:not(:disabled)) {
+  background: transparent;
+}
+[data-theme='cyberpunk2077'] label:hover input:not(:disabled) {
+  border-color: var(--color-signal);
+  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
 }
 @media (forced-colors: active) {
   input,

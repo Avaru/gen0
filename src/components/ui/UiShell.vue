@@ -30,7 +30,7 @@ const navigation = computed(() => {
   <div class="shell" :data-theme="theme">
     <header>
       <nav aria-label="Main navigation">
-        <RouterLink :to="navigation">{{ isAbout ? 'Back to generator' : 'About' }}</RouterLink>
+        <RouterLink :to="navigation"><span class="link-label">{{ isAbout ? 'Back to generator' : 'About' }}</span></RouterLink>
       </nav>
       <span class="brand">gen 0</span><span class="caption">Cyberpunk name generator</span>
       <a
@@ -39,7 +39,7 @@ const navigation = computed(() => {
         target="_blank"
         rel="noopener noreferrer"
         title="View gen0 on GitHub (opens in a new tab)"
-      ><UiScrambleText :text="`#${version}`" /></a>
+      ><UiScrambleText class="link-label" :text="`#${version}`" /></a>
     </header>
     <main id="main" ref="main" tabindex="-1"><slot /></main>
   </div>
@@ -49,6 +49,31 @@ const navigation = computed(() => {
   max-width: 74rem;
   margin-inline: auto;
   padding: var(--space-6) var(--space-4) var(--space-8);
+}
+.shell :deep(a) {
+  color: inherit;
+  text-decoration: none;
+}
+.shell :deep(.link-label) {
+  display: inline-block;
+  padding: 0 1px;
+  border-bottom: 1px solid currentColor;
+  background-image: linear-gradient(var(--color-link-background), var(--color-link-background));
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  transition: var(--link-transition);
+}
+.shell :deep(a:hover .link-label),
+.shell :deep(a:focus-visible .link-label) {
+  color: var(--color-accent);
+  background-size: 100% 100%;
+  border-bottom-color: var(--color-signal);
+}
+.shell :deep(a.version .link-label) {
+  border-bottom: 0;
+}
+.shell :deep(a:focus-visible) {
+  outline-color: var(--color-on-page);
 }
 header {
   display: flex;
@@ -71,13 +96,8 @@ nav a {
   display: inline-flex;
   align-items: center;
   min-height: var(--control-height);
-  padding-inline: var(--space-2);
-  color: inherit;
+  padding-inline: 1px;
   font-weight: 600;
-  text-underline-offset: 0.2em;
-}
-nav a:focus-visible {
-  outline-color: var(--color-on-page);
 }
 main:focus {
   outline: none;
@@ -106,7 +126,6 @@ header::before {
   position: absolute;
   bottom: var(--space-2);
   right: 0;
-  color: inherit;
   font-size: 0.625rem;
   line-height: 1;
   white-space: nowrap;

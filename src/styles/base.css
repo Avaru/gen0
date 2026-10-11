@@ -15,10 +15,13 @@
   --control-height: 2.75rem;
   --control-color-transition: background-color 160ms ease-out, color 160ms ease-out,
     border-color 160ms ease-out;
+  --link-transition: background-size 180ms ease-out, color 120ms ease-out,
+    border-color 120ms ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
   :root {
     --control-color-transition: none;
+    --link-transition: none;
   }
 }
 * {

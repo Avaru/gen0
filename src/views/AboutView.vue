@@ -29,14 +29,8 @@ const paragraphs = [
         target="_blank"
         rel="noopener noreferrer"
         title="View gen0 on GitHub (opens in a new tab)"
-      ><UiScrambleText text="GitHub" /></a>.
+      ><UiScrambleText class="link-label" text="GitHub" /></a>.
     </p>
     <p><UiScrambleText :text="dataUseNotice" /></p>
   </UiArticle>
 </template>
-<style scoped>
-a {
-  color: inherit;
-  text-underline-offset: 0.2em;
-}
-</style>

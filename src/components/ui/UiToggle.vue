@@ -15,6 +15,7 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
 </template>
 <style scoped>
 label {
+  transition: var(--control-color-transition);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -24,6 +25,8 @@ label {
   min-height: var(--control-height);
   min-width: var(--control-height);
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
   font-size: 0.8125rem;
   font-weight: 650;
 }
@@ -62,6 +65,18 @@ input:checked + .track::after {
   margin-left: auto;
   background: var(--color-on-accent);
 }
+label:hover {
+  color: var(--color-signal);
+}
+label:hover .track {
+  border-color: var(--color-signal);
+}
+label:hover input:not(:checked) + .track {
+  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
+}
+label:hover input:checked + .track {
+  background: var(--color-accent-hover);
+}
 input:focus-visible + .track {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
@@ -97,6 +112,12 @@ input:focus-visible + .track {
 }
 [data-theme='cyberpunk2077'] input:checked + .track::after {
   background: var(--color-signal);
+}
+[data-theme='cyberpunk2077'] label:hover input + .track {
+  background: var(--color-signal);
+}
+[data-theme='cyberpunk2077'] label:hover .track::before {
+  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
 }
 [data-theme='cyberpunk2077'] input:focus-visible ~ span:last-child {
   outline: 3px solid var(--color-focus);

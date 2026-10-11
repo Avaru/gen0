@@ -82,7 +82,9 @@ function enter() {
       @click="open"
     >
       <span :id="`${id}-value`">{{ selected?.label ?? 'Choose category' }}</span>
-      <span aria-hidden="true">↗</span>
+      <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <path d="M7 17 17 7M7 7h10v10" />
+      </svg>
     </button>
     <dialog
       :id="`${id}-dialog`"
@@ -175,9 +177,9 @@ input {
   text-align: left;
   overflow-wrap: anywhere;
 }
-.trigger > :last-child {
+.arrow {
+  flex-shrink: 0;
   color: var(--color-signal);
-  font-size: 1.25rem;
 }
 button:hover {
   border-color: var(--color-signal);
