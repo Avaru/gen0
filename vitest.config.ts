@@ -7,6 +7,8 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'jsdom',
+      // Keep CI's large name-data imports from competing across too many workers.
+      maxWorkers: process.env.CI || process.env.VERCEL ? 2 : undefined,
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
     },
