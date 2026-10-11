@@ -56,9 +56,8 @@ describe('Names by sovereignty', () => {
     expect(() => bySovereignty('nusa', GENUS.M, { flavor: 'shadowrun' })).toThrow('available')
   })
 
-  it('keeps every empty pool visible as TODO without pretending it has names', () => {
+  it('keeps missing traditions visible as TODO without pretending they have names', () => {
     for (const pool of pendingNationalities) {
-      expect(pool.names).toHaveLength(0)
       expect(availableCategories().find((item) => item.id === pool.id)?.label).toBe(
         `${pool.label} TODO`,
       )

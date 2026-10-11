@@ -1,29 +1,33 @@
-# 0006: Typed and linked personal names
+# 0006: Personal names and regional mixes
 
-Date: 2026-10-10
-Status: Accepted
+Keep typed personal-name lists by tradition under `src/data/names/`, combined by `rl-names-modern.ts`. Naming IDs, labels, order, and probabilities live together in `nationality/traditions.ts`, so categories and builders use the same rules.
 
-## Reason
+- Preserve stored compound names and diacritics. Gender is masculine/feminine or omitted for invariant forms. Deduplicate spellings only in pools that require distinct parts, preserving the last stored entry.
+- Keep IDs on given names referenced by patronymics or reviewed nicknames. Russian `fatherNameId` links and spelling aliases support explicit father lookup; unsupported fathers raise errors. Keep `father:*` exclusion tags. Existing `formGroupId` surname pairs and `givenNameIds` nickname links describe reviewed relationships; they do not drive generation.
+- Select gender once per person. Reuse the same given-name/surname helpers in direct, Mixed, regional, and nested generators; pass flavor/tag options through every selection.
 
-Keep additions such as gendered surnames and Russian patronymics easy to edit without replacing the shared generator or adding a separate rule language.
+| Tradition | Current display rule |
+| --- | --- |
+| British, US American, German | Given + surname; 15% second given, 15% second surname, hyphen/space equally likely |
+| French | Given + surname; 10% second given, 15% second surname joined by space |
+| Italian | Given + surname; 15% second given, 5% second surname joined by space |
+| Russian | Given + surname, with a patronymic 75% of the time |
+| Polish | Given + surname; 25% second given, 10% hyphenated second surname |
+| Greek | Given + surname; 10% second given |
+| Spanish | One or two given names (15% second), then two space-separated surnames |
+| Chinese, Japanese, Korean, Vietnamese | Surname first, then one complete stored given-name entry; no random extra names |
+| Arabic | Given + surname; 50% includes father's male given name, half with ibn/bin or bint |
+| Dutch, Swedish, Turkish, Ukrainian, Hindi | One given + one surname; Ukrainian omits patronymics |
+| Tamil | Distinct father's full given name + person's given name; no hereditary surname pool |
 
-## Decision
+An optional runner nickname follows surname-first/Tamil names and precedes surnames elsewhere. Informal Russian names remain separate nickname entries. Probabilities are adjustable display choices, not demographic estimates; these rules do not cover every cultural or legal naming practice.
 
-- Store personal names by tradition under `src/data/names/`. `rl-names-modern.ts` combines those lists for existing generators. Preserve all 19,478 entries and their original values, types, genders, and tags.
-- Use `NameEntry` from `src/data/nameTypes.ts`. Name parts have a fixed set of types; name gender is `m`, `f`, or omitted for an invariant form. Other generator entries continue using `RawBit`.
-- Keep a stable `id` only on given names referenced by `fatherNameId` or `givenNameIds`. Keep these IDs when correcting spellings. Ordinary names and duplicate inherited rows need no IDs; this does not remove entries or change their selection weight.
-- Only related male/female surname forms have a `formGroupId` and share the group, including multiple inherited male spellings with the same female form. Invariant surnames remain usable by either gender.
-- Patronymics reference a male given-name entry through `fatherNameId`. Supported alternative father spellings are stored as `aliases` on that referenced entry. Explicit father-name lookup uses the link rather than parsing a tag.
-- Retain the existing `father:*` tags for compatibility with include/exclude options.
-- Nicknames may reference formal given names through `givenNameIds`. Link Dima, Misha, and Vanya to the already established formal names. Leave other inherited informal forms unlinked until their relationships are reviewed.
-- Keep composition order and optional-part probabilities in the nationality functions. Preserve flavor filtering, explicit options through nested generation, and error behavior for empty pools or unsupported fathers.
+Mixed chooses a surname tradition uniformly, then a different compatible given-name tradition. Surname rules determine order and variation; extra given names use the given-name tradition, while Russian patronymics and Arabic fathers use the surname tradition. Tamil supplies given names only. Fewer than two suitable traditions raises an error.
 
-## Limits
+Regional mixes choose one complete naming tradition per person using editable relative weights in `src/data/sovereignties.ts` and `continents.ts`. Weights are generator choices, not canon population shares. Umbrella regions are browsing conveniences. Excluded, empty, and incompatible traditions are skipped; exhausted mixes explain what is missing. Generic offers six continent choices; setting flavors use their tagged states and alternate labels. Regional and Mixed choices do not imply citizenship or ancestry.
 
-The combined list is now grouped by tradition. Random selection keeps the same entries and weights, but the same random seed can produce a different result where a generator samples across the whole list. The lists still ship with the app, and no family generator or automatic nickname selection is added.
+Pending traditions remain listed in `src/data/names/pending.ts`. They require sourced names and composition rules before activation. Do not substitute the inherited general Native American pool for specific peoples. Africa, South America, and Oceania have particularly limited coverage; show the existing coverage notes.
 
-Links describe the relationships already represented in the data; they do not constitute an editorial audit of every inherited spelling or cultural convention.
+Exact data sources, reuse terms, spelling conversions, and limits remain in [personal-name sources](../name-data-sources.md) and [regional sources](../sovereignty-name-sources.md); required notices ship in `public/name-data-notices.txt`.
 
-## Cleanup
-
-Updated 2026-10-10 at the user’s request: remove unused entry IDs and surname group IDs. Retain only existing name relationships; random selection does not require identity fields.
+Construction references: [W3C](https://www.w3.org/International/questions/qa-personal-names), [Spain](https://www.gov.uk/government/publications/spain-knowledge-base-profile/spain-knowledge-base-profile), [Arabic naming guide](https://www.fbiic.gov/public/2008/nov/Naming_practice_guide_UK_2006.pdf), [UK](https://www.gov.uk/government/publications/change-of-name-passport-applications-caseworker-guidance/names-change-of-name-passport-applications-accessible), [US](https://fam.state.gov/fam/08fam/08fam040301.html), [Germany](https://www.bmj.de/SharedDocs/Pressemitteilungen/DE/2025/0429_Namensrecht.html), [France](https://www.service-public.gouv.fr/particuliers/vosdroits/F10505), [Italy](https://www.cortecostituzionale.it/scheda-pronuncia/2022/131), and [India](https://www.gov.uk/government/publications/india-knowledge-base-profile/india-knowledge-base-profile).

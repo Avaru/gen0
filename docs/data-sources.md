@@ -9,4 +9,4 @@ The combined list contains 431 distinct source pages, deduplicated by URL. Only 
 
 This is the union of these community-maintained indexes, not a guarantee of every corporation in every sourcebook or game. The indexes may contain historical, real-world, or noncanonical companies. Both eras deliberately share one flavor, so the list is not filtered by in-world date.
 
-Shadowrun data was migrated from pgen's local lists. Its original source content has not undergone a full editorial or canon review.
+Shadowrun data was migrated from itemcards.com's local lists. Its original source content has not undergone a full editorial or canon review.

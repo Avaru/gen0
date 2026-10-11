@@ -1,5 +1,5 @@
 import { randomFrom } from '@/helper/randomFrom'
-import type { BitFilter, RawBit, GENUS } from './types'
+import type { BitFilter, RawBit } from './types'
 
 /** An independent selection pool. Filtering creates another independent pool. */
 export default class Bits<Entry extends RawBit = RawBit> {
@@ -22,8 +22,7 @@ export default class Bits<Entry extends RawBit = RawBit> {
           (!filter.one || filter.one.some((tag) => bit.tags.includes(tag))) &&
           (!filter.all || filter.all.every((tag) => bit.tags.includes(tag))) &&
           (!filter.none || !filter.none.some((tag) => bit.tags.includes(tag))) &&
-          (!filter.genus || bit.genus === filter.genus) &&
-          (!filter.required || filter.required.every((key) => bit[key] !== undefined)),
+          (!filter.genus || bit.genus === filter.genus),
       )
       .map((bit) => ({ ...bit, tags: [...bit.tags] }))
   }
@@ -33,9 +32,6 @@ export default class Bits<Entry extends RawBit = RawBit> {
   }
   tag(tag: string): Bits<Entry> {
     return this.filter({ tag })
-  }
-  genus(genus: GENUS): Bits<Entry> {
-    return this.filter({ genus })
   }
   type(type: NonNullable<Entry['type']>): Bits<Entry> {
     return this.filter({ type })

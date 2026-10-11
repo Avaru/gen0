@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import type { Theme } from '@/styles/themes'
 import { useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { computed, nextTick, useTemplateRef, watch } from 'vue'
 import { settingsFromRoute, settingsPath, settingsQuery } from '@/generator/settings'
+import UiScrambleText from '@/components/ui/UiScrambleText.vue'
 defineProps<{ theme: Theme }>()
+const version = __APP_VERSION__
 const route = useRoute()
+const main = useTemplateRef<HTMLElement>('main')
 const isAbout = computed(() => route.matched.some((record) => record.path.endsWith('/about')))
+// Announce the new page without taking focus from controls on settings changes.
+watch(isAbout, async () => {
+  await nextTick()
+  main.value?.focus()
+})
 const navigation = computed(() => {
   const settings = settingsFromRoute(route)
   return {
@@ -21,10 +29,16 @@ const navigation = computed(() => {
       <nav aria-label="Main navigation">
         <RouterLink :to="navigation">{{ isAbout ? 'Back to generator' : 'About' }}</RouterLink>
       </nav>
-      <span class="brand">gen 0</span
-      ><span class="caption">Cyberpunk name generator</span>
+      <span class="brand">gen 0</span><span class="caption">Cyberpunk name generator</span>
+      <a
+        class="version"
+        href="https://github.com/Avaru/gen0"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="View gen0 on GitHub (opens in a new tab)"
+      ><UiScrambleText :text="`#${version}`" /></a>
     </header>
-    <main id="main" tabindex="-1"><slot /></main>
+    <main id="main" ref="main" tabindex="-1"><slot /></main>
   </div>
 </template>
 <style scoped>
@@ -59,6 +73,10 @@ nav a {
   font-weight: 600;
   text-underline-offset: 0.2em;
 }
+nav a:focus-visible,
+main:focus-visible {
+  outline-color: var(--color-on-page);
+}
 header::after {
   content: '';
   position: absolute;
@@ -78,6 +96,15 @@ header::before {
   height: 0.625rem;
   background: var(--theme-panel-edge);
   pointer-events: none;
+}
+.version {
+  position: absolute;
+  bottom: var(--space-2);
+  right: 0;
+  color: inherit;
+  font-size: 0.625rem;
+  line-height: 1;
+  white-space: nowrap;
 }
 .brand {
   font-size: clamp(5rem, 16vw, 9rem);

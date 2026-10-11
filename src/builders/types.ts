@@ -28,5 +28,4 @@ export interface BitFilter<Entry extends RawBit = RawBit> {
   none?: string[]
   type?: Entry['type']
   genus?: GENUS
-  required?: (keyof Entry)[]
 }

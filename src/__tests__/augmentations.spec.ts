@@ -36,11 +36,13 @@ describe('augmentations', () => {
   })
 
   it('describes obscure terms but leaves self-explanatory types without descriptions', () => {
-    for (const id of ['cyberarm', 'thermal-vision', 'armor', 'strength', 'air-tank']) {
-      expect(augmentationData.find((entry) => entry.id === id)?.details).toBeUndefined()
+    for (const value of ['Cyberarm', 'Thermal vision', 'Subdermal armor', 'Augmented strength', 'Internal air tank']) {
+      const entry = augmentationData.find((entry) => entry.value === value)
+      expect(entry).toBeDefined()
+      expect(entry?.details).toBeUndefined()
     }
-    for (const id of ['sandevistan', 'kerenzikov', 'skillwires', 'simrig']) {
-      expect(augmentationData.find((entry) => entry.id === id)?.details).toBeTruthy()
+    for (const value of ['Sandevistan', 'Kerenzikov', 'Skillwires', 'Simrig']) {
+      expect(augmentationData.find((entry) => entry.value === value)?.details).toBeTruthy()
     }
   })
 
@@ -90,17 +92,21 @@ describe('augmentations', () => {
   })
 
   it('offers the full augmentation pool in every flavor and keeps alternate names', () => {
-    const ids = augmentationData.map((entry) => entry.id)
+    const values = augmentationData.map((entry) => entry.value)
     for (const { id: flavor } of flavors) {
-      expect(load(CONTENT.AUGMENTATIONS, { flavor }).map((entry) => entry.id)).toEqual(ids)
+      const entries = load(CONTENT.AUGMENTATIONS, { flavor })
+      expect(entries.map((entry) => entry.value)).toEqual(
+        augmentationData.map((entry) => entry.flavorNames?.[flavor] ?? entry.value),
+      )
     }
     expect(
       load(CONTENT.AUGMENTATIONS, {
         flavor: 'shadowrun',
         includeTags: ['shadowrun', 'cyberpunk2020-2077'],
         excludeTags: ['shadowrun', 'cyberpunk2020-2077'],
-      }).map((entry) => entry.id),
-    ).toEqual(ids)
+      }).map((entry) => entry.value),
+    ).toEqual(augmentationData.map((entry) => entry.flavorNames?.shadowrun ?? entry.value))
+    expect(load(CONTENT.AUGMENTATIONS).map((entry) => entry.value)).toEqual(values)
     expect(
       load(CONTENT.AUGMENTATIONS, { flavor: 'shadowrun' }).find((entry) => entry.id === 'armor')
         ?.value,

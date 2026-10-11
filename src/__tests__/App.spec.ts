@@ -26,7 +26,7 @@ async function chooseCategory(wrapper: ReturnType<typeof mount>, value: string) 
   await wrapper.get(`[data-category="${value}"]`).trigger('click')
 }
 
-async function setup(url = '/') {
+async function setup(url = '/', attachTo?: HTMLElement) {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
@@ -38,12 +38,35 @@ async function setup(url = '/') {
   })
   await router.push(url)
   await router.isReady()
-  const wrapper = mount(App, { global: { plugins: [router] } })
+  const wrapper = mount(App, { attachTo, global: { plugins: [router] } })
   await flushPromises()
   return { wrapper, router }
 }
 
 describe('name generator interface', () => {
+  it('focuses new page content while keeping focus on controls for setting changes', async () => {
+    const { wrapper, router } = await setup('/cyberpunk/german', document.body)
+    try {
+      const flavor = wrapper.get('input[name="flavor"][value="cyberpunk"]').element as HTMLInputElement
+      flavor.focus()
+      await router.push('/cyberpunk/russian')
+      await flushPromises()
+      expect(document.activeElement).toBe(flavor)
+      await wrapper.get('nav a').trigger('click')
+      await flushPromises()
+      expect(wrapper.get('h1').text()).toBe('About gen 0')
+      expect(document.activeElement).toBe(wrapper.get('main').element)
+      await wrapper.get('nav a').trigger('click')
+      await flushPromises()
+      expect(document.activeElement).toBe(wrapper.get('main').element)
+      router.back()
+      await flushPromises()
+      expect(wrapper.get('h1').text()).toBe('About gen 0')
+      expect(document.activeElement).toBe(wrapper.get('main').element)
+    } finally {
+      wrapper.unmount()
+    }
+  })
   it('restores path settings and query options on direct links and fresh app loads', async () => {
     const url = '/shadowrun/german?gender=f&flavor=cyberpunk&category=corporations'
     const { wrapper, router } = await setup(url)

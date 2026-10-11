@@ -102,4 +102,21 @@ input:focus-visible + .track {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
+@media (forced-colors: active) {
+  input {
+    position: static;
+    width: 1.25rem;
+    height: 1.25rem;
+    opacity: 1;
+    appearance: auto;
+  }
+  .track,
+  [data-theme='cyberpunk2077'] .track {
+    display: none;
+  }
+  label:has(input:focus-visible) {
+    outline: 3px solid Highlight;
+    outline-offset: 3px;
+  }
+}
 </style>

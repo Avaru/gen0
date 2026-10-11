@@ -126,7 +126,7 @@ describe('migrated generator', () => {
       bit.tags.includes('known-corporation'),
     )
     expect(known).toHaveLength(cyberpunkCorporations.length)
-    expect(new Set(known.map((bit) => bit.id)).size).toBe(known.length)
+    expect(new Set(known.map((bit) => bit.source)).size).toBe(known.length)
     expect(known.some((bit) => bit.value === 'Arasaka')).toBe(true)
     expect(known.some((bit) => bit.value === 'Aztechnology')).toBe(false)
     expect(

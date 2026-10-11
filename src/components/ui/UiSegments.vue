@@ -124,4 +124,26 @@ input:focus-visible + span {
     font-size: min(var(--font-small-control-size), 0.75rem);
   }
 }
+@media (forced-colors: active) {
+  label {
+    align-items: center;
+  }
+  input {
+    position: static;
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    opacity: 1;
+    appearance: auto;
+  }
+  span {
+    white-space: normal;
+    padding-inline: var(--space-1);
+  }
+  label:has(input:focus-visible) {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+}
 </style>
