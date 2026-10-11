@@ -1,3 +1,4 @@
+import { cities, streets } from '@/patterns/cyberpunk/places/places'
 import { augmentations } from '@/patterns/cyberpunk/augmentations/augmentations'
 import { weapons, foodMenu, shops, deviceContents } from '@/patterns/cyberpunk/content/content'
 import { corporations, knownCorporation } from '@/patterns/cyberpunk/corporations/corporations'
@@ -108,6 +109,8 @@ export const categories: Category[] = [
   { id: 'weapons', label: 'Weapons', group: 'Equipment', generate: weapons },
   { id: 'food-menu', label: 'Food menu', group: 'Food and drink', generate: foodMenu },
   { id: 'shops', label: 'Shops', group: 'Places', generate: shops },
+  { id: 'cities', label: 'Cities', group: 'Places', generate: cities },
+  { id: 'streets', label: 'Streets & plazas', group: 'Places', generate: streets },
   {
     id: 'device-data',
     label: 'Device data',

@@ -8,6 +8,7 @@ import type { Generated } from '@/patterns/types'
 import { randomFrom } from '@/helper/randomFrom'
 import { randomRounded } from '@/helper/randomRounded'
 import { p } from '@/helper/prob'
+import { rng } from '@/helper/rng'
 import { corporationName } from '../corporations/corporations'
 import { givenName } from '../_secondary/names'
 import { weaponName } from './weaponName'
@@ -68,15 +69,31 @@ function address(options: GenerationOptions) {
 export function deviceContents(options: GenerationOptions = {}): Generated {
   const data = pool(CONTENT.DEVICE_DATA, options)
   const storage = capitalize(data.type('storage').take().value)
-  switch (randomFrom(['picture', 'access', 'file', 'journey', 'map'])) {
-    case 'picture': {
-      const subject = data.type('subject').take()
+  // Keep mixed recordings/access at 30%; move 5 points from files to people.
+  const roll = rng()
+  const kind = roll < 0.3 ? 'picture'
+    : roll < 0.6 ? 'access'
+    : roll < 0.85 ? 'file'
+    : roll < 0.9 ? 'people'
+    : roll < 0.95 ? 'journey'
+    : 'map'
+  switch (kind) {
+    case 'picture':
+    case 'people': {
+      const subjects = data.type('subject')
+      const subject = (kind === 'people' ? subjects.tag('people') : subjects).take()
       const description = subject.tags.includes('people')
         ? `${data.type('person-description').take().value} `
         : ''
+      const name = subject.tags.includes('people') && p(0.5)
+        ? givenName({
+            ...options,
+            genus: subject.genus === 'm' || subject.genus === 'f' ? subject.genus : undefined,
+          })
+        : undefined
       return {
         primary: `${capitalize(data.type('quality').take().value)} ${data.type('recording').take().value} of ${description}${subject.value}`,
-        details: `${storage}, labeled ${givenName(options)}`,
+        details: name ? `${storage}, labeled ${name}` : storage,
       }
     }
     case 'access':

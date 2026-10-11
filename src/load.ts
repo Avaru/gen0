@@ -12,6 +12,7 @@ import { foodMenuData } from '@/data/food-menu'
 import { shopData } from '@/data/shops'
 import { deviceData } from '@/data/device-data'
 import { augmentationData } from '@/data/augmentations'
+import { placeData } from '@/data/places'
 
 export enum RL {
   NAMES_MODERN = 'rl-names-modern',
@@ -28,6 +29,7 @@ export enum CONTENT {
   FOOD_MENU = 'food-menu',
   SHOPS = 'shops',
   DEVICE_DATA = 'device-data',
+  PLACES = 'places',
 }
 const lists = {
   [RL.NAMES_MODERN]: rlNamesModern,
@@ -36,6 +38,7 @@ const lists = {
   [CONTENT.FOOD_MENU]: foodMenuData,
   [CONTENT.SHOPS]: shopData,
   [CONTENT.DEVICE_DATA]: deviceData,
+  [CONTENT.PLACES]: placeData,
   [SHADOWRUN.NAMES]: [...shadowrunNames, ...cyberpunkCorporations],
   [SHADOWRUN.CHARACTERS]: shadowrunCharacters,
   [SHADOWRUN.FOOD]: shadowrunFood,

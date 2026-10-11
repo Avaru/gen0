@@ -24,5 +24,5 @@ export function genericName(options: GenerationOptions = {}, includeNickname = t
 }
 
 export function givenName(options: GenerationOptions = {}): string {
-  return capitalize(new Bits(getNamePools(options).get(undefined, 'given')).take().value)
+  return capitalize(new Bits(getNamePools(options).get(undefined, 'given', options.genus)).take().value)
 }

@@ -5,6 +5,7 @@ import { flavors } from '@/generator/options'
 import { CONTENT, load, SHADOWRUN } from '@/load'
 import { deviceContents, weapons } from '@/patterns/cyberpunk/content/content'
 import * as weaponNames from '@/patterns/cyberpunk/content/weaponName'
+import * as personalNames from '@/patterns/cyberpunk/_secondary/names'
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -49,7 +50,7 @@ describe('adapted content generators', () => {
     ).toBe('Decker')
     expect(
       load(CONTENT.DEVICE_DATA, { flavor: 'cyberpunk2020-2077' }).find(
-        (bit) => bit.id === 'data-storage',
+        (bit) => bit.type === 'storage' && bit.flavorNames?.shadowrun === 'commlink memory',
       )?.value,
     ).toBe('data shard')
     expect(
@@ -120,6 +121,69 @@ describe('adapted content generators', () => {
     ).toBe(false)
   })
 
+  it('keeps maps and travel records uncommon in every flavor', () => {
+    seedRandom(971)
+    for (const { id: flavor } of flavors) {
+      const results = Array.from({ length: 3 }, () =>
+        generateNames('device-data', 100, { flavor }),
+      ).flat()
+      for (const pattern of [/^Map of /, /^(Route|Travel log|Train ticket) from /]) {
+        const count = results.filter((result) => pattern.test(result.primary)).length
+        expect(count).toBeGreaterThan(0)
+        expect(count).toBeLessThan(30)
+      }
+      expect(
+        results.filter((result) => /^(Password|Access key|Key card) for /.test(result.primary))
+          .length,
+      ).toBeGreaterThan(60)
+    }
+  })
+
+  it('names people half the time using their gender and inherited settings', () => {
+    const options = { flavor: 'shadowrun' as const, excludeTags: ['shadowrun'] }
+    const subjects = load(CONTENT.DEVICE_DATA, options).filter((bit) => bit.type === 'subject')
+    const nameSpy = vi.spyOn(personalNames, 'givenName')
+    for (const value of ['woman', 'man', 'parent']) {
+      const index = subjects.findIndex((bit) => bit.value === value)
+      const subject = subjects[index]!
+      for (const chance of [0.499, 0.5]) {
+        nameSpy.mockClear()
+        vi.spyOn(Math, 'random').mockReturnValue(0.2)
+          .mockReturnValueOnce(0.2) // storage
+          .mockReturnValueOnce(0.2) // mixed recording
+          .mockReturnValueOnce((index + 0.1) / subjects.length)
+          .mockReturnValueOnce(0.2) // description
+          .mockReturnValueOnce(chance)
+        const result = deviceContents(options)
+        expect(result.primary.endsWith(value)).toBe(true)
+        expect(nameSpy.mock.calls).toEqual(
+          chance < 0.5 ? [[{ ...options, genus: subject.genus }]] : [],
+        )
+        expect(result.details?.includes('labeled')).toBe(chance < 0.5)
+      }
+    }
+  })
+
+  it('uses the five-point bonus for people and reduces technical files to 25%', () => {
+    for (const [roll, pattern] of [
+      [0.6, / of /], [0.849, / of /],
+      [0.85, / of .*girlfriend$/], [0.899, / of .*girlfriend$/],
+      [0.9, / from .* to /], [0.95, /^Map of /],
+    ] as const) {
+      vi.spyOn(Math, 'random').mockReturnValue(0)
+        .mockReturnValueOnce(0).mockReturnValueOnce(roll)
+      expect(deviceContents().primary).toMatch(pattern)
+    }
+    const subjects = load(CONTENT.DEVICE_DATA).filter((bit) => bit.type === 'subject')
+    const index = subjects.findIndex((bit) => bit.value === 'car')
+    const nameSpy = vi.spyOn(personalNames, 'givenName')
+    vi.spyOn(Math, 'random').mockReturnValue(0)
+      .mockReturnValueOnce(0).mockReturnValueOnce(0.2)
+      .mockReturnValueOnce((index + 0.1) / subjects.length)
+    expect(deviceContents().primary).toMatch(/ of car$/)
+    expect(nameSpy).not.toHaveBeenCalled()
+  })
+
   it('avoids firearm modifications on melee weapons', () => {
     const list = load(CONTENT.WEAPONS)
     const melee = list
@@ -147,11 +211,9 @@ describe('adapted content generators', () => {
   })
 
   it('reports an empty required pool rather than producing broken data', () => {
-    const subjects = load(CONTENT.DEVICE_DATA)
-      .filter((bit) => bit.type === 'subject')
-      .map((bit) => bit.id!)
+    const subjects = load(CONTENT.DEVICE_DATA).filter((bit) => bit.type === 'subject')
     // Ordinary pool tags can be excluded explicitly.
-    vi.spyOn(Math, 'random').mockReturnValue(0)
+    vi.spyOn(Math, 'random').mockReturnValue(0.2)
     expect(subjects.length).toBeGreaterThan(0)
     expect(() => deviceContents({ excludeTags: ['people', 'general'] })).toThrow('No entries match')
   })
