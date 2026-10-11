@@ -1,25 +1,15 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
+import { computed, inject, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { availableCategories, generateNames } from '@/generator/categories'
 import type { Generated } from '@/patterns/types'
 import { useGeneratorSettings } from '@/composables/useGeneratorSettings'
 import GeneratorControls from '@/components/generator/GeneratorControls.vue'
 import GeneratorResults from '@/components/generator/GeneratorResults.vue'
 import UiWorkspace from '@/components/ui/UiWorkspace.vue'
-import type { GeneratorSettings } from '@/generator/settings'
 
 const { settings, update } = useGeneratorSettings()
-const controls = useTemplateRef<InstanceType<typeof GeneratorControls>>('controls')
+const showDetails = inject('showDetails', ref(true))
 const resultList = useTemplateRef<InstanceType<typeof GeneratorResults>>('resultList')
-async function updateSettings(patch: Partial<GeneratorSettings>) {
-  await update(patch)
-  if (patch.category !== undefined && !window.matchMedia('(min-width: 56rem)').matches) {
-    await nextTick()
-    // Let the native dialog finish restoring focus and release the page's scroll lock.
-    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
-    controls.value?.scrollToGenerate()
-  }
-}
 const category = computed(() =>
   availableCategories({ flavor: settings.value.flavor }).find(
     (item) => item.id === settings.value.category,
@@ -51,23 +41,21 @@ async function generate(append = false, revealFirstName = false) {
   busy.value = true
   error.value = ''
   const selection = settings.value
-  const firstAddition = results.value.length
   try {
     // Flush the busy state before local calculation.
     await nextTick()
     if (current !== request) return
-    const generated = generateNames(selection.category, 10, {
+    const generated = generateNames(selection.category, append ? 20 : 10, {
       flavor: selection.flavor,
       genders: selection.gender,
       corporationSizes: selection.size,
     })
     if (current === request) {
       results.value = append ? [...results.value, ...generated] : generated
-      if ((append || revealFirstName) && generated.length) {
+      if (revealFirstName && generated.length) {
         await nextTick()
         if (current === request) {
-          if (append) resultList.value?.scrollToResult(firstAddition)
-          else resultList.value?.revealFirstName()
+          resultList.value?.revealFirstName()
         }
       }
     }
@@ -81,14 +69,15 @@ async function generate(append = false, revealFirstName = false) {
 </script>
 <template>
   <UiWorkspace>
-    <GeneratorControls ref="controls" :settings="settings" :busy="busy" @update="updateSettings" @generate="generate(false, true)" />
+    <GeneratorControls :settings="settings" :busy="busy" @update="update" @generate="generate(false, true)" />
     <GeneratorResults
       ref="resultList"
       :results="results"
       :busy="busy"
       :label="category?.label ?? 'Generated names'"
       :error="error"
-      :show-details="settings.details"
+      :show-details="showDetails"
+      @update:show-details="showDetails = $event"
       @more="generate(true)"
     />
   </UiWorkspace>

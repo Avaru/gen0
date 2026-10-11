@@ -4,13 +4,29 @@ import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 import { flavors } from '@/generator/options'
 import { corporationEvents } from '@/data/corporation-events'
 import { seedRandom } from './helpers/random'
-import { load, SHADOWRUN } from '@/load'
+import { load, SHADOWRUN, CONTENT } from '@/load'
 import * as personalNames from '@/patterns/cyberpunk/_secondary/names'
+import * as weaponNames from '@/patterns/cyberpunk/content/weaponName'
 
 afterEach(() => vi.restoreAllMocks())
 
 function rows(size: CORPORATION_SIZE, flavor: typeof flavors[number]['id'] = 'cyberpunk') {
   return corporations({ corporationSize: size, flavor }).details!.split('\n')
+}
+
+function escapePattern(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function eventPattern(template: string): RegExp {
+  const parts = template.split(/(\[[^\]]+\]|\$(?:people|product|corporation)\$)/g)
+  const pattern = parts.map(part => {
+    if (part.startsWith('[')) return `(?:${part.slice(1, -1).split('|').map(escapePattern).join('|')})`
+    if (part === '$product$') return '(?<product>.+?)'
+    if (part === '$people$' || part === '$corporation$') return '.+?'
+    return escapePattern(part)
+  }).join('')
+  return new RegExp(`^${pattern}$`)
 }
 
 describe('generated corporation details', () => {
@@ -60,8 +76,7 @@ describe('generated corporation details', () => {
       expect(years).toEqual([...years].sort((a, b) => a - b))
       // Rendering may add names, but each history uses different templates.
       const templates = lines.slice(5).map(line => corporationEvents.findIndex(event => {
-        const literal = event.value.replace(/\$(people|product|corporation)\$/g, '.*')
-        return new RegExp(`^${literal}$`).test(line.slice(6))
+        return eventPattern(event.value).test(line.slice(6))
       }))
       expect(templates.every(index => index >= 0)).toBe(true)
       expect(new Set(templates).size).toBe(years.length)
@@ -115,5 +130,88 @@ describe('generated corporation details', () => {
     seedRandom()
     expect(Object.keys(knownCorporation({ flavor: 'shadowrun' }))).toEqual(['primary'])
     expect(Object.keys(knownCorporation({ flavor: 'cyberpunk2020-2077' }))).toEqual(['primary'])
+  })
+
+  it('uses manufacturer-free weapon names in every product event and preserves nested settings', () => {
+    seedRandom()
+    const nameSpy = vi.spyOn(weaponNames, 'weaponProductName')
+    const templates = corporationEvents.filter(event => event.value.includes('$product$'))
+    for (const { id: flavor } of flavors) {
+      const options = { flavor, includeTags: ['shadowrun'], excludeTags: ['shadowrun'] }
+      const data = load(CONTENT.WEAPONS, options)
+      const models = data.filter(bit => bit.type === 'model').map(bit => bit.value)
+      const series = data.filter(bit => bit.type === 'series').map(bit => bit.value)
+      const kinds = data.filter(bit => bit.type === 'kind').map(bit => bit.value)
+      const allowedProducts = new Set(models.flatMap(model => [
+        ...series.map(name => `${model} “${name}”`),
+        ...kinds.map(kind => `${model} ${kind}`),
+      ]))
+      const seen = new Set<string>()
+      let withSeries = false
+      let withoutSeries = false
+      nameSpy.mockClear()
+      for (let i = 0; i < 100; i++) {
+        const lines = corporations({ ...options, corporationSize: CORPORATION_SIZE.AAA })
+          .details!.split('\n').slice(5)
+        for (const line of lines) {
+          const text = line.slice(6)
+          for (const template of templates) {
+            const match = eventPattern(template.value).exec(text)
+            if (!match) continue
+            seen.add(template.value)
+            const product = match.groups!.product!
+            expect(allowedProducts.has(product)).toBe(true)
+            if (product.includes(' “')) withSeries = true
+            else withoutSeries = true
+          }
+        }
+      }
+      expect(seen.size).toBe(templates.length)
+      expect(withSeries && withoutSeries).toBe(true)
+      expect(nameSpy).toHaveBeenCalled()
+      expect(nameSpy.mock.calls.every(([nestedOptions]) =>
+        nestedOptions?.flavor === flavor &&
+        nestedOptions.includeTags === options.includeTags &&
+        nestedOptions.excludeTags === options.excludeTags,
+      )).toBe(true)
+    }
+  })
+
+  it('includes a weapon type even when a product uses a numeric model without a series', () => {
+    const models = load(CONTENT.WEAPONS).filter(bit => bit.type === 'model')
+    const index = models.findIndex(bit => bit.value === '200')
+    expect(index).toBeGreaterThanOrEqual(0)
+    vi.spyOn(Math, 'random')
+      .mockReturnValueOnce((index + 0.1) / models.length)
+      .mockReturnValueOnce(0.9)
+      .mockReturnValueOnce(0)
+    expect(weaponNames.weaponProductName()).toBe('200 Revolver')
+  })
+
+  it('omits the type when a weapon product has a quoted series', () => {
+    const data = load(CONTENT.WEAPONS)
+    const model = data.find(bit => bit.type === 'model')!.value
+    const series = data.find(bit => bit.type === 'series')!.value
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0)
+    expect(weaponNames.weaponProductName()).toBe(`${model} “${series}”`)
+    expect(random).toHaveBeenCalledTimes(3)
+  })
+
+  it('renders all event types and wording choices without leaving template markers', () => {
+    seedRandom(971)
+    const texts = Array.from({ length: 450 }, () =>
+      rows(CORPORATION_SIZE.AAA).slice(5).map(line => line.slice(6)),
+    ).flat()
+    expect(texts.join('\n')).not.toMatch(/[[\]$]|undefined/)
+    for (const template of corporationEvents) {
+      const matching = texts.filter(text => eventPattern(template.value).test(text))
+      expect(matching.length).toBeGreaterThan(0)
+      const choices = [...template.value.matchAll(/\[([^\]]+)\]/g)]
+        .flatMap(match => match[1]!.split('|'))
+      for (const choice of choices) {
+        const pattern = new RegExp(`\\b${escapePattern(choice)}\\b`)
+        expect({ choice, seen: matching.some(text => pattern.test(text)) }).toEqual({ choice, seen: true })
+      }
+    }
   })
 })

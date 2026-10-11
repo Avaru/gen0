@@ -15,11 +15,19 @@ export const movies = (options: GenerationOptions = {}): Generated => {
     primary +=
       capitalize(movie.tag('character-start').take().value) +
       lowercaseFirst(movie.tag('character-end').take().value)
-    primary += p(0.25) ? ' ' + movie.tag('title-object').take().value : ''
+    primary += p(0.25) ? ' ' + movie.tag('title-object-end').take().value : ''
   } else if (p(0.33)) {
-    primary += p(0.33) ? capitalize(movie.tag('title-prefix').take().value) + ' ' : ''
-    primary += capitalize(movie.tag('title-subject').take().value)
-    primary += p(0.33) ? ' ' + capitalize(movie.tag('title-object').take().value) : ''
+    let subjectTag = 'title-subject'
+    if (p(0.33)) {
+      const opening = movie.filter({
+        one: ['title-prefix', 'title-object-start', 'title-prefix-action'],
+      }).take()
+      primary += capitalize(opening.value.trim())
+      primary += opening.tags.includes('title-object-start') ? ' of the ' : ' '
+      if (opening.tags.includes('title-prefix-action')) subjectTag = 'title-action'
+    }
+    primary += capitalize(movie.tag(subjectTag).take().value)
+    primary += p(0.33) ? ' ' + movie.tag('title-object-end').take().value : ''
   } else {
     primary += p(0.33) ? capitalize(movie.tag('subject').take().value) + ' ' : ''
     if (p()) {
@@ -30,15 +38,15 @@ export const movies = (options: GenerationOptions = {}): Generated => {
       primary += givenName(options)
     }
     primary += ' '
-    primary += p(0.33) ? capitalize(movie.tag('title-object').take().value) + ' ' : ''
+    primary += p(0.33) ? movie.tag('title-object-end').take().value + ' ' : ''
   }
-  primary += p(0.6) ? ' ' + movie.tag('title-suffix').take().value : ''
+  primary += p(0.2) ? ' ' + movie.tag('title-suffix').take().value : ''
 
   const details = [capitalize(movie.tag('genre').take().value), movie.tag('meta').take().value]
   if (p(0.1)) details.push(movie.tag('meta').take().value)
 
   return {
-    primary,
+    primary: primary.replace(/\s+/g, ' ').trim(),
     details: details.join(', '),
   }
 }

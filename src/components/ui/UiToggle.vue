@@ -17,10 +17,14 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
 label {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
+  justify-content: center;
+  gap: var(--space-1);
   min-height: var(--control-height);
+  min-width: var(--control-height);
   cursor: pointer;
+  font-size: 0.8125rem;
   font-weight: 650;
 }
 input {
@@ -35,8 +39,8 @@ input {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  width: 2.75rem;
-  height: 1.5rem;
+  width: 2.25rem;
+  height: 1.25rem;
   padding: 2px;
   border: 1px solid var(--color-control-border);
   border-radius: var(--radius-sm);
@@ -45,8 +49,8 @@ input {
 .track::after {
   transition: var(--control-color-transition);
   content: '';
-  width: 1rem;
-  height: 1rem;
+  width: 0.75rem;
+  height: 0.75rem;
   border-radius: var(--radius-sm);
   background: var(--color-muted);
 }
@@ -68,8 +72,8 @@ input:focus-visible + .track {
   letter-spacing: 0.035em;
 }
 [data-theme='cyberpunk2077'] .track {
-  width: 3rem;
-  height: 1.125rem;
+  width: 2.5rem;
+  height: 1rem;
   padding: 0;
   border: 0;
   background: var(--color-control-border);

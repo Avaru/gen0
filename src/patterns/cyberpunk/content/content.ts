@@ -10,6 +10,7 @@ import { randomRounded } from '@/helper/randomRounded'
 import { p } from '@/helper/prob'
 import { corporationName } from '../corporations/corporations'
 import { givenName } from '../_secondary/names'
+import { weaponName } from './weaponName'
 
 function pool<List extends CONTENT>(list: List, options: GenerationOptions) {
   return new Bits(load(list, options))
@@ -26,8 +27,7 @@ function company(options: GenerationOptions, manufacturersOnly = false) {
 export function weapons(options: GenerationOptions = {}): Generated {
   const data = pool(CONTENT.WEAPONS, options)
   const kind = data.type('kind').take()
-  const name = [company(options, true), data.type('model').take().value]
-  if (p(0.6)) name.push(`“${data.type('series').take().value}”`)
+  const name = [company(options, true), weaponName(options)]
   const modifications = data
     .type('modification')
     .filter({ none: kind.tags.includes('melee') ? ['firearm'] : [] })

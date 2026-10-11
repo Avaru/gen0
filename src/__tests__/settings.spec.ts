@@ -28,22 +28,17 @@ describe('Generator settings normalization', () => {
       category: 'german',
       gender: ['f,m', 'f', 'invalid'],
       size: ['a'],
-      details: 'false',
     })
     expect(settings.gender).toEqual(['m', 'f'])
     expect(settings.size).toEqual([])
-    expect(settingsQuery(settings)).toEqual({
-      flavor: 'cyberpunk',
-      category: 'german',
-      details: 'false',
-    })
+    expect(settingsQuery(settings)).toEqual({})
     expect(normalizeGeneratorSettings({ ...settings, gender: [] }).gender).toEqual(['m', 'f'])
   })
 
   it('compares URL contents without depending on property order', () => {
     const query = settingsQuery(normalizeGeneratorSettings({ category: 'german', gender: 'f' }))
     expect(
-      matchesSettingsQuery({ gender: 'f', category: 'german', flavor: 'cyberpunk' }, query),
+      matchesSettingsQuery({ gender: 'f' }, query),
     ).toBe(true)
     expect(matchesSettingsQuery({ ...query, count: '10' }, query)).toBe(false)
     expect(matchesSettingsQuery({ ...query, gender: ['f'] }, query)).toBe(false)

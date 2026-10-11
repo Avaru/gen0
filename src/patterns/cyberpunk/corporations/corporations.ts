@@ -5,7 +5,7 @@ import { p } from '@/helper/prob'
 import { randomFrom } from '@/helper/randomFrom'
 import { randomFromEnum } from '@/helper/randomFromEnum'
 import { randomRounded } from '@/helper/randomRounded'
-import { load, SHADOWRUN, CONTENT } from '@/load'
+import { load, SHADOWRUN } from '@/load'
 import { getNamePools } from '@/builders/namePools'
 import { corporationEvents } from '@/data/corporation-events'
 import { isEntryAvailable } from '@/builders/availability'
@@ -14,6 +14,7 @@ import { genericName } from '../_secondary/names'
 import { rng } from '@/helper/rng'
 import type { Generated } from '@/patterns/types'
 import { CORPORATION_SIZE, CORPORATION_PARAMETERS } from './helpers'
+import { weaponProductName } from '../content/weaponName'
 
 interface CorporationNameOptions extends GenerationOptions {
   knownParent?: boolean
@@ -106,14 +107,15 @@ function subsidiaryNames(parent: string, options: GenerationOptions): string[] {
 }
 
 function eventText(template: string, options: GenerationOptions): string {
+  const wording = template.replace(/\[([^[\]]+)\]/g, (_, choices: string) => randomFrom(choices.split('|')))
   const replacements = new Map<string, string>()
-  return template.replace(/\$(people|product|corporation)\$/g, (_, key: string) => {
+  return wording.replace(/\$(people|product|corporation)\$/g, (_, key: string) => {
     if (!replacements.has(key)) {
       const value = key === 'people'
         ? genericName(options, false)
         : key === 'corporation'
           ? corporationName(options)
-          : new Bits(load(CONTENT.WEAPONS, options), { type: 'model' }).take().value
+          : weaponProductName(options)
       replacements.set(key, value)
     }
     return replacements.get(key)!

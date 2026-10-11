@@ -1,16 +1,25 @@
 <script setup lang="ts">
 import type { Theme } from '@/styles/themes'
 import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+import { settingsFromRoute, settingsPath, settingsQuery } from '@/generator/settings'
 defineProps<{ theme: Theme }>()
 const route = useRoute()
+const isAbout = computed(() => route.matched.some((record) => record.path.endsWith('/about')))
+const navigation = computed(() => {
+  const settings = settingsFromRoute(route)
+  return {
+    path: settingsPath(settings) + (isAbout.value ? '' : '/about'),
+    query: settingsQuery(settings),
+  }
+})
 </script>
 <template>
-  <a class="skip" href="#main">{{ route.path === '/about' ? 'Skip to content' : 'Skip to generator' }}</a>
+  <a class="skip" href="#main">{{ isAbout ? 'Skip to content' : 'Skip to generator' }}</a>
   <div class="shell" :data-theme="theme">
     <header>
       <nav aria-label="Main navigation">
-        <RouterLink v-if="route.path === '/about'" :to="{ path: '/', query: route.query }">Back to generator</RouterLink>
-        <RouterLink v-else :to="{ path: '/about', query: route.query }">About</RouterLink>
+        <RouterLink :to="navigation">{{ isAbout ? 'Back to generator' : 'About' }}</RouterLink>
       </nav>
       <span class="brand">gen 0</span
       ><span class="caption">Cyberpunk name generator</span>

@@ -4,6 +4,7 @@
 - If a choice makes a lot of sense, say why in plain language. If something feels wrong or conflicts with the request, ask before starting that part.
 - Avoid smart-sounding language and unnecessary development jargon.
 - Keep work scoped to the requested generator changes. Do not add more categories, flavors, persistence, styling, or publishing without a request.
+- All authored list entries must be human-made. Do not make up or add AI-authored list items without explicit user consent. AI should only help with formatting, migrating existing human-made entries, and correcting typos, spelling, grammar, and similar cleanup unless the user explicitly agrees otherwise.
 
 ## Product and structure
 

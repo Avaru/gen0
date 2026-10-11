@@ -8,13 +8,13 @@ import {
   type Flavor,
 } from './options'
 import type { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 export interface GeneratorSettings {
   flavor: Flavor
   category: string
   gender: NameGender[]
   size: CORPORATION_SIZE[]
-  details: boolean
 }
 
 type SettingsInput = { [Key in keyof GeneratorSettings]?: unknown }
@@ -42,7 +42,6 @@ export function normalizeGeneratorSettings(input: SettingsInput): GeneratorSetti
   return {
     flavor,
     category: category.id,
-    details: input.details !== false && input.details !== 'false',
     gender: category.gender ? parseSelections(input.gender, givenNameGenders) : [],
     size: category.corporationSize ? parseSelections(input.size, corporationSizes) : [],
   }
@@ -50,9 +49,6 @@ export function normalizeGeneratorSettings(input: SettingsInput): GeneratorSetti
 
 export function settingsQuery(settings: GeneratorSettings): Record<string, string> {
   return {
-    flavor: settings.flavor,
-    category: settings.category,
-    ...(!settings.details ? { details: 'false' } : {}),
     ...(settings.gender.length && settings.gender.length < givenNameGenders.length
       ? { gender: settings.gender.join(',') }
       : {}),
@@ -60,6 +56,18 @@ export function settingsQuery(settings: GeneratorSettings): Record<string, strin
       ? { size: settings.size.join(',') }
       : {}),
   }
+}
+
+export function settingsFromRoute(route: RouteLocationNormalizedLoaded): GeneratorSettings {
+  return normalizeGeneratorSettings({
+    ...route.query,
+    flavor: route.params.flavor ?? route.query.flavor,
+    category: route.params.category ?? route.query.category,
+  })
+}
+
+export function settingsPath(settings: GeneratorSettings): string {
+  return `/${settings.flavor}/${settings.category}`
 }
 
 /** Compare query contents; their property order has no meaning. */

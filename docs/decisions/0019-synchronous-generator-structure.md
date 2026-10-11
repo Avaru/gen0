@@ -13,7 +13,7 @@ The user requested the full TypeScript and Vue review cleanup. The old asynchron
 - Define nationality IDs, labels, structure choices, and variation probabilities together in `patterns/cyberpunk/nationality/traditions.ts`. Categories derive from those definitions; adding data still requires its import in `data/rl-names-modern.ts`.
 - Share complete-name eligibility checks between generic, mixed, regional, and direct nationality generation. Check required gendered parts, potential second names, Spanish surnames, Russian patronymics, Arabic fathers, and distinct Tamil fathers before generation. Mixed still chooses surname traditions uniformly, then compatible different given-name traditions.
 - Preserve dataset fragment types through loading and selection. Genus accepts supported values only; personal names use masculine/feminine types. Shared Vue controls preserve their option types without settings casts.
-- Use one pure settings normalizer for links and control updates. Compare canonical query values without depending on property order. Keep URL defaults, category fallback, Back/Forward, details, and batching behavior.
+- Use one pure settings normalizer for links and control updates. Compare canonical query values without depending on property order. Keep URL defaults, category fallback, Back/Forward, and batching behavior. Details uses app state as described in decision 0004.
 - Remove the unused counter store, Pinia dependency, and `UiField`. Reuse one seeded-random test helper.
 
 ## Limits

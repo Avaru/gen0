@@ -1,24 +1,36 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue'
+import { onMounted, onUnmounted, useTemplateRef } from 'vue'
 import type { Generated } from '@/patterns/types'
-import UiButton from '@/components/ui/UiButton.vue'
+import UiToggle from '@/components/ui/UiToggle.vue'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
 import { scrollToContent } from '@/components/ui/scrollToContent'
-defineProps<{
+const props = defineProps<{
   results: Generated[]
   busy: boolean
   label: string
   error: string
   showDetails: boolean
 }>()
-defineEmits<{ more: [] }>()
+const emit = defineEmits<{ more: []; 'update:showDetails': [value: boolean] }>()
 const list = useTemplateRef<HTMLOListElement>('list')
+let previousScrollY = 0
+function loadMoreOnScroll() {
+  const scrollingDown = window.scrollY > previousScrollY
+  previousScrollY = window.scrollY
+  if (!scrollingDown || props.busy || props.error || !props.results.length) return
+  if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1)
+    emit('more')
+}
+onMounted(() => {
+  previousScrollY = window.scrollY
+  window.addEventListener('scroll', loadMoreOnScroll, { passive: true })
+})
+onUnmounted(() => window.removeEventListener('scroll', loadMoreOnScroll))
 function revealTiming(index: number) {
   const position = index % 10
   return { duration: position === 0 ? 140 : 260, delay: position * 40 }
 }
 defineExpose({
-  scrollToResult: (index: number) => scrollToContent(list.value?.children[index] as HTMLElement | undefined),
   revealFirstName() {
     const name = list.value?.querySelector<HTMLElement>('li strong')
     if (!name) return
@@ -29,7 +41,14 @@ defineExpose({
 </script>
 <template>
   <section aria-labelledby="results-heading" :aria-busy="busy">
-    <h1 id="results-heading">{{ label }}</h1>
+    <div class="heading">
+      <h1 id="results-heading">{{ label }}</h1>
+      <UiToggle
+        :model-value="showDetails"
+        label="details"
+        @update:model-value="$emit('update:showDetails', $event)"
+      />
+    </div>
     <p class="status" role="status" aria-atomic="true">
       {{ busy ? 'Generating names…' : results.length ? 'Names updated.' : '' }}
     </p>
@@ -48,9 +67,6 @@ defineExpose({
         </div>
       </li>
     </ol>
-    <UiButton v-if="results.length" variant="secondary" :disabled="busy" @click="$emit('more')"
-      >Generate more</UiButton
-    >
   </section>
 </template>
 <style scoped>
@@ -86,7 +102,17 @@ section::after {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.heading > :last-child {
+  flex-shrink: 0;
+}
 h1 {
+  min-width: 0;
   font-size: clamp(2rem, 6vw, 3.5rem);
   font-weight: var(--theme-heading-weight);
   text-transform: uppercase;

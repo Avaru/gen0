@@ -32,6 +32,8 @@ async function setup(url = '/') {
     routes: [
       { path: '/', component: GeneratorView },
       { path: '/about', component: AboutView },
+      { path: '/:flavor/:category/about', component: AboutView },
+      { path: '/:flavor/:category?', component: GeneratorView },
     ],
   })
   await router.push(url)
@@ -42,9 +44,38 @@ async function setup(url = '/') {
 }
 
 describe('name generator interface', () => {
+  it('restores path settings and query options on direct links and fresh app loads', async () => {
+    const url = '/shadowrun/german?gender=f&flavor=cyberpunk&category=corporations'
+    const { wrapper, router } = await setup(url)
+    expect(router.currentRoute.value.fullPath).toBe('/shadowrun/german?gender=f')
+    expect(wrapper.get('input[name="flavor"][value="shadowrun"]').element).toHaveProperty('checked', true)
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    const saved = router.currentRoute.value.fullPath
+    wrapper.unmount()
+    const reloaded = await setup(saved)
+    expect(reloaded.router.currentRoute.value.fullPath).toBe(saved)
+    expect(reloaded.wrapper.get('input[name="gender"][value="f"]').element).toHaveProperty('checked', true)
+    reloaded.wrapper.unmount()
+  })
+
+  it('normalizes incomplete and unsupported paths using existing fallbacks', async () => {
+    for (const [url, expected] of [
+      ['/shadowrun', '/shadowrun/runners'],
+      ['/unknown/known-corporations', '/cyberpunk/corporations'],
+      ['/cyberpunk/missing', '/cyberpunk/runners'],
+      ['/cyberpunk/about', '/cyberpunk/runners'],
+    ]) {
+      const { wrapper, router } = await setup(url)
+      expect(router.currentRoute.value.fullPath).toBe(expected)
+      expect(wrapper.findAll('li')).toHaveLength(10)
+      wrapper.unmount()
+    }
+  })
+
   it('falls back to Generic runners for a saved Birka fashion link', async () => {
     const { wrapper, router } = await setup('/?flavor=birka&category=fashion-items')
-    expect(router.currentRoute.value.query).toEqual({ flavor: 'cyberpunk', category: 'runners' })
+    expect(router.currentRoute.value.path).toBe('/cyberpunk/runners')
+    expect(router.currentRoute.value.query).toEqual({})
     expect(wrapper.find('input[name="flavor"][value="birka"]').exists()).toBe(false)
     expect(wrapper.find('[data-category="fashion-items"]').exists()).toBe(false)
     expect(wrapper.findAll('li')).toHaveLength(10)
@@ -87,50 +118,70 @@ describe('name generator interface', () => {
       await chooseCategory(wrapper, category)
       await flushPromises()
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
-      expect(router.currentRoute.value.query.category).toBe(category)
+      expect(router.currentRoute.value.params.category).toBe(category)
       expect(wrapper.findAll('li')).toHaveLength(10)
       expect(scroll).not.toHaveBeenCalled()
     }
     wrapper.unmount()
   })
 
-  it('scrolls to Generate on smaller screens after a category choice, including choosing the current category', async () => {
-    const { wrapper, router } = await setup('/?category=german')
-    expect(scroll).not.toHaveBeenCalled()
+  it('keeps phone category choices in place, including choosing the current category', async () => {
+    const { wrapper, router } = await setup('/cyberpunk/german')
     await wrapper.get('#category').trigger('click')
     await wrapper.get('.close').trigger('click')
     expect(scroll).not.toHaveBeenCalled()
-    await chooseCategory(wrapper, 'corporations')
-    await flushPromises()
-    await vi.waitFor(() => expect(scroll).toHaveBeenCalled())
-    expect(router.currentRoute.value.query.category).toBe('corporations')
-    expect(wrapper.find('input[name="size"]').exists()).toBe(true)
-    expect(scroll.mock.contexts[scroll.mock.contexts.length - 1]).toBe(wrapper.get('button[type="submit"]').element)
-    expect(scroll).toHaveBeenLastCalledWith({ block: 'start', behavior: 'smooth' })
-    scroll.mockClear()
+    for (const category of ['corporations', 'corporations', 'german']) {
+      await chooseCategory(wrapper, category)
+      await flushPromises()
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+      expect(router.currentRoute.value.params.category).toBe(category)
+      expect(wrapper.findAll('li')).toHaveLength(10)
+      expect(scroll).not.toHaveBeenCalled()
+    }
     router.back()
     await flushPromises()
     expect(scroll).not.toHaveBeenCalled()
-    media.add('(prefers-reduced-motion: reduce)')
-    await chooseCategory(wrapper, 'german')
-    await flushPromises()
-    await vi.waitFor(() => expect(scroll).toHaveBeenLastCalledWith({ block: 'start', behavior: 'instant' }))
     wrapper.unmount()
   })
 
-  it('scrolls to the first new name after each appended batch', async () => {
-    const { wrapper } = await setup('/?category=german&details=false')
-    const original = wrapper.findAll('li').map(item => item.text())
-    await wrapper.get('button.secondary').trigger('click')
-    await flushPromises()
-    expect(wrapper.findAll('li').slice(0, 10).map(item => item.text())).toEqual(original)
-    expect(scroll.mock.contexts[scroll.mock.contexts.length - 1]).toBe(wrapper.findAll('li')[10]!.element)
-    expect(scroll).toHaveBeenLastCalledWith({ block: 'start', behavior: 'smooth' })
-    await wrapper.get('button.secondary').trigger('click')
-    await flushPromises()
-    expect(wrapper.findAll('li')).toHaveLength(30)
-    expect(scroll.mock.contexts[scroll.mock.contexts.length - 1]).toBe(wrapper.findAll('li')[20]!.element)
-    wrapper.unmount()
+  it('adds twenty names at the bottom without moving the viewport or replacing existing names', async () => {
+    const height = vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(2000)
+    const position = vi.spyOn(window, 'scrollY', 'get').mockReturnValue(0)
+    const { wrapper } = await setup('/cyberpunk/german')
+    try {
+      expect(wrapper.text()).not.toContain('Generate more')
+      const original = wrapper.findAll('li').map(item => item.text())
+      position.mockReturnValue(100)
+      window.dispatchEvent(new Event('scroll'))
+      await flushPromises()
+      expect(wrapper.findAll('li')).toHaveLength(10)
+
+      position.mockReturnValue(2000 - window.innerHeight)
+      window.dispatchEvent(new Event('scroll'))
+      window.dispatchEvent(new Event('scroll'))
+      await flushPromises()
+      expect(wrapper.findAll('li')).toHaveLength(30)
+      expect(wrapper.findAll('li').slice(0, 10).map(item => item.text())).toEqual(original)
+      expect(scroll).not.toHaveBeenCalled()
+
+      height.mockReturnValue(4000)
+      position.mockReturnValue(2000 - window.innerHeight - 100)
+      window.dispatchEvent(new Event('scroll'))
+      await flushPromises()
+      expect(wrapper.findAll('li')).toHaveLength(30)
+      position.mockReturnValue(4000 - window.innerHeight)
+      window.dispatchEvent(new Event('scroll'))
+      await flushPromises()
+      expect(wrapper.findAll('li')).toHaveLength(50)
+      expect(scroll).not.toHaveBeenCalled()
+      await chooseCategory(wrapper, 'corporations')
+      await flushPromises()
+      expect(wrapper.findAll('li')).toHaveLength(10)
+    } finally {
+      wrapper.unmount()
+      height.mockRestore()
+      position.mockRestore()
+    }
   })
 
   it('opens About and returns with the selected settings and theme, including a direct link', async () => {
@@ -138,21 +189,21 @@ describe('name generator interface', () => {
     const query = { ...router.currentRoute.value.query }
     await wrapper.get('nav a').trigger('click')
     await flushPromises()
-    expect(router.currentRoute.value.path).toBe('/about')
+    expect(router.currentRoute.value.path).toBe('/cyberpunk2020-2077/german/about')
     expect(wrapper.get('h1').text()).toBe('About gen 0')
     expect(wrapper.text()).toContain('Anton Katzer')
     expect(wrapper.get('.shell').attributes('data-theme')).toBe('cyberpunk2077')
     expect(wrapper.find('#category').exists()).toBe(false)
     await wrapper.get('nav a').trigger('click')
     await flushPromises()
-    expect(router.currentRoute.value.path).toBe('/')
+    expect(router.currentRoute.value.path).toBe('/cyberpunk2020-2077/german')
     expect(router.currentRoute.value.query).toEqual(query)
     expect(wrapper.findAll('li')).toHaveLength(10)
     wrapper.unmount()
 
     const direct = await setup('/about')
     expect(direct.wrapper.text()).toContain('Anton Katzer')
-    expect(direct.wrapper.get('nav a').attributes('href')).toBe('/')
+    expect(direct.wrapper.get('nav a').attributes('href')).toBe('/cyberpunk/runners')
     direct.wrapper.unmount()
   })
 
@@ -195,14 +246,14 @@ describe('name generator interface', () => {
     await wrapper.get('[aria-label="Close category picker"]').trigger('click')
     await wrapper.get('input[name="flavor"][value="shadowrun"]').setValue(true)
     await flushPromises()
-    expect(router.currentRoute.value.query.category).toBe('runners')
+    expect(router.currentRoute.value.params.category).toBe('runners')
     await wrapper.get('#category').trigger('click')
     expect(wrapper.find('[data-category="continent-oceania"]').exists()).toBe(false)
     expect(wrapper.find('[data-category="sovereignty-ucas"]').exists()).toBe(true)
     await wrapper.get('[aria-label="Close category picker"]').trigger('click')
     router.back()
     await flushPromises()
-    expect(router.currentRoute.value.query.category).toBe('continent-oceania')
+    expect(router.currentRoute.value.params.category).toBe('continent-oceania')
     expect(router.currentRoute.value.query.gender).toBe('f')
     expect(wrapper.findAll('li')).toHaveLength(10)
     wrapper.unmount()
@@ -219,7 +270,7 @@ describe('name generator interface', () => {
     await wrapper.get('input[name="flavor"][value="cyberpunk2020-2077"]').setValue(true)
     await flushPromises()
     expect(wrapper.get('#category').text()).toContain('Japan')
-    expect(router.currentRoute.value.query.category).toBe('sovereignty-japan')
+    expect(router.currentRoute.value.params.category).toBe('sovereignty-japan')
     await wrapper.get('#category').trigger('click')
     expect(wrapper.find('[data-category="sovereignty-nusa"]').exists()).toBe(true)
     expect(wrapper.find('[data-category="sovereignty-ucas"]').exists()).toBe(false)
@@ -232,7 +283,7 @@ describe('name generator interface', () => {
     expect(wrapper.get('#category').text()).toContain('Japanese Imperial State')
     await wrapper.get('input[name="flavor"][value="cyberpunk"]').setValue(true)
     await flushPromises()
-    expect(router.currentRoute.value.query.category).toBe('runners')
+    expect(router.currentRoute.value.params.category).toBe('runners')
     await wrapper.get('#category').trigger('click')
     expect(wrapper.text()).not.toContain('Names by sovereignty')
     wrapper.unmount()
@@ -261,25 +312,22 @@ describe('name generator interface', () => {
     await flushPromises()
     router.back()
     await flushPromises()
-    expect(router.currentRoute.value.query.category).toBe('mixed')
+    expect(router.currentRoute.value.params.category).toBe('mixed')
     expect(router.currentRoute.value.query.gender).toBe('f')
     expect(wrapper.findAll('li')).toHaveLength(10)
     wrapper.unmount()
   })
 
-  it('generates ten names immediately, appends ten, and replaces them when settings change', async () => {
+  it('generates ten names immediately and replaces them when settings change', async () => {
     const { wrapper, router } = await setup()
     expect(wrapper.findAll('li')).toHaveLength(10)
     expect(wrapper.find('#count').exists()).toBe(false)
     expect(router.currentRoute.value.query.count).toBeUndefined()
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)
-    await wrapper.get('button.secondary').trigger('click')
-    await flushPromises()
-    expect(wrapper.findAll('li')).toHaveLength(20)
     await wrapper.get('input[name="flavor"][value="shadowrun"]').setValue(true)
     await flushPromises()
     expect(wrapper.findAll('li')).toHaveLength(10)
-    expect(router.currentRoute.value.query.flavor).toBe('shadowrun')
+    expect(router.currentRoute.value.params.flavor).toBe('shadowrun')
     wrapper.unmount()
   })
 
@@ -296,7 +344,7 @@ describe('name generator interface', () => {
     await wrapper.get('input[name="flavor"][value="cyberpunk"]').setValue(true)
     await flushPromises()
     expect(wrapper.get('#category').attributes('data-value')).toBe('corporations')
-    expect(router.currentRoute.value.query.category).toBe('corporations')
+    expect(router.currentRoute.value.params.category).toBe('corporations')
     expect(wrapper.findAll('select')).toHaveLength(0)
     wrapper.unmount()
   })
@@ -356,26 +404,27 @@ describe('name generator interface', () => {
     expect(router.currentRoute.value.query.gender).toBeUndefined()
     router.back()
     await flushPromises()
-    expect(router.currentRoute.value.query.category).toBe('german')
+    expect(router.currentRoute.value.params.category).toBe('german')
     expect(
       (wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked,
     ).toBe(true)
     expect(wrapper.findAll('li')).toHaveLength(10)
     router.forward()
     await flushPromises()
-    expect(router.currentRoute.value.query.category).toBe('corporations')
+    expect(router.currentRoute.value.params.category).toBe('corporations')
     wrapper.unmount()
   })
 
   it('toggles details without changing names and keeps the choice across categories and history', async () => {
     const { wrapper, router } = await setup('/?category=german')
+    const query = { ...router.currentRoute.value.query }
     const names = wrapper.findAll('strong').map((item) => item.text())
     expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
     await wrapper.get('input[type="checkbox"]:not([name])').setValue(false)
     await flushPromises()
     expect(wrapper.findAll('.name div')).toHaveLength(0)
     expect(wrapper.findAll('strong').map((item) => item.text())).toEqual(names)
-    expect(router.currentRoute.value.query.details).toBe('false')
+    expect(router.currentRoute.value.query).toEqual(query)
     await chooseCategory(wrapper, 'corporations')
     await flushPromises()
     expect(wrapper.findAll('.name div')).toHaveLength(0)
@@ -387,16 +436,24 @@ describe('name generator interface', () => {
     expect(wrapper.findAll('strong').map((item) => item.text())).toEqual(corporationNames)
     router.back()
     await flushPromises()
-    expect(wrapper.findAll('.name div')).toHaveLength(0)
-    expect(wrapper.findAll('strong').map((item) => item.text())).toEqual(corporationNames)
+    expect(router.currentRoute.value.params.category).toBe('german')
+    expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
+    expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(true)
+    await wrapper.get('input[type="checkbox"]:not([name])').setValue(false)
+    await wrapper.get('nav a').trigger('click')
+    await flushPromises()
+    await wrapper.get('nav a').trigger('click')
+    await flushPromises()
+    expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(false)
     wrapper.unmount()
   })
 
-  it('restores hidden details from a link', async () => {
-    const { wrapper } = await setup('/?category=german&details=false')
+  it('ignores old details links and starts each app with details visible', async () => {
+    const { wrapper, router } = await setup('/?category=german&details=false')
     expect(wrapper.findAll('li')).toHaveLength(10)
-    expect(wrapper.findAll('.name div')).toHaveLength(0)
-    expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(false)
+    expect(router.currentRoute.value.query.details).toBeUndefined()
+    expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
+    expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(true)
     wrapper.unmount()
   })
 
@@ -404,10 +461,8 @@ describe('name generator interface', () => {
     const { wrapper, router } = await setup(
       '/?flavor=unknown&category=known-corporations&size=invalid&count=1000',
     )
-    expect(router.currentRoute.value.query).toEqual({
-      flavor: 'cyberpunk',
-      category: 'corporations',
-    })
+    expect(router.currentRoute.value.path).toBe('/cyberpunk/corporations')
+    expect(router.currentRoute.value.query).toEqual({})
     expect(wrapper.findAll('li')).toHaveLength(10)
     expect(wrapper.find('#count').exists()).toBe(false)
     wrapper.unmount()

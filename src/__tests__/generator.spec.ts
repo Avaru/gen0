@@ -36,7 +36,7 @@ describe('migrated generator', () => {
     expect(load(SHADOWRUN.NAMES, options)).toHaveLength(2179)
     expect(load(SHADOWRUN.CHARACTERS, options)).toHaveLength(373)
     expect(load(SHADOWRUN.FOOD, options)).toHaveLength(611)
-    expect(load(SHADOWRUN.MOVIE, options)).toHaveLength(469)
+    expect(load(SHADOWRUN.MOVIE, options)).toHaveLength(517)
   })
 
   it('generates every available category in all flavors', () => {
@@ -80,6 +80,26 @@ describe('migrated generator', () => {
       }),
     ).toBe(false)
     expect(pickSpecies({})).toBe(SPECIES.NORM)
+  })
+
+  it('keeps movie experience terms in their own flavors and respects overrides', () => {
+    for (const { id: flavor } of flavors) {
+      const values = load(SHADOWRUN.MOVIE, { flavor }).map((bit) => bit.value)
+      expect(values.includes('BTL trip')).toBe(flavor === 'shadowrun')
+      expect(values.includes('Braindance')).toBe(flavor === 'cyberpunk2020-2077')
+      expect(values.includes('XBD')).toBe(flavor === 'cyberpunk2020-2077')
+    }
+    const included = load(SHADOWRUN.MOVIE, {
+      includeTags: ['cyberpunk2020-2077'],
+    }).map((bit) => bit.value)
+    expect(included).toEqual(expect.arrayContaining(['Braindance', 'XBD']))
+    const excluded = load(SHADOWRUN.MOVIE, {
+      flavor: 'cyberpunk2020-2077',
+      includeTags: ['cyberpunk2020-2077'],
+      excludeTags: ['cyberpunk2020-2077'],
+    }).map((bit) => bit.value)
+    expect(excluded).not.toContain('Braindance')
+    expect(excluded).not.toContain('XBD')
   })
 
   it('uses setting names and short names without changing the source lists', () => {

@@ -4,6 +4,7 @@ import { availableCategories, generateNames } from '@/generator/categories'
 import { flavors } from '@/generator/options'
 import { CONTENT, load, SHADOWRUN } from '@/load'
 import { deviceContents, weapons } from '@/patterns/cyberpunk/content/content'
+import * as weaponNames from '@/patterns/cyberpunk/content/weaponName'
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -131,6 +132,18 @@ describe('adapted content generators', () => {
     expect(result.details).not.toMatch(
       /Silencer|Smart targeting|Tripod|Bipod|Belt-feed|Stock|Gas-vent/,
     )
+  })
+
+  it('adds a manufacturer to the shared weapon name and preserves its settings', () => {
+    seedRandom()
+    const nameSpy = vi.spyOn(weaponNames, 'weaponName')
+    const options = { flavor: 'shadowrun' as const, excludeTags: ['shadowrun'] }
+    const result = weapons(options)
+    expect(nameSpy).toHaveBeenCalledWith(options)
+    const name = nameSpy.mock.results[0]!.value as string
+    expect(result.primary.endsWith(` ${name}`)).toBe(true)
+    expect(result.primary.length).toBeGreaterThan(name.length + 1)
+    expect(result.details).toBeTruthy()
   })
 
   it('reports an empty required pool rather than producing broken data', () => {
