@@ -14,8 +14,9 @@ function change(value: Value, event: Event) {
   if (input.checked) selected.add(value)
   else selected.delete(value)
   if (!selected.size) {
-    input.checked = true
-    return
+    for (const option of props.options) {
+      if (option.value !== value) selected.add(option.value)
+    }
   }
   emit(
     'update:modelValue',
@@ -34,7 +35,6 @@ function change(value: Value, event: Event) {
           :name="name"
           :value="option.value"
           :checked="modelValue.includes(option.value)"
-          :disabled="modelValue.length === 1 && modelValue.includes(option.value)"
           @change="change(option.value, $event)"
         />
         <span>{{ option.label }}</span>
@@ -94,17 +94,10 @@ label:has(input:checked) {
   border-color: var(--color-signal);
   background: var(--color-surface);
 }
-label:hover:has(input:not(:disabled)) {
+label:hover {
   color: var(--color-signal);
   border-color: var(--color-signal);
   background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
-}
-label:has(input:disabled) {
-  color: var(--color-disabled);
-  border-color: var(--color-disabled);
-  border-style: dashed;
-  background: var(--color-disabled-fill);
-  cursor: not-allowed;
 }
 label:has(input:focus-visible) {
   outline: 3px solid var(--color-focus);
@@ -144,19 +137,11 @@ input:checked {
 input:checked::after {
   visibility: visible;
 }
-input:disabled {
-  border-color: var(--color-disabled);
-  background: var(--color-disabled-fill);
-}
-input:disabled::after {
-  border-color: var(--color-disabled);
-}
 [data-theme='cyberpunk2077'] .choices {
   gap: var(--space-4);
 }
 [data-theme='cyberpunk2077'] label,
-[data-theme='cyberpunk2077'] label:has(input:checked),
-[data-theme='cyberpunk2077'] label:has(input:disabled) {
+[data-theme='cyberpunk2077'] label:has(input:checked) {
   border: 0;
   background: transparent;
   padding-inline: 0;
@@ -186,17 +171,10 @@ input:disabled::after {
   justify-self: end;
   background: var(--color-signal);
 }
-[data-theme='cyberpunk2077'] input:disabled {
-  border-color: var(--color-disabled);
-  background: var(--color-disabled-fill);
-}
-[data-theme='cyberpunk2077'] input:disabled::after {
-  background: var(--color-disabled);
-}
-[data-theme='cyberpunk2077'] label:hover:has(input:not(:disabled)) {
+[data-theme='cyberpunk2077'] label:hover {
   background: transparent;
 }
-[data-theme='cyberpunk2077'] label:hover input:not(:disabled) {
+[data-theme='cyberpunk2077'] label:hover input {
   border-color: var(--color-signal);
   background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
 }

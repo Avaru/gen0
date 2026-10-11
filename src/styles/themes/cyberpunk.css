@@ -25,7 +25,6 @@
   --color-on-page: #11171b;
   --color-link-background: #11171b;
   --color-disabled: #7b858b;
-  --color-disabled-fill: #293139;
   --theme-check-shape: polygon(0 0, 100% 0, 100% 100%, 0 100%);
   --theme-panel-shadow: 6px 6px 0 #11171b;
   --theme-panel-fill: var(--color-surface);

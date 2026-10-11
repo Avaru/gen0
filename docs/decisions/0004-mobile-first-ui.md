@@ -4,7 +4,7 @@ Keep the app usable on 320px phones and current browsers. Use a phone single-col
 
 - Use semantic HTML, visible focus, readable contrast, explicit labels, 44px touch targets, and hidden status announcements. Aim for WCAG 2.2 AA; automated checks do not establish screen-reader or real-device accessibility.
 - Shared `Ui*` components own scoped presentation. Central CSS variables own repeated tokens; pages coordinate state with little CSS. Add VueUse only when native HTML, Vue, and Vue Router are insufficient.
-- Flavor is a native radio group. Gender and size use checkboxes, all selected initially; the last selected choice cannot be unchecked. Each result picks equally among selected choices. Keep each person's name-part gender consistent.
+- Flavor is a native radio group. Gender and size use checkboxes, all selected initially and always enabled; unchecking the last selected choice selects all the other choices. Each result picks equally among selected choices. Keep each person's name-part gender consistent.
 - Categories use a searchable grouped native dialog: full-screen on phones, centered from 640px. Match all search words against category/group labels; Enter selects a single match. Close/Escape cancels, selection closes, and focus returns to the trigger. Focus Close on phones/touch devices and search on larger mouse-driven screens.
 - Nationalities appear last, with Mixed first. Generic offers continent mixes; setting flavors offer sovereignty mixes immediately before nationalities. Missing pools remain visible as TODO with coverage notes.
 - Generate 10 names initially and on setting changes. Scrolling down to the bottom appends 20 without moving the viewport. The manual button rerolls; no batch-size control or result counters.

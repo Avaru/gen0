@@ -22,7 +22,6 @@
   --color-hot: #ff645c;
   --color-on-page: #ff645c;
   --color-disabled: #74818e;
-  --color-disabled-fill: #252d38;
   --theme-check-shape: polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%);
   --theme-action-shape: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
   --theme-panel-shadow: none;
