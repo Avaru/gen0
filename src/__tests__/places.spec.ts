@@ -29,11 +29,23 @@ describe('place categories', () => {
       ]
       const brands = load(SHADOWRUN.NAMES, { flavor }).filter(bit => bit.tags.includes('known-corporation')).map(bit => bit.value)
       const kinds = load(CONTENT.DEVICE_DATA, { flavor }).filter(bit => bit.type === 'street-kind').map(bit => bit.value)
+      const cityNames = new Set(bases.flatMap(base => [
+        base, ...suffixes.map(suffix => `${base} ${suffix}`),
+      ]))
+      const streetBases = new Set([...bases, ...brands])
       const cities = generateNames('cities', 30, { flavor })
-      expect(cities.every(city => bases.some(base => city.primary === base || suffixes.some(suffix => city.primary === `${base} ${suffix}`)))).toBe(true)
+      expect(cities.every(city => cityNames.has(city.primary))).toBe(true)
       expect(cities.every(city => /^\d[\d,. ]* inhabitants/.test(city.details ?? ''))).toBe(true)
       const streets = generateNames('streets', 30, { flavor })
-      expect(streets.every(street => prefixes.some(prefix => [...bases, ...brands].some(base => kinds.some(kind => street.primary === `${prefix} ${base} ${kind}`))))).toBe(true)
+      expect(streets.every(street => prefixes.some(prefix => {
+        const start = `${prefix} `
+        if (!street.primary.startsWith(start)) return false
+        return kinds.some(kind => {
+          const end = ` ${kind}`
+          return street.primary.endsWith(end) &&
+            streetBases.has(street.primary.slice(start.length, -end.length))
+        })
+      }))).toBe(true)
     }
   })
 

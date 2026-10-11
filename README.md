@@ -22,7 +22,7 @@ npm run preview
 
 `check` runs lint without edits, unit tests, TypeScript checks, and the production build. Output goes to `dist/`; `preview` serves that build locally.
 
-Unit tests use at most two workers when `CI` or `VERCEL` is set, limiting CPU and memory pressure during deployment checks.
+Unit tests run in Node by default; UI test files opt into jsdom with `@vitest-environment jsdom`. Test files remain isolated and use at most two workers when `CI` or `VERCEL` is set, limiting CPU and memory pressure during deployment checks.
 
 Individual commands: `npm run build`, `npm run test:unit -- --run`, and `npm run lint` (applies fixes).
 

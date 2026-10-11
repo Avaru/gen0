@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { afterAll, beforeAll, beforeEach, describe, it, expect, vi } from 'vitest'
 import { mockDialog } from './helpers/dialog'
 import { mockMedia } from './helpers/media'
