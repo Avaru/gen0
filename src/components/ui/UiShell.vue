@@ -10,7 +10,10 @@ const route = useRoute()
 const main = useTemplateRef<HTMLElement>('main')
 const isAbout = computed(() => route.matched.some((record) => record.path.endsWith('/about')))
 // Announce the new page without taking focus from controls on settings changes.
-watch(isAbout, async () => {
+watch(() => route.matched, async (matched, previous) => {
+  if (!previous.length
+    || matched.some((record) => record.path.endsWith('/about'))
+      === previous.some((record) => record.path.endsWith('/about'))) return
   await nextTick()
   main.value?.focus()
 })
@@ -73,9 +76,11 @@ nav a {
   font-weight: 600;
   text-underline-offset: 0.2em;
 }
-nav a:focus-visible,
-main:focus-visible {
+nav a:focus-visible {
   outline-color: var(--color-on-page);
+}
+main:focus {
+  outline: none;
 }
 header::after {
   content: '';

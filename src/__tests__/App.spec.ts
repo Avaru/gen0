@@ -44,6 +44,27 @@ async function setup(url = '/', attachTo?: HTMLElement) {
 }
 
 describe('name generator interface', () => {
+  it.each(['/about', '/shadowrun/german/about'])('does not focus content when loading %s', async (url) => {
+    const history = createMemoryHistory()
+    history.push(url)
+    const router = createRouter({
+      history,
+      routes: [
+        { path: '/about', component: AboutView },
+        { path: '/:flavor/:category/about', component: AboutView },
+      ],
+    })
+    // Mount before the initial navigation finishes, as in main.ts.
+    const wrapper = mount(App, { attachTo: document.body, global: { plugins: [router] } })
+    try {
+      await router.isReady()
+      await flushPromises()
+      expect(wrapper.get('h1').text()).toBe('About gen 0')
+      expect(document.activeElement).toBe(document.body)
+    } finally {
+      wrapper.unmount()
+    }
+  })
   it('focuses new page content while keeping focus on controls for setting changes', async () => {
     const { wrapper, router } = await setup('/cyberpunk/german', document.body)
     try {
