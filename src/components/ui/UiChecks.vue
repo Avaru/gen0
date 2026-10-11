@@ -2,6 +2,7 @@
 const props = defineProps<{
   modelValue: readonly Value[]
   label: string
+  hideLabel?: boolean
   name: string
   options: readonly { value: Value; label: string }[]
 }>()
@@ -25,7 +26,7 @@ function change(value: Value, event: Event) {
 
 <template>
   <fieldset>
-    <legend>{{ label }}</legend>
+    <legend :class="{ 'visually-hidden': hideLabel }">{{ label }}</legend>
     <div class="choices">
       <label v-for="option in options" :key="option.value">
         <input
@@ -62,6 +63,16 @@ legend {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 label {
   transition: var(--control-color-transition);

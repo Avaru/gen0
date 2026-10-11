@@ -10,6 +10,7 @@ const props = defineProps<{
   label: string
   error: string
   showDetails: boolean
+  pendingPools?: readonly string[]
 }>()
 const emit = defineEmits<{ more: []; 'update:showDetails': [value: boolean] }>()
 const list = useTemplateRef<HTMLOListElement>('list')
@@ -49,6 +50,9 @@ defineExpose({
         @update:model-value="$emit('update:showDetails', $event)"
       />
     </div>
+    <p v-if="pendingPools?.length">
+      Some name pools are still TODO: {{ pendingPools.join(', ') }}.
+    </p>
     <p class="status" role="status" aria-atomic="true">
       {{ busy ? 'Generating names…' : results.length ? 'Names updated.' : '' }}
     </p>

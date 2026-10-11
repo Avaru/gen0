@@ -23,6 +23,9 @@ function generate() {
 }
 const available = computed(() => availableCategories({ flavor: props.settings.flavor }))
 const category = computed(() => available.value.find((item) => item.id === props.settings.category))
+const hideChoiceLabel = computed(() =>
+  Number(!!category.value?.gender) + Number(!!category.value?.corporationSize) === 1,
+)
 const flavorOptions = flavors.map((item) => ({ value: item.id, label: item.label }))
 const genderOptions = [
   { value: GENUS.M, label: 'Masculine' },
@@ -49,14 +52,12 @@ const sizeOptions = [
       :options="available"
       @update:model-value="emit('update', { category: $event })"
     />
-    <p v-if="category?.pendingPools?.length">
-      Some name pools are still TODO: {{ category.pendingPools.join(', ') }}.
-    </p>
     <p v-if="category?.coverage">{{ category.coverage }}</p>
     <UiChecks
       v-if="category?.gender"
       :model-value="settings.gender"
       label="Given names"
+      :hide-label="hideChoiceLabel"
       name="gender"
       :options="genderOptions"
       @update:model-value="emit('update', { gender: $event })"
@@ -65,6 +66,7 @@ const sizeOptions = [
       v-if="category?.corporationSize"
       :model-value="settings.size"
       label="Corporation size"
+      :hide-label="hideChoiceLabel"
       name="size"
       :options="sizeOptions"
       @update:model-value="emit('update', { size: $event })"
