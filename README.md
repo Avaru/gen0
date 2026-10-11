@@ -4,6 +4,8 @@ Local Vue/TypeScript cyberpunk name generator. See the [app guide](docs/app.md) 
 
 I do not allow any of the data in this project to be used for training or developing AI models without my explicit permission.
 
+The [character data model](docs/character-data-model.md) and CBR+PNK seed catalogue are available in `src/data/characters/`. The “char” link opens a blank editable sheet backed by Pinia; no character generation is implemented.
+
 ## Run
 
 Node 24 is the minimum; prefer a newer version.

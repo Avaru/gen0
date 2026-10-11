@@ -1,38 +1,68 @@
 <script setup lang="ts">
 import type { Theme } from '@/styles/themes'
-import { useRoute } from 'vue-router'
+import { useRoute, type NavigationFailure } from 'vue-router'
 import { computed, nextTick, useTemplateRef, watch } from 'vue'
 import { settingsFromRoute, settingsPath, settingsQuery } from '@/generator/settings'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
+import UiBrandTitle from '@/components/ui/UiBrandTitle.vue'
 defineProps<{ theme: Theme }>()
 const version = __APP_VERSION__
 const route = useRoute()
 const main = useTemplateRef<HTMLElement>('main')
 const isAbout = computed(() => route.matched.some((record) => record.path.endsWith('/about')))
+const isCharacter = computed(() => route.matched.some((record) => record.path.endsWith('/char')))
+const page = computed(() => isAbout.value ? 'about' : isCharacter.value ? 'char' : 'generator')
 // Announce the new page without taking focus from controls on settings changes.
 watch(() => route.matched, async (matched, previous) => {
-  if (!previous.length
-    || matched.some((record) => record.path.endsWith('/about'))
-      === previous.some((record) => record.path.endsWith('/about'))) return
+  const pageKind = (records: typeof matched) => records.some(record => record.path.endsWith('/about'))
+    ? 'about' : records.some(record => record.path.endsWith('/char')) ? 'char' : 'generator'
+  if (!previous.length || pageKind(matched) === pageKind(previous)) return
   await nextTick()
-  main.value?.focus()
+  main.value?.focus({ preventScroll: true })
 })
+async function navigateFromMenu(
+  event: MouseEvent,
+  navigate: (event?: MouseEvent) => Promise<void | NavigationFailure>,
+) {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+  await navigate(event)
+  await nextTick()
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+}
 const navigation = computed(() => {
   const settings = settingsFromRoute(route)
   return {
-    path: settingsPath(settings) + (isAbout.value ? '' : '/about'),
+    path: settingsPath(settings) + (page.value === 'generator' ? '/about' : ''),
     query: settingsQuery(settings),
   }
 })
+const characterNavigation = computed(() => ({
+  path: `${settingsPath(settingsFromRoute(route))}/char`,
+  query: settingsQuery(settingsFromRoute(route)),
+}))
+const aboutNavigation = computed(() => ({
+  path: `${settingsPath(settingsFromRoute(route))}/about`,
+  query: settingsQuery(settingsFromRoute(route)),
+}))
 </script>
 <template>
-  <a class="skip" href="#main">{{ isAbout ? 'Skip to content' : 'Skip to generator' }}</a>
+  <a class="skip" href="#main">{{ page === 'generator' ? 'Skip to generator' : 'Skip to content' }}</a>
   <div class="shell" :data-theme="theme">
     <header>
       <nav aria-label="Main navigation">
-        <RouterLink :to="navigation"><span class="link-label">{{ isAbout ? 'Back to generator' : 'About' }}</span></RouterLink>
+        <RouterLink v-slot="{ href, navigate }" :to="navigation" custom>
+          <a :href="href" @click="navigateFromMenu($event, navigate)"><span class="link-label">{{ page === 'generator' ? 'About' : 'Back to generator' }}</span></a>
+        </RouterLink>
+        <RouterLink v-if="isCharacter" v-slot="{ href, navigate }" :to="aboutNavigation" custom>
+          <a :href="href" @click="navigateFromMenu($event, navigate)"><span class="link-label">About</span></a>
+        </RouterLink>
+        <RouterLink v-slot="{ href, navigate }" :to="characterNavigation" custom>
+          <a :href="href" :aria-current="isCharacter ? 'page' : undefined" @click="navigateFromMenu($event, navigate)"><span class="link-label">char</span></a>
+        </RouterLink>
       </nav>
-      <span class="brand">gen 0</span><span class="caption">Cyberpunk name generator</span>
+      <UiBrandTitle :theme="theme" />
+      <h1 v-if="isCharacter" class="caption">CBR+PNK <span class="caption-line">Runner sheet</span></h1>
+      <span v-else class="caption">Cyberpunk name generator</span>
       <a
         class="version"
         href="https://github.com/Avaru/gen0"
@@ -89,6 +119,8 @@ header {
 nav {
   flex-basis: 100%;
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
   justify-content: flex-end;
   padding-right: calc(3rem + var(--space-3));
 }
@@ -130,23 +162,16 @@ header::before {
   line-height: 1;
   white-space: nowrap;
 }
-.brand {
-  font-size: clamp(5rem, 16vw, 9rem);
-  font-family: var(--font-display);
-  font-weight: var(--theme-heading-weight);
-  line-height: 0.85;
-  text-transform: uppercase;
-  transform: skew(var(--theme-heading-slant));
-  letter-spacing: -0.06em;
-  text-shadow: var(--theme-brand-shadow);
-}
 .caption {
+  font-family: var(--font-body);
+  line-height: 1.5;
   max-width: 15rem;
   font-size: clamp(0.875rem, 2vw, 1rem);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+.caption-line { display: block; }
 .skip {
   position: fixed;
   top: var(--space-2);

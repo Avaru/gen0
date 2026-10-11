@@ -8,6 +8,8 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import App from '../App.vue'
 import GeneratorView from '../views/GeneratorView.vue'
 import AboutView from '../views/AboutView.vue'
+import CharacterView from '../views/CharacterView.vue'
+import { createPinia } from 'pinia'
 
 mockDialog()
 const media = mockMedia()
@@ -17,8 +19,13 @@ beforeAll(() => Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
   configurable: true,
   value: scroll,
 }))
-beforeEach(() => scroll.mockClear())
+const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+beforeEach(() => {
+  scroll.mockClear()
+  scrollTo.mockClear()
+})
 afterAll(() => {
+  scrollTo.mockRestore()
   if (originalScroll) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', originalScroll)
   else Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView')
 })
@@ -34,18 +41,83 @@ async function setup(url = '/', attachTo?: HTMLElement) {
     routes: [
       { path: '/', component: GeneratorView },
       { path: '/about', component: AboutView },
+      { path: '/char', component: CharacterView },
       { path: '/:flavor/:category/about', component: AboutView },
+      { path: '/:flavor/:category/char', component: CharacterView },
       { path: '/:flavor/:category?', component: GeneratorView },
     ],
   })
   await router.push(url)
   await router.isReady()
-  const wrapper = mount(App, { attachTo, global: { plugins: [router] } })
+  const wrapper = mount(App, { attachTo, global: { plugins: [createPinia(), router] } })
   await flushPromises()
   return { wrapper, router }
 }
 
 describe('name generator interface', () => {
+  it('scrolls to the top only for top-menu navigation, including the current page', async () => {
+    const { wrapper, router } = await setup('/cyberpunk/german', document.body)
+    const focus = vi.spyOn(wrapper.get('main').element as HTMLElement, 'focus')
+    try {
+      expect(scrollTo).not.toHaveBeenCalled()
+      await chooseCategory(wrapper, 'russian')
+      await flushPromises()
+      expect(scrollTo).not.toHaveBeenCalled()
+      for (const label of ['About', 'char', 'char', 'About', 'Back to generator']) {
+        const link = wrapper.findAll('nav a').find(link => link.text() === label)!
+        await link.trigger('click')
+        await flushPromises()
+        expect(scrollTo).toHaveBeenLastCalledWith({ top: 0, left: 0, behavior: 'instant' })
+      }
+      expect(scrollTo).toHaveBeenCalledTimes(5)
+      expect(focus).toHaveBeenLastCalledWith({ preventScroll: true })
+      scrollTo.mockClear()
+      router.back()
+      await flushPromises()
+      router.forward()
+      await flushPromises()
+      expect(scrollTo).not.toHaveBeenCalled()
+      expect(focus).toHaveBeenLastCalledWith({ preventScroll: true })
+      await wrapper.get('nav a').trigger('click', { ctrlKey: true })
+      await flushPromises()
+      expect(scrollTo).not.toHaveBeenCalled()
+    } finally {
+      focus.mockRestore()
+      wrapper.unmount()
+    }
+  })
+
+  it('opens the character sheet with the current theme, retains edits across navigation, and returns to settings', async () => {
+    const { wrapper, router } = await setup('/cyberpunk2020-2077/german?gender=f', document.body)
+    try {
+      await wrapper.get('nav a[href$="/char?gender=f"]').trigger('click')
+      await flushPromises()
+      expect(router.currentRoute.value.fullPath).toBe('/cyberpunk2020-2077/german/char?gender=f')
+      expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk2077')
+      expect(document.activeElement).toBe(wrapper.get('main').element)
+      const rating = '[aria-label="Aggressive rating 2"]'
+      await wrapper.get(rating).setValue(true)
+      await wrapper.get('nav a[href$="/about?gender=f"]').trigger('click')
+      await flushPromises()
+      await wrapper.get('nav a[href$="/char?gender=f"]').trigger('click')
+      await flushPromises()
+      expect(wrapper.get(rating).element).toHaveProperty('checked', true)
+      expect(wrapper.get('[aria-label="Aggressive rating 1"]').element).toHaveProperty('checked', true)
+      await wrapper.get('nav a').trigger('click')
+      await flushPromises()
+      expect(router.currentRoute.value.fullPath).toBe('/cyberpunk2020-2077/german?gender=f')
+    } finally { wrapper.unmount() }
+  })
+  it('supports an empty character sheet on a direct /char link', async () => {
+    const { wrapper } = await setup('/char')
+    expect(wrapper.get('h1').text()).toBe('CBR+PNK Runner sheet')
+    expect(wrapper.findAll('h1')).toHaveLength(1)
+    expect(wrapper.get('header .caption').text()).toBe('CBR+PNK Runner sheet')
+    expect(wrapper.find('form h1').exists()).toBe(false)
+    expect(wrapper.get('[aria-label="Aggressive rating 1"]').element).toHaveProperty('checked', false)
+    expect(wrapper.get('[aria-label="Aggressive rating 2"]').element).toHaveProperty('checked', false)
+    wrapper.unmount()
+  })
   it.each(['/about', '/shadowrun/german/about'])('does not focus content when loading %s', async (url) => {
     const history = createMemoryHistory()
     history.push(url)

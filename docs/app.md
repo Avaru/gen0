@@ -12,9 +12,18 @@ The header shows `v/{commit hash}` in small text above the right end of the stri
 
 Setting names and terminology follow the selected flavor. Generated company histories, products, prices, and places are fictional. Regional naming coverage is incomplete; missing pools are marked TODO.
 
+The “char” link beside About opens a CBR+PNK runner sheet. Approaches and skills come from the catalogue, including Attune marked as Weird. Ratings and expertise start empty; Glitched toggles start off. Each approach and skill has two + checkboxes, for ratings from 0 to 2. Selecting the right box selects both; clearing the right leaves the left selected, and clearing the left clears both. Approaches and Skills use the name generator’s panels and headings. Approaches and skills are dark at 0, yellow at 1, and cyan at 2, using the shared palette; approaches turn red when glitched. A Glitched hazard toggle sits beside the boxes on desktop and below on smaller screens. It shows the negative name (such as Hesitation) beside the original name, without changing the rating. That space stays reserved when off, so toggling does not shift the layout. Expertise is free text; filled fields have a yellow background with dark, heavier text. Edits stay in Pinia while navigating and reset on reload. No archetype is applied and no character is generated. Sheet links retain current settings and theme; `/char` also opens directly.
+
+The Harm card has three blank description lines, two independent slots each for levels 1 and 2, and one slot for level 3, matching the supplied sheet. The card turns yellow when level 1 is full and red when level 2 or 3 is full; a red state takes priority. Descriptions and slots live in the same character Pinia state. The card sits below Approaches on desktop and after Skills on mobile. It does not automatically move harm between levels.
+
+The Stress card copies the supplied card’s costs, overload rules, and seven connected diamonds. Selecting a slot marks all slots through it; clearing one clears it and every later slot. Stress starts at zero and stays in Pinia with the rest of the sheet. The last slot highlights the overload rule; choosing a glitched Approach remains manual.
+
+The Augmentations card copies the supplied rules and provides three blank text lines with independent Glitched hazard toggles. On desktop it sits directly below Skills, while the left column stacks Approaches, Harm, and Stress independently. Filled text fields turn yellow like skill expertise fields. Both text and glitch marks stay in the character Pinia store across navigation and reset on reload.
+
 ## Code and data
 
-- `src/data/`: editable names/fragments; personal names live in `names/`.
+- `src/data/`: editable names/fragments; personal names live in `names/`. `characters/` contains the separate [character model and CBR+PNK seed](character-data-model.md), plus display labels transcribed from the supplied sheet image.
+- `src/stores/character.ts`: Pinia state for the editable sheet, linked to catalogue IDs; blank values are `null`, distinct from zero.
 - `src/patterns/cyberpunk/`: composition; nationality rules live in `nationality/traditions.ts`.
 - `src/builders/`: independent selection pools and cached personal-name pools.
 - `src/generator/`: categories, options, alternate labels, and route normalization.

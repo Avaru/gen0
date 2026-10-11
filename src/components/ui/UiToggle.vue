@@ -1,11 +1,12 @@
 <script setup lang="ts">
-defineProps<{ modelValue: boolean; label: string }>()
+defineProps<{ modelValue: boolean; label: string; hazard?: boolean; inputLabel?: string }>()
 defineEmits<{ 'update:modelValue': [value: boolean] }>()
 </script>
 <template>
-  <label>
+  <label :class="{ hazard }">
     <input
       type="checkbox"
+      :aria-label="inputLabel ?? label"
       :checked="modelValue"
       @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
     />
@@ -123,6 +124,43 @@ input:focus-visible + .track {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
+label.hazard {
+  flex-direction: row;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid currentColor;
+  font-size: var(--font-small-control-size);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: inherit;
+}
+label.hazard .track {
+  width: 2.75rem;
+  height: 1.25rem;
+  padding: 0;
+  border: 1px solid var(--color-control-border);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-muted) 0 4px,
+    var(--color-surface) 4px 8px
+  );
+  clip-path: none;
+}
+label.hazard .track::before,
+label.hazard .track::after {
+  display: none;
+}
+label.hazard input:checked + .track {
+  border-color: var(--color-on-accent);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-on-accent) 0 4px,
+    var(--color-hot) 4px 8px
+  );
+}
+label.hazard:hover {
+  outline: 1px solid currentColor;
+}
 @media (forced-colors: active) {
   input {
     position: static;
@@ -132,6 +170,7 @@ input:focus-visible + .track {
     appearance: auto;
   }
   .track,
+  label.hazard .track,
   [data-theme='cyberpunk2077'] .track {
     display: none;
   }
