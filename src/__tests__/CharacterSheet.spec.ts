@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestPinia as createPinia } from './helpers/pinia'
 import { mount, flushPromises } from '@vue/test-utils'
 import CharacterView from '@/views/CharacterView.vue'
+import UiApproachRow from '@/components/ui/UiApproachRow.vue'
+import UiSkillRow from '@/components/ui/UiSkillRow.vue'
 import { useCharacterStore } from '@/stores/character'
 import { DATA, load } from '@/builders/load'
 import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
@@ -39,6 +41,8 @@ describe('editable CBR+PNK sheet', () => {
     const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
     const store = useCharacterStore(pinia)
     const card = wrapper.get('.runner-card')
+    expect(wrapper.getComponent(UiApproachRow).props('generation')).toBe(0)
+    expect(wrapper.getComponent(UiSkillRow).props('generation')).toBe(0)
     expect(card.get('label[for="runner-alias"]').text()).toBe('Handle')
     expect(card.get('label[for="runner-description"]').text()).toBe('Details and looks')
     expect(card.get('.angle legend').text()).toBe('Angle // Convey what ultimately you run for:')
@@ -62,9 +66,13 @@ describe('editable CBR+PNK sheet', () => {
     vi.spyOn(generators, 'generateNames').mockReturnValue([{ primary: 'Handle', secondary: 'Role' }])
     const random = vi.spyOn(Math, 'random').mockReturnValue(0)
     await chooseArchetype(wrapper, 'hacker')
+    expect(wrapper.getComponent(UiApproachRow).props('generation')).toBe(1)
+    expect(wrapper.getComponent(UiSkillRow).props('generation')).toBe(1)
     expect(store.sheet.runner.angle).toBe('Get out')
     random.mockReturnValue(0.999)
     await chooseArchetype(wrapper, 'hacker')
+    expect(wrapper.getComponent(UiApproachRow).props('generation')).toBe(2)
+    expect(wrapper.getComponent(UiSkillRow).props('generation')).toBe(2)
     expect(store.sheet.runner.angle).toBe('Take a stand')
     expect(card.findAll('input[name="runner-angle"]:checked')).toHaveLength(1)
     expect(useCharacterStore(createPinia()).sheet.runner.angle).toBe('Take a stand')
@@ -94,6 +102,13 @@ describe('editable CBR+PNK sheet', () => {
       removeEventListener: vi.fn<(event: string, listener: () => void) => void>(),
     }
     vi.stubGlobal('matchMedia', (query: string) => {
+      if (query === '(prefers-reduced-motion: reduce)') {
+        return {
+          matches: true,
+          addEventListener: vi.fn<() => void>(),
+          removeEventListener: vi.fn<() => void>(),
+        }
+      }
       const media = query === 'print' ? print : desktop
       media.addEventListener.mockImplementation((_event: string, listener: () => void) => {
         listeners.set(query, listener)

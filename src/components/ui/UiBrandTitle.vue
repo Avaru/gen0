@@ -5,7 +5,7 @@ const animationRun = ref(0)
 </script>
 
 <template>
-  <span class="brand" @mouseenter="animationRun++">
+  <span class="brand" :class="{ initial: animationRun === 0 }" @mouseenter="animationRun++">
     <span :key="`hot-${animationRun}`" class="layer layer--hot" aria-hidden="true">gen 0</span>
     <span :key="`signal-${animationRun}`" class="layer layer--signal" aria-hidden="true"
       >gen 0</span
@@ -45,6 +45,9 @@ const animationRun = ref(0)
   color: var(--color-signal);
   transform: translate(-3px, 2px);
   animation: signal-flicker 10s steps(1, end);
+}
+.initial .layer {
+  animation-duration: 5s;
 }
 @keyframes hot-flicker {
   0% {

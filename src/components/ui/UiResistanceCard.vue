@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSheetSymbol from './UiSheetSymbol.vue'
 import UiSheetCard from './UiSheetCard.vue'
 import UiDiamondChoice from './UiDiamondChoice.vue'
 const specialArmor = defineModel<boolean>({ required: true })
@@ -33,9 +34,23 @@ const specialArmor = defineModel<boolean>({ required: true })
         </p>
         <ul class="outcomes">
           <li>6,6 EZ. THAT’S IT.</li>
-          <li>6 SOLID. MARK <span aria-label="1 stress">⚡︎</span>.</li>
-          <li>4/5 NOT BAD. MARK <span aria-label="2 stress">⚡︎⚡︎</span>.</li>
-          <li>1–3 CLOSE. MARK <span aria-label="3 stress">⚡︎⚡︎⚡︎</span>.</li>
+          <li>
+            6 SOLID. MARK
+            <span role="img" aria-label="1 stress"><UiSheetSymbol kind="stress" /></span>.
+          </li>
+          <li>
+            4/5 NOT BAD. MARK
+            <span role="img" aria-label="2 stress"
+              ><UiSheetSymbol kind="stress" /><UiSheetSymbol kind="stress" /></span
+            >.
+          </li>
+          <li>
+            1–3 CLOSE. MARK
+            <span role="img" aria-label="3 stress"
+              ><UiSheetSymbol kind="stress" /><UiSheetSymbol kind="stress" /><UiSheetSymbol
+                kind="stress" /></span
+            >.
+          </li>
         </ul>
       </div>
     </div>

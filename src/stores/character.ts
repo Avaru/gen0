@@ -271,6 +271,20 @@ export const useCharacterStore = defineStore('character', () => {
   function reset() {
     sheet.value = createBlankSheet()
   }
+  function importCharacter(json: string) {
+    const imported: unknown = JSON.parse(json)
+    const defaults = createBlankSheet()
+    if (!isUsableSheet(imported, defaults)) throw new Error('Invalid character JSON')
+    sheet.value = {
+      ...imported,
+      specialArmor: imported.specialArmor ?? false,
+      runner: imported.runner ?? defaults.runner,
+      gear: imported.gear
+        ? { ...imported.gear, level: imported.gear.level || 'medium' }
+        : defaults.gear,
+    }
+    save()
+  }
   return {
     system: ref(system),
     attributes: ref(attributes),
@@ -279,5 +293,6 @@ export const useCharacterStore = defineStore('character', () => {
     hasContent,
     applyArchetype,
     reset,
+    importCharacter,
   }
 })

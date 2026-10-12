@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSheetSymbol from './UiSheetSymbol.vue'
 import type { SheetRating } from '@/data/characters/types'
 
 defineProps<{ label: string; id: string }>()
@@ -20,7 +21,7 @@ function change(position: 1 | 2, event: Event) {
         :aria-label="`${label} rating ${position}`"
         @change="change(position, $event)"
       />
-      <span aria-hidden="true">+</span>
+      <span aria-hidden="true"><UiSheetSymbol kind="dice" :framed="false" /></span>
     </label>
   </div>
 </template>
@@ -56,6 +57,7 @@ span {
   border-radius: var(--radius-sm);
   background: var(--color-subtle);
   color: var(--color-muted);
+  --sheet-symbol-ink: currentColor;
   font-size: 1.5rem;
   font-weight: 600;
   transition: var(--control-color-transition);
@@ -66,6 +68,7 @@ input:checked + span {
   border-color: var(--color-on-accent);
   background: var(--color-signal);
   color: var(--color-on-accent);
+  --sheet-symbol-ink: #fff;
 }
 label:hover span {
   background-image: repeating-linear-gradient(

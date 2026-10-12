@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 defineOptions({ inheritAttrs: false })
 withDefaults(
   defineProps<{
+    id?: string
+    label?: string
     multiline?: boolean
     rows?: number
-    variant?: 'boxed' | 'line'
+    variant?: 'boxed' | 'line' | 'runner'
     filled?: boolean
     printClass?: string
   }>(),
@@ -13,6 +16,13 @@ withDefaults(
     rows: 7,
   },
 )
+const field = ref<HTMLInputElement | HTMLTextAreaElement>()
+defineExpose({
+  select() {
+    field.value?.focus()
+    field.value?.select()
+  },
+})
 const value = defineModel<string>({ required: true })
 </script>
 
@@ -21,6 +31,8 @@ const value = defineModel<string>({ required: true })
   <textarea
     v-if="multiline"
     v-bind="$attrs"
+    :id="id"
+    ref="field"
     v-model="value"
     class="sheet-field"
     :class="[variant, { filled }]"
@@ -29,11 +41,14 @@ const value = defineModel<string>({ required: true })
   <input
     v-else
     v-bind="$attrs"
+    :id="id"
+    ref="field"
     v-model="value"
     class="sheet-field"
     :class="[variant, { filled }]"
     type="text"
   />
+  <label v-if="label" :for="id">{{ label }}</label>
 </template>
 
 <style scoped>
@@ -53,11 +68,24 @@ const value = defineModel<string>({ required: true })
   font-weight: 600;
   transition: var(--control-color-transition);
 }
-.boxed {
+.boxed,
+.runner {
   border: 1px solid var(--color-border);
   background-color: var(--color-surface);
   color: var(--color-text);
   font: inherit;
+}
+.runner {
+  border: 0;
+  border-bottom: 3px solid currentColor;
+  border-left: var(--theme-panel-rule-width) solid var(--color-accent);
+  border-radius: 0;
+  background-color: transparent;
+}
+label {
+  font-family: var(--font-display);
+  font-size: var(--font-small-control-size);
+  text-transform: uppercase;
 }
 .filled {
   background-color: var(--color-rating-one);

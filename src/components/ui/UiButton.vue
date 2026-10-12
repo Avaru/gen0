@@ -3,6 +3,7 @@ withDefaults(
   defineProps<{
     type?: 'button' | 'submit'
     variant?: 'primary' | 'secondary' | 'destructive' | 'destructive-secondary'
+    onBackground?: boolean
     activation?: number
   }>(),
   {
@@ -15,7 +16,7 @@ withDefaults(
 <template>
   <button
     :type="type"
-    :class="[variant, activation ? (activation % 2 ? 'pulse-a' : 'pulse-b') : undefined]"
+    :class="[variant, { 'on-background': onBackground }, activation ? (activation % 2 ? 'pulse-a' : 'pulse-b') : undefined]"
   >
     <slot />
   </button>
@@ -61,6 +62,22 @@ button::after {
 }
 .primary:active:enabled {
   background: color-mix(in srgb, var(--color-accent-hover) 85%, var(--color-on-accent));
+}
+.on-background {
+  --control-focus-color: var(--color-on-page);
+}
+.primary.on-background {
+  --button-rest-color: var(--color-on-page);
+  background: var(--color-on-page);
+  color: var(--color-page);
+  border-bottom-color: color-mix(in srgb, var(--color-on-page) 65%, var(--color-page));
+}
+.primary.on-background:hover:enabled {
+  --button-rest-color: color-mix(in srgb, var(--color-on-page) 85%, var(--color-page));
+  background: var(--button-rest-color);
+}
+.primary.on-background:active:enabled {
+  background: color-mix(in srgb, var(--color-on-page) 75%, var(--color-page));
 }
 .secondary {
   border-color: var(--color-signal);

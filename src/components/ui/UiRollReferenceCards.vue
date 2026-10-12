@@ -1,7 +1,11 @@
+<script setup lang="ts">
+import UiScrambleText from './UiScrambleText.vue'
+</script>
+
 <template>
   <div class="roll-reference-cards">
     <section class="roll-reference-card" aria-labelledby="action-roll-heading">
-      <h2 id="action-roll-heading">Action roll</h2>
+      <h2 id="action-roll-heading"><UiScrambleText text="Action roll" /></h2>
       <dl class="outcomes">
         <div>
           <dt>6,6</dt>
@@ -22,7 +26,7 @@
       </dl>
     </section>
     <section class="roll-reference-card" aria-labelledby="glitched-dice-heading">
-      <h2 id="glitched-dice-heading">Glitched dice</h2>
+      <h2 id="glitched-dice-heading"><UiScrambleText text="Glitched dice" /></h2>
       <p>
         Each <strong>GLITCHED</strong> factor used on an Action Roll replaces a normal die with a
         GLITCH die—use a die that’s easily discernible from the rest.

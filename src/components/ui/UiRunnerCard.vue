@@ -88,67 +88,12 @@ function regenerate(field: 'alias' | 'description') {
           trigger-id="runner-generate"
           trigger-label="Generate"
           label="Archetype"
+          description="Picking this will create a random name, details, approaches, skills and augmentations as per CBR+PNK char gen rules"
           plural="archetypes"
           :model-value="runner.archetypeId ?? ''"
           :options="archetypes"
           @update:model-value="generate"
-        >
-          <section class="file-runner" aria-labelledby="file-runner-heading">
-            <h3 id="file-runner-heading">Or file a runner</h3>
-            <ol>
-              <li>
-                Enter a <strong>Handle</strong>—what they call you on the Grid and streets alike.
-              </li>
-              <li>Enter a few evocative words to describe your <strong>Look</strong>.</li>
-              <li>
-                You risk it all for a reason. What’s in it for you? Choose an
-                <strong>Angle</strong> and detail it briefly.
-              </li>
-              <li>
-                Assign
-                <span class="approach-rating" aria-label="two pluses"
-                  ><span aria-hidden="true">⊞⊞</span></span
-                >,
-                <span class="approach-rating" aria-label="one plus"
-                  ><span aria-hidden="true">⊞</span></span
-                >, and
-                <span class="approach-rating" aria-label="one plus"
-                  ><span aria-hidden="true">⊞</span></span
-                >
-                in any order to three of your <strong>Approaches</strong>.
-              </li>
-              <li>
-                Distribute <strong>8 dice</strong> over your <strong>Skills</strong>. To assign an
-                <strong>Expertise</strong>, spend a third die on a particular Skill—choose or write
-                the Expertise down aside.
-              </li>
-              <li>
-                <p>
-                  Body modifications of all types—Cybernetics, Biotech and others—are widely adopted
-                  among Runners. Define your starting <strong>Signature Augmentation</strong> by
-                  writing down its model/brand and an outline of its primary feature,
-                  <em>e.g. Ashide™ Racing Legs.</em>
-                </p>
-                <p>
-                  While taking action or resisting Consequences, you can mark
-                  <span aria-label="stress"><span aria-hidden="true">ϟ</span></span> or
-                  <strong>SPECIAL RESISTANCE</strong> to leverage your Augmentation into it.
-                </p>
-                <p>
-                  <em
-                    >During the Run, you may declare additional Augmentations or extra
-                    functionalities of existing ones as <strong>UPGRADES</strong> (panel 8).</em
-                  >
-                </p>
-              </li>
-              <li>
-                Don’t pick your <strong>Gear</strong> just yet—you’ll decide what you are carrying
-                on the fly during the Run. For now, just circle on the list the ones you are
-                interested in, for easy referencing later.
-              </li>
-            </ol>
-          </section>
-        </UiChoicePicker>
+        />
         <UiButton v-if="canReset && confirmingReset" variant="destructive" @click="reset"
           >really?</UiButton
         >
@@ -158,7 +103,7 @@ function regenerate(field: 'alias' | 'description') {
       </div>
     </template>
     <div class="runner-field">
-      <UiSheetField id="runner-alias" v-model="runner.alias" variant="boxed" />
+      <UiSheetField id="runner-alias" v-model="runner.alias" variant="runner" label="Handle" />
       <UiButton
         class="regenerate"
         variant="secondary"
@@ -181,13 +126,13 @@ function regenerate(field: 'alias' | 'description') {
           <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
         </svg>
       </UiButton>
-      <label for="runner-alias">Handle</label>
     </div>
     <div class="runner-field">
       <UiSheetField
         id="runner-description"
         v-model="runner.description"
-        variant="boxed"
+        variant="runner"
+        label="Details and looks"
         multiline
         print-class="runner-description"
       />
@@ -213,7 +158,6 @@ function regenerate(field: 'alias' | 'description') {
           <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
         </svg>
       </UiButton>
-      <label for="runner-description">Details and looks</label>
     </div>
     <fieldset class="angle">
       <legend>Angle // Convey what ultimately you run for:</legend>
@@ -236,33 +180,6 @@ function regenerate(field: 'alias' | 'description') {
 </template>
 
 <style scoped>
-.file-runner {
-  margin-top: var(--space-6);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--color-border);
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-.file-runner h3 {
-  margin-bottom: var(--space-4);
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: var(--color-signal);
-  text-transform: uppercase;
-}
-.file-runner ol {
-  margin: 0;
-  padding-left: 2rem;
-  list-style-type: decimal-leading-zero;
-}
-.file-runner li + li,
-.file-runner p + p {
-  margin-top: var(--space-4);
-}
-.approach-rating {
-  white-space: nowrap;
-}
-
 .runner-card {
   --card-heading-gap: var(--space-3);
   --field-end-padding: calc(var(--control-height) + var(--space-2));
@@ -270,11 +187,6 @@ function regenerate(field: 'alias' | 'description') {
   gap: var(--space-2);
 }
 
-label {
-  font-family: var(--font-display);
-  font-size: var(--font-small-control-size);
-  text-transform: uppercase;
-}
 .angle {
   min-width: 0;
   margin: 0;
@@ -302,13 +214,6 @@ label {
   min-width: 0;
   display: grid;
   gap: var(--space-1);
-}
-.runner-field :deep(.sheet-field) {
-  border: 0;
-  border-bottom: 3px solid currentColor;
-  border-left: var(--theme-panel-rule-width) solid var(--color-accent);
-  border-radius: 0;
-  background-color: transparent;
 }
 .runner-field > .regenerate {
   position: absolute;

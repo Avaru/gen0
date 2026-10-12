@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId } from 'vue'
 import UiButton from './UiButton.vue'
+import UiModal from './UiModal.vue'
 
 const props = withDefaults(
   defineProps<{
     modelValue: string
     options: readonly { id: string; label: string; group: string }[]
     label?: string
+    description?: string
     plural?: string
     triggerLabel?: string
     searchable?: boolean
@@ -16,11 +18,10 @@ const props = withDefaults(
 )
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 const id = useId()
-const dialog = ref<HTMLDialogElement>()
+const dialog = ref<InstanceType<typeof UiModal>>()
 const trigger = ref<HTMLButtonElement>()
 const actionTrigger = ref<InstanceType<typeof UiButton>>()
 const search = ref<HTMLInputElement>()
-const closeButton = ref<HTMLButtonElement>()
 const query = ref('')
 const opened = ref(false)
 let chosen: string | undefined
@@ -38,11 +39,9 @@ async function open() {
   await nextTick()
   dialog.value?.showModal()
   opened.value = true
-  const initialFocus =
-    props.searchable && window.matchMedia('(min-width: 40rem) and (pointer: fine)').matches
-      ? search.value
-      : closeButton.value
-  initialFocus?.focus({ preventScroll: true })
+  if (props.searchable && window.matchMedia('(min-width: 40rem) and (pointer: fine)').matches) {
+    search.value?.focus({ preventScroll: true })
+  }
 }
 function close() {
   dialog.value?.close()
@@ -59,19 +58,6 @@ function closed() {
 function choose(value: string) {
   chosen = value
   close()
-}
-function wrapFocus(event: KeyboardEvent) {
-  const controls = dialog.value?.querySelectorAll<HTMLElement>('button, input')
-  if (!controls?.length) return
-  const first = controls[0]!
-  const last = controls[controls.length - 1]!
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
 }
 function enter() {
   if (filtered.value.length === 1) choose(filtered.value[0]!.id)
@@ -121,74 +107,61 @@ function enter() {
         <path d="M7 17 17 7M7 7h10v10" />
       </svg>
     </button>
-    <dialog
+    <UiModal
       :id="`${id}-dialog`"
       ref="dialog"
-      :aria-labelledby="`${id}-heading`"
+      :title="`Choose ${label.toLowerCase()}`"
+      :close-label="`Close ${label.toLowerCase()} picker`"
       @close="closed"
-      @keydown.tab="wrapFocus"
     >
-      <div class="panel">
-        <header>
-          <h2 :id="`${id}-heading`">Choose {{ label.toLowerCase() }}</h2>
-          <button
-            ref="closeButton"
-            class="close"
-            type="button"
-            :aria-label="`Close ${label.toLowerCase()} picker`"
-            @click="close"
-          >
-            ✕
-          </button>
-        </header>
-        <div v-if="searchable" class="search">
-          <label :for="`${id}-search`">Search {{ plural }}</label>
-          <input
-            :id="`${id}-search`"
-            ref="search"
-            v-model="query"
-            type="search"
-            placeholder="Type a name or group…"
-            autocomplete="off"
-            :aria-controls="`${id}-choices`"
-            @keydown.enter.prevent="enter"
-          />
-          <p class="match-status" role="status" aria-atomic="true">
-            {{
-              filtered.length
-                ? `${filtered.length} ${plural}`
-                : `No ${plural} found. Try another search.`
-            }}
-          </p>
-        </div>
-        <div :id="`${id}-choices`" class="groups">
-          <section
-            v-for="(group, index) in groups"
-            :key="group"
-            :aria-labelledby="group ? `${id}-group-${index}` : undefined"
-          >
-            <h3 v-if="group" :id="`${id}-group-${index}`">{{ group }}</h3>
-            <div class="choices">
-              <button
-                v-for="option in filtered.filter((item) => item.group === group)"
-                :key="option.id"
-                type="button"
-                :data-category="label === 'Category' ? option.id : undefined"
-                :data-choice="option.id"
-                :aria-current="option.id === modelValue ? 'true' : undefined"
-                @click="choose(option.id)"
-              >
-                <span>{{ option.label }}</span>
-                <span v-if="option.id === modelValue" class="current"
-                  >Selected <span aria-hidden="true">✓</span></span
-                >
-              </button>
-            </div>
-          </section>
-          <slot />
-        </div>
+      <div v-if="searchable" class="search">
+        <label :for="`${id}-search`">Search {{ plural }}</label>
+        <input
+          :id="`${id}-search`"
+          ref="search"
+          v-model="query"
+          type="search"
+          placeholder="Type a name or group…"
+          autocomplete="off"
+          :aria-controls="`${id}-choices`"
+          @keydown.enter.prevent="enter"
+        />
+        <p class="match-status" role="status" aria-atomic="true">
+          {{
+            filtered.length
+              ? `${filtered.length} ${plural}`
+              : `No ${plural} found. Try another search.`
+          }}
+        </p>
       </div>
-    </dialog>
+      <div :id="`${id}-choices`" class="groups">
+        <p v-if="description" class="rule">{{ description }}</p>
+        <section
+          v-for="(group, index) in groups"
+          :key="group"
+          :aria-labelledby="group ? `${id}-group-${index}` : undefined"
+        >
+          <h3 v-if="group" :id="`${id}-group-${index}`">{{ group }}</h3>
+          <div class="choices">
+            <button
+              v-for="option in filtered.filter((item) => item.group === group)"
+              :key="option.id"
+              type="button"
+              :data-category="label === 'Category' ? option.id : undefined"
+              :data-choice="option.id"
+              :aria-current="option.id === modelValue ? 'true' : undefined"
+              @click="choose(option.id)"
+            >
+              <span>{{ option.label }}</span>
+              <span v-if="option.id === modelValue" class="current"
+                >Selected <span aria-hidden="true">✓</span></span
+              >
+            </button>
+          </div>
+        </section>
+        <slot />
+      </div>
+    </UiModal>
   </div>
 </template>
 
@@ -197,6 +170,11 @@ function enter() {
   display: grid;
   gap: var(--space-2);
   min-width: 0;
+}
+.rule {
+  margin-bottom: var(--space-4);
+  font-size: var(--font-sheet-rule-size);
+  line-height: 1.35;
 }
 .label,
 .search label {
@@ -242,50 +220,6 @@ button:not(.primary):hover {
 }
 button:not(.primary):active {
   background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
-}
-dialog {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  max-width: none;
-  height: 100%;
-  height: 100dvh;
-  max-height: none;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-top: 5px solid var(--color-signal);
-  background: var(--color-surface);
-  background-image: var(--theme-panel-texture);
-  color: var(--color-text);
-}
-dialog::backdrop {
-  background: rgb(0 0 0 / 75%);
-}
-.panel {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-4);
-}
-h2 {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3rem);
-  text-transform: uppercase;
-  color: var(--color-signal);
-  line-height: 1;
-}
-.close {
-  flex-shrink: 0;
-  width: var(--control-height);
-  font-size: 1.25rem;
 }
 .search {
   display: grid;
@@ -340,14 +274,6 @@ h3 {
   flex-shrink: 0;
 }
 @media (min-width: 40rem) {
-  dialog {
-    width: min(44rem, calc(100% - 4rem));
-    height: min(48rem, calc(100dvh - 4rem));
-    margin: auto;
-    border: 1px solid var(--color-control-border);
-    border-top: 5px solid var(--color-signal);
-  }
-  header,
   .groups {
     padding: var(--space-6);
   }

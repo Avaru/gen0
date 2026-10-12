@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiScrambleText from './UiScrambleText.vue'
+
 withDefaults(
   defineProps<{
     title: string
@@ -14,7 +16,7 @@ withDefaults(
 <template>
   <section class="sheet-card" :data-state="state" :data-edge="edge" :aria-labelledby="headingId">
     <header class="card-heading" :class="headingClass">
-      <h2 :id="headingId">{{ title }}<slot name="title-extra" /></h2>
+      <h2 :id="headingId"><UiScrambleText :text="title" /><slot name="title-extra" /></h2>
       <slot name="actions" />
       <slot name="heading-extra" />
     </header>
@@ -54,6 +56,8 @@ withDefaults(
 }
 .sheet-card:not([data-state='empty']) {
   --card-ink: var(--color-on-accent);
+  --sheet-symbol-ink: #000;
+  --sheet-symbol-square: #000;
   --card-title: var(--card-ink);
   --card-title-shadow: none;
   --control-focus-color: var(--color-on-accent);
@@ -84,6 +88,7 @@ withDefaults(
   min-width: 0;
 }
 h2 {
+  --scramble-color: var(--card-title);
   min-width: 0;
   font-family: var(--font-display);
   font-size: var(--font-sheet-heading-size);

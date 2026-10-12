@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSheetSymbol from './UiSheetSymbol.vue'
 import UiSheetField from './UiSheetField.vue'
 import UiSheetCard from './UiSheetCard.vue'
 import type { CharacterSheet } from '@/data/characters/types'
@@ -16,7 +17,7 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
   >
     <div class="rules">
       <p>
-        Mark ⚡ to activate an enhanced capability
+        Mark <UiSheetSymbol kind="stress" label="stress" /> to activate an enhanced capability
         <em>(e.g. therma-vision, wired reflexes, augmented strength)</em> or produce/conceal an
         specific compact asset <em>(chemicals, blade, nanobots)</em>. Can be combined with a
         <strong>Push</strong>.

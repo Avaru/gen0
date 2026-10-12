@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import type { Theme } from '@/styles/themes'
 import { useRoute, type NavigationFailure } from 'vue-router'
-import { computed, nextTick, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, provide, ref, useTemplateRef, watch } from 'vue'
 import { settingsFromRoute, settingsPath, settingsQuery } from '@/generator/settings'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
 import UiBrandTitle from '@/components/ui/UiBrandTitle.vue'
+import UiButton from './UiButton.vue'
+import UiCharacterTransfer from './UiCharacterTransfer.vue'
 defineProps<{ theme: Theme }>()
+const showCharacterGuide = ref(false)
+provide('showCharacterGuide', showCharacterGuide)
 const version = __APP_VERSION__
 const route = useRoute()
 const main = useTemplateRef<HTMLElement>('main')
@@ -59,6 +63,14 @@ const aboutNavigation = computed(() => ({
       <UiBrandTitle />
       <h1 v-if="isCharacter" class="caption">CBR+PNK <span class="caption-line">Runner sheet</span></h1>
       <span v-else class="caption">Cyberpunk name generator</span>
+      <div v-if="isCharacter" class="character-actions">
+        <UiCharacterTransfer />
+        <UiButton
+          :aria-expanded="showCharacterGuide"
+          aria-controls="runner-guide"
+          @click="showCharacterGuide = !showCharacterGuide"
+        >guide</UiButton>
+      </div>
       <a
         class="version"
         href="https://github.com/Avaru/gen0"
@@ -149,6 +161,24 @@ header::before {
   height: 0.625rem;
   background: var(--theme-panel-edge);
   pointer-events: none;
+}
+.character-actions {
+  --button-flex: 0 0 auto;
+  --button-font-size: var(--font-control-size);
+  --button-padding-inline: var(--space-2);
+  --button-white-space: nowrap;
+  position: absolute;
+  bottom: calc(var(--space-2) + 0.625rem + var(--space-2));
+  right: 0;
+  display: flex;
+  gap: var(--space-2);
+}
+@media (max-width: 47.999rem) {
+  h1.caption {
+    flex-basis: 100%;
+    max-width: calc(100% - 11rem);
+    margin-right: 11rem;
+  }
 }
 .version {
   position: absolute;

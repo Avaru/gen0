@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSheetSymbol from './UiSheetSymbol.vue'
 import UiSheetCard from './UiSheetCard.vue'
 import UiDiamondChoice from './UiDiamondChoice.vue'
 import { cbrPnkStressComplications } from '@/data/characters/cbr-pnk-sheet'
@@ -12,9 +13,20 @@ function change(position: number, selected: boolean) {
 <template>
   <UiSheetCard class="stress-card" title="Stress" heading-id="stress-heading" edge="hot">
     <p class="costs">
-      <span>Push: ⚡⚡</span><span aria-hidden="true">/</span> <span>Assist: ⚡</span
+      <span
+        >Push: <UiSheetSymbol kind="stress" label="stress" /><UiSheetSymbol
+          kind="stress"
+          label="stress" /></span
       ><span aria-hidden="true">/</span>
-      <span>Flashback: ⚡ or ⚡⚡+</span>
+      <span>Assist: <UiSheetSymbol kind="stress" label="stress" /></span
+      ><span aria-hidden="true">/</span>
+      <span
+        >Flashback: <UiSheetSymbol kind="stress" label="stress" /> or
+        <UiSheetSymbol kind="stress" label="stress" /><UiSheetSymbol
+          kind="stress"
+          label="stress"
+        />+</span
+      >
     </p>
     <div class="track" role="group" aria-label="Stress slots">
       <UiDiamondChoice
@@ -29,7 +41,8 @@ function change(position: number, selected: boolean) {
     </div>
     <div class="overload" :class="{ active: stress === 7 }">
       <p>
-        <strong>Overload</strong> When you mark your last ⚡, an Approach of your choosing becomes
+        <strong>Overload</strong> When you mark your last
+        <UiSheetSymbol kind="stress" label="stress" />, an Approach of your choosing becomes
         permanently <strong>Glitched</strong> and immediately incurs a complication, such as:
       </p>
       <ul>
@@ -38,8 +51,9 @@ function change(position: number, selected: boolean) {
         </li>
       </ul>
       <p>
-        While <strong>overloaded</strong> you can’t perform actions that would require ⚡.
-        <strong>Take a breather</strong> to relieve ⚡ and clear this status.
+        While <strong>overloaded</strong> you can’t perform actions that would require
+        <UiSheetSymbol kind="stress" label="stress" />. <strong>Take a breather</strong> to relieve
+        <UiSheetSymbol kind="stress" label="stress" /> and clear this status.
       </p>
     </div>
   </UiSheetCard>

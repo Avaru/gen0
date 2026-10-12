@@ -4,7 +4,8 @@ import { cbrPnkExpertiseOptions } from '@/data/characters/cbr-pnk-sheet'
 import UiSheetRatingRow from './UiSheetRatingRow.vue'
 import UiRatingChecks from './UiRatingChecks.vue'
 import UiExpertiseChoices from './UiExpertiseChoices.vue'
-defineProps<{ skill: Skill; coreModuleId: string }>()
+import UiScrambleText from './UiScrambleText.vue'
+withDefaults(defineProps<{ skill: Skill; coreModuleId: string; generation?: number }>(), { generation: 0 })
 const rating = defineModel<CharacterSheet['skillRatings'][number]>('rating', { required: true })
 const expertise = defineModel<CharacterSheet['expertises'][number]>('expertise', { required: true })
 </script>
@@ -12,8 +13,7 @@ const expertise = defineModel<CharacterSheet['expertises'][number]>('expertise',
   <UiSheetRatingRow kind="skill" :state="String(rating.value ?? 0)">
     <div class="skill-stat">
       <label class="skill-name" :for="skill.id"
-        >{{ skill.name
-        }}<small v-if="skill.requiredModuleIds.some((id) => id !== coreModuleId)"
+        ><UiScrambleText :text="skill.name" :replay-key="generation" :duration="generation ? 550 : 0" /><small v-if="skill.requiredModuleIds.some((id) => id !== coreModuleId)"
           >// Weird</small
         ></label
       >
@@ -30,6 +30,7 @@ const expertise = defineModel<CharacterSheet['expertises'][number]>('expertise',
 </template>
 <style scoped>
 .skill-name {
+  --scramble-color: var(--row-name);
   max-width: 7rem;
   font-family: var(--font-display);
   font-weight: var(--theme-name-weight);

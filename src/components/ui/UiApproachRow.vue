@@ -4,7 +4,8 @@ import { cbrPnkApproachLabels } from '@/data/characters/cbr-pnk-sheet'
 import UiSheetRatingRow from './UiSheetRatingRow.vue'
 import UiRatingChecks from './UiRatingChecks.vue'
 import UiToggle from './UiToggle.vue'
-defineProps<{ attribute: Attribute }>()
+import UiScrambleText from './UiScrambleText.vue'
+withDefaults(defineProps<{ attribute: Attribute; generation?: number }>(), { generation: 0 })
 const rating = defineModel<CharacterSheet['attributeRatings'][number]>('rating', { required: true })
 const glitch = defineModel<CharacterSheet['glitches'][number]>('glitch', { required: true })
 </script>
@@ -12,7 +13,7 @@ const glitch = defineModel<CharacterSheet['glitches'][number]>('glitch', { requi
   <UiSheetRatingRow kind="approach" :state="glitch.marked ? 'glitched' : String(rating.value ?? 0)">
     <div class="approach-panel">
       <div class="approach-title">
-        <label class="approach-name" :for="attribute.id">{{ attribute.name }}</label>
+        <label class="approach-name" :for="attribute.id"><UiScrambleText :text="attribute.name" :replay-key="generation" :duration="generation ? 550 : 0" /></label>
         <span class="approach-negative" :class="{ visible: glitch.marked }"
           >// {{ cbrPnkApproachLabels[attribute.key]?.glitch }}</span
         >
@@ -44,6 +45,7 @@ const glitch = defineModel<CharacterSheet['glitches'][number]>('glitch', { requi
   white-space: nowrap;
 }
 .approach-name {
+  --scramble-color: var(--row-name);
   font-family: var(--font-display);
   font-weight: var(--theme-name-weight);
   color: var(--row-name);

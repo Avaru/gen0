@@ -1,7 +1,12 @@
+<script setup lang="ts">
+import UiSheetSymbol from './UiSheetSymbol.vue'
+</script>
+
 <template>
   <p class="expertise-rule">
-    Expertises don’t add + to a roll, but allow you to trade + for an EDGE—and vice versa—when they
-    are applicable.
+    Expertises don’t add <UiSheetSymbol kind="dice" label="a die" /> to a roll, but allow you to
+    trade <UiSheetSymbol kind="dice" label="a die" /> for an EDGE—and vice versa—when they are
+    applicable.
   </p>
 </template>
 <style scoped>
