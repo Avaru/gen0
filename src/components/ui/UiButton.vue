@@ -1,5 +1,5 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ type?: 'button' | 'submit'; variant?: 'primary' | 'secondary'; activation?: number }>(), {
+withDefaults(defineProps<{ type?: 'button' | 'submit'; variant?: 'primary' | 'secondary' | 'destructive' | 'destructive-secondary'; activation?: number }>(), {
   type: 'button',
   variant: 'primary',
   activation: 0,
@@ -59,6 +59,30 @@ button::after {
 .secondary:active:enabled {
   background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
 }
+.destructive {
+  --button-feedback-color: var(--color-signal);
+  --button-rest-color: var(--color-hot);
+  background: var(--color-hot);
+  color: var(--color-on-accent);
+}
+.destructive:hover:enabled {
+  --button-rest-color: color-mix(in srgb, var(--color-hot) 85%, white);
+  background: var(--button-rest-color);
+}
+.destructive:active:enabled {
+  background: color-mix(in srgb, var(--color-hot) 85%, var(--color-on-accent));
+}
+.destructive-secondary {
+  border-color: var(--color-hot);
+  background: var(--color-surface);
+  color: var(--color-hot);
+}
+.destructive-secondary:hover:enabled {
+  background: var(--color-subtle);
+}
+.destructive-secondary:active:enabled {
+  background: color-mix(in srgb, var(--color-hot) 16%, var(--color-surface));
+}
 [data-theme='cyberpunk2077'] button {
   --button-feedback-color: color-mix(in srgb, currentColor 32%, var(--color-surface));
   --button-rest-color: color-mix(in srgb, currentColor 8%, var(--color-surface));
@@ -104,6 +128,22 @@ button::after {
 }
 [data-theme='cyberpunk2077'] button:active:enabled::after {
   background: color-mix(in srgb, currentColor 30%, var(--color-surface));
+}
+[data-theme='cyberpunk2077'] .destructive {
+  --button-feedback-color: var(--color-signal);
+  --button-rest-color: var(--color-hot);
+  color: var(--color-on-accent);
+}
+[data-theme='cyberpunk2077'] .destructive::before,
+[data-theme='cyberpunk2077'] .destructive::after {
+  background: var(--color-hot);
+}
+[data-theme='cyberpunk2077'] .destructive:hover:enabled::after {
+  --button-rest-color: color-mix(in srgb, var(--color-hot) 85%, white);
+  background: var(--button-rest-color);
+}
+[data-theme='cyberpunk2077'] .destructive:active:enabled::after {
+  background: color-mix(in srgb, var(--color-hot) 85%, var(--color-on-accent));
 }
 [data-theme='cyberpunk2077'] button:disabled {
   color: var(--color-disabled);

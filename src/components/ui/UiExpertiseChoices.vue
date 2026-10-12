@@ -1,6 +1,7 @@
 <script setup lang="ts">
 defineProps<{ label: string; options: string[] }>()
 const selected = defineModel<string[]>({ required: true })
+const custom = defineModel<string>('custom')
 </script>
 
 <template>
@@ -13,6 +14,10 @@ const selected = defineModel<string[]>({ required: true })
         :aria-label="`${label} expertise: ${option}`"
       />
       <span>{{ option }}</span>
+    </label>
+    <label class="custom-expertise" :class="{ filled: custom?.trim() }">
+      <input v-model="custom" type="text" placeholder="Custom" :aria-label="`${label} custom expertise`" />
+      <span v-if="custom?.trim()" class="custom-print-value">{{ custom }}</span>
     </label>
   </div>
 </template>
@@ -35,7 +40,7 @@ const selected = defineModel<string[]>({ required: true })
   cursor: pointer;
   align-self: flex-start;
 }
-input {
+input[type='checkbox'] {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -72,13 +77,14 @@ span::after {
   margin-left: calc(-1 * var(--space-1));
   color: inherit;
 }
-.expertise-choice:last-child span::after {
+.expertise-choice:has(+ .custom-expertise) span::after {
   content: '';
 }
 .expertise-choice:nth-child(3n + 2) span {
   border-bottom-style: dotted;
 }
-input:checked + span {
+input:checked + span,
+.custom-expertise.filled input {
   background: var(--color-rating-one);
   background-image: repeating-linear-gradient(
     0deg,
@@ -105,8 +111,67 @@ input:focus-visible + span {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
+.custom-expertise {
+  position: relative;
+  flex: 1 1 5rem;
+  min-width: 0;
+  max-width: 100%;
+}
+.custom-expertise input {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height);
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-bottom: 1px dashed currentColor;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-expertise);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+.custom-expertise input::placeholder {
+  color: var(--color-muted);
+  opacity: 1;
+}
+.custom-expertise.filled::before {
+  content: '✓';
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--color-on-accent);
+  font-size: 0.625rem;
+  pointer-events: none;
+}
+.custom-expertise input:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+.custom-print-value {
+  display: none;
+}
+@media print {
+  .custom-expertise:not(.filled),
+  .custom-expertise input {
+    display: none;
+  }
+  .custom-expertise.filled {
+    flex: 0 1 auto;
+  }
+  .custom-print-value {
+    display: flex;
+    white-space: pre-wrap;
+  }
+  .custom-print-value::after {
+    content: '';
+  }
+}
 @media (forced-colors: active) {
-  input {
+  input[type='checkbox'] {
     position: static;
     width: 1.25rem;
     height: 1.25rem;

@@ -28,6 +28,41 @@ beforeEach(() => localStorage.clear())
 afterEach(() => vi.restoreAllMocks())
 
 describe('editable CBR+PNK sheet', () => {
+  it.each(flavors)('regenerates each runner field independently using the $label flavor without changing stats', async ({ id }) => {
+    const generate = vi.spyOn(generators, 'generateNames').mockReturnValue([
+      { primary: 'New alias', details: 'Real name: New name', title: 'New role', appearance: 'New appearance', archetypeId: 'driver' },
+    ])
+    const pinia = createPinia()
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/chars/cbrpnk', component: CharacterView }],
+    })
+    await router.push({ path: '/chars/cbrpnk', query: { flavor: id } })
+    await router.isReady()
+    const wrapper = mount(CharacterView, { global: { plugins: [pinia, router] } })
+    const store = useCharacterStore(pinia)
+    store.sheet.runner = { alias: 'Existing alias', description: 'Existing description', archetypeId: 'hacker' }
+    store.sheet.attributeRatings[0]!.value = 2
+    store.sheet.skillRatings[0]!.value = 1
+    store.sheet.expertises[0]!.values = ['Existing expertise']
+    store.sheet.augmentations[0]!.description = 'Existing augmentation'
+    store.sheet.stress = 4
+    await flushPromises()
+    const before = JSON.parse(JSON.stringify(store.sheet))
+    await wrapper.get('[aria-label="Regenerate alias"]').trigger('click')
+    expect(generate).toHaveBeenLastCalledWith('runners', 1, { flavor: id })
+    expect(store.sheet).toEqual({ ...before, runner: { ...before.runner, alias: 'New alias' } })
+    expect(wrapper.get('#runner-alias').element).toHaveProperty('value', 'New alias')
+    await wrapper.get('[aria-label="Regenerate name and description"]').trigger('click')
+    expect(generate).toHaveBeenLastCalledWith('runners', 1, { flavor: id })
+    expect(store.sheet).toEqual({ ...before, runner: {
+      ...before.runner, alias: 'New alias', description: 'Real name: New name\nNew role\nNew appearance',
+    } })
+    expect(wrapper.get('#runner-description').element).toHaveProperty('value', store.sheet.runner.description)
+    expect(useCharacterStore(createPinia()).sheet).toEqual(store.sheet)
+    wrapper.unmount()
+  })
+
   it('opens the archetype picker without changing fields and cancels without generating', async () => {
     const wrapper = mount(CharacterView, { attachTo: document.body, global: { plugins: [createPinia()] } })
     const store = useCharacterStore()
@@ -43,7 +78,7 @@ describe('editable CBR+PNK sheet', () => {
     wrapper.unmount()
   })
 
-  it('immediately clears every sheet field and saves blank defaults on Reset', async () => {
+  it('clears every sheet field and saves blank defaults only after confirming Reset', async () => {
     const pinia = createPinia()
     const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
     const store = useCharacterStore(pinia)
@@ -61,24 +96,96 @@ describe('editable CBR+PNK sheet', () => {
     })
     store.sheet.gear = { level: 'heavy', selected: ['Armor'], extra: [true, false, false, false] }
     store.sheet.stress = 7
+    store.sheet.specialArmor = true
     store.sheet.augmentations.forEach((row) => {
       row.description = 'Augmentation'
       row.glitched = true
     })
     await wrapper.get('#runner-alias').setValue('Alias')
     expect(wrapper.findAll('#runner-generate, .actions > button').map((item) => item.text())).toEqual(['Generate', 'Reset'])
+    const before = JSON.stringify(store.sheet)
     await button('Reset').trigger('click')
+    expect(JSON.stringify(store.sheet)).toBe(before)
+    expect(wrapper.findAll('#runner-generate, .actions > button').map((item) => item.text())).toEqual(['Generate', 'really?', 'nah.'])
+    expect(button('really?').classes()).toContain('destructive')
+    await button('really?').trigger('click')
     expect(store.sheet).toEqual(blank)
     expect(JSON.parse(localStorage.getItem('gen0.character')!)).toEqual(blank)
     expect(wrapper.find('#runner-archetype').exists()).toBe(false)
     expect(useCharacterStore(createPinia()).sheet).toEqual(blank)
     expect(wrapper.get('#runner-alias').element).toHaveProperty('value', '')
     expect(wrapper.get('#runner-description').element).toHaveProperty('value', '')
-    expect(wrapper.findAll('#runner-generate, .actions > button').map((item) => item.text())).toEqual(['Generate', 'Reset'])
+    expect(wrapper.findAll('#runner-generate, .actions > button').map((item) => item.text())).toEqual(['Generate'])
     // A later reset must still create fresh blank values after nested edits.
     await wrapper.get('#runner-alias').setValue('Another alias')
     await button('Reset').trigger('click')
+    await button('really?').trigger('click')
     expect(store.sheet).toEqual(blank)
+    wrapper.unmount()
+  })
+
+  it('cancels reset confirmation with nah., generation, and unmounting', async () => {
+    const pinia = createPinia()
+    const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
+    const store = useCharacterStore(pinia)
+    const button = (text: string) => wrapper.findAll('.actions > button').find((item) => item.text() === text)!
+    await wrapper.get('#runner-alias').setValue('Keep me')
+    const before = JSON.stringify(store.sheet)
+    await button('Reset').trigger('click')
+    await button('nah.').trigger('click')
+    expect(JSON.stringify(store.sheet)).toBe(before)
+    expect(wrapper.findAll('.actions > button').map((item) => item.text())).toEqual(['Reset'])
+    await button('Reset').trigger('click')
+    await chooseArchetype(wrapper, 'hacker')
+    expect(wrapper.findAll('.actions > button').map((item) => item.text())).toEqual(['Reset'])
+    const generated = JSON.stringify(store.sheet)
+    await button('Reset').trigger('click')
+    wrapper.unmount()
+    const remounted = mount(CharacterView, { global: { plugins: [pinia] } })
+    expect(remounted.findAll('.actions > button').map((item) => item.text())).toEqual(['Reset'])
+    expect(JSON.stringify(store.sheet)).toBe(generated)
+    remounted.unmount()
+  })
+
+  it('shows Reset for content anywhere in the sheet and hides it when cleared', async () => {
+    const pinia = createPinia()
+    const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
+    const store = useCharacterStore(pinia)
+    const edits: Array<() => void> = [
+      () => { store.sheet.runner.alias = 'Alias' },
+      () => { store.sheet.runner.description = 'Description' },
+      () => { store.sheet.runner.archetypeId = 'hacker' },
+      () => { store.sheet.attributeRatings[0]!.value = 1 },
+      () => { store.sheet.skillRatings[0]!.value = 1 },
+      () => { store.sheet.expertises[0]!.values = ['People'] },
+      () => { store.sheet.glitches[0]!.marked = true },
+      () => { store.sheet.harm[0]!.description = 'Bruised' },
+      () => { store.sheet.harm[0]!.marks[0] = true },
+      () => { store.sheet.stress = 1 },
+      () => { store.sheet.specialArmor = true },
+      () => { store.sheet.gear.level = 'light' },
+      () => { store.sheet.gear.selected = ['Armor'] },
+      () => { store.sheet.gear.extra[0] = true },
+      () => { store.sheet.augmentations[0]!.description = 'Wired reflexes' },
+      () => { store.sheet.augmentations[0]!.glitched = true },
+    ]
+    expect(wrapper.findAll('.actions > button')).toHaveLength(0)
+    for (const edit of edits) {
+      edit()
+      await flushPromises()
+      expect(wrapper.get('.actions > button').text()).toBe('Reset')
+      await wrapper.get('.actions > button').trigger('click')
+      store.reset()
+      await flushPromises()
+      expect(wrapper.findAll('.actions > button')).toHaveLength(0)
+    }
+    await wrapper.get('[aria-label="Aggressive rating 1"]').setValue(true)
+    await wrapper.get('[aria-label="Aggressive rating 1"]').setValue(false)
+    expect(wrapper.findAll('.actions > button')).toHaveLength(0)
+    await wrapper.get('#runner-alias').setValue('Alias')
+    expect(wrapper.get('.actions > button').text()).toBe('Reset')
+    await wrapper.get('#runner-alias').setValue('')
+    expect(wrapper.findAll('.actions > button')).toHaveLength(0)
     wrapper.unmount()
   })
 
@@ -210,6 +317,40 @@ describe('editable CBR+PNK sheet', () => {
     expect(useCharacterStore(createPinia()).sheet.augmentations).toEqual(store.sheet.augmentations)
     remounted.unmount()
   })
+  it('keeps resistance static except Special Armor, saves its yellow state, and clears it on reset', async () => {
+    const pinia = createPinia()
+    const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
+    const store = useCharacterStore(pinia)
+    const card = wrapper.get('.resistance-card')
+    expect(card.findAll('input, button, select, textarea')).toHaveLength(1)
+    expect(card.attributes('data-state')).toBe('empty')
+    expect(store.hasContent).toBe(false)
+    const before = JSON.parse(JSON.stringify(store.sheet))
+    await card.get('[aria-label="Special Armor"]').setValue(true)
+    expect(store.sheet).toEqual({ ...before, specialArmor: true })
+    expect(card.attributes('data-state')).toBe('yellow')
+    expect(store.hasContent).toBe(true)
+    wrapper.unmount()
+    const remounted = mount(CharacterView, { global: { plugins: [createPinia()] } })
+    expect(remounted.get('[aria-label="Special Armor"]').element).toHaveProperty('checked', true)
+    expect(remounted.get('.resistance-card').attributes('data-state')).toBe('yellow')
+    await remounted.get('[aria-label="Special Armor"]').setValue(false)
+    expect(remounted.get('.resistance-card').attributes('data-state')).toBe('empty')
+    remounted.unmount()
+  })
+
+  it('preserves older sheets without Special Armor and rejects invalid saved marks', () => {
+    const blank = useCharacterStore(createPinia()).sheet
+    const { specialArmor: _specialArmor, ...older } = JSON.parse(JSON.stringify(blank))
+    older.runner.alias = 'Saved alias'
+    localStorage.setItem('gen0.character', JSON.stringify(older))
+    const restored = useCharacterStore(createPinia())
+    expect(restored.sheet.runner.alias).toBe('Saved alias')
+    expect(restored.sheet.specialArmor).toBe(false)
+    localStorage.setItem('gen0.character', JSON.stringify({ ...older, specialArmor: 'true' }))
+    expect(useCharacterStore(createPinia()).sheet).toEqual(blank)
+  })
+
   it('fills stress through the selected slot, clears subsequent slots, and retains it across navigation', async () => {
     const pinia = createPinia()
     const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
@@ -291,6 +432,29 @@ describe('editable CBR+PNK sheet', () => {
     )
     remounted.unmount()
   })
+  it('saves custom expertise, shows its filled state, and clears it on reset', async () => {
+    const pinia = createPinia()
+    const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
+    const store = useCharacterStore(pinia)
+    const field = wrapper.get('[aria-label="Analyze custom expertise"]')
+    expect(wrapper.find('.custom-print-value').exists()).toBe(false)
+    await field.setValue('  ')
+    expect(store.hasContent).toBe(false)
+    expect(wrapper.find('.custom-print-value').exists()).toBe(false)
+    await field.setValue('User expertise')
+    expect(store.hasContent).toBe(true)
+    expect(store.sheet.expertises[0]?.custom).toBe('User expertise')
+    expect(field.element.parentElement?.classList.contains('filled')).toBe(true)
+    expect(wrapper.get('.custom-print-value').text()).toBe('User expertise')
+    expect(useCharacterStore(createPinia()).sheet.expertises[0]?.custom).toBe('User expertise')
+    store.reset()
+    await flushPromises()
+    expect(field.element).toHaveProperty('value', '')
+    expect(wrapper.find('.custom-print-value').exists()).toBe(false)
+    expect(store.hasContent).toBe(false)
+    wrapper.unmount()
+  })
+
   it('selects zero through all preset expertises independently and retains them across navigation', async () => {
     const pinia = createPinia()
     const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
@@ -334,8 +498,8 @@ describe('editable CBR+PNK sheet', () => {
     expect(wrapper.find('#runner-archetype').exists()).toBe(false)
     expect(wrapper.findAll('[data-choice]').map((option) => option.attributes('data-choice'))).toEqual(cbrPnkCatalogue.archetypes.map((item) => item.id))
     expect(wrapper.findAll('input[type="number"]')).toHaveLength(0)
-    expect(wrapper.findAll('input[type="checkbox"]')).toHaveLength(109)
-    expect(wrapper.findAll('input[type="text"]')).toHaveLength(7)
+    expect(wrapper.findAll('input[type="checkbox"]')).toHaveLength(110)
+    expect(wrapper.findAll('input[type="text"]')).toHaveLength(18)
     for (const input of wrapper.findAll('input')) {
       expect(input.element).toHaveProperty(
         input.attributes('type') === 'text' ? 'value' : 'checked',
@@ -352,6 +516,7 @@ describe('editable CBR+PNK sheet', () => {
       'Approaches',
       'Harm',
       'Stress',
+      'Resistance/Armor',
       'Skills',
       'Load/Gear',
       'Augmentations',

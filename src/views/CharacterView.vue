@@ -7,11 +7,11 @@ import { useCharacterStore } from '@/stores/character'
 import UiCharacterSheet from '@/components/ui/UiCharacterSheet.vue'
 
 const character = useCharacterStore()
-const { system, attributes, skills, sheet } = storeToRefs(character)
+const { system, attributes, skills, sheet, hasContent } = storeToRefs(character)
 const route = inject(routeLocationKey, undefined)
 const flavor = computed(() => route ? settingsFromRoute(route).flavor : 'cyberpunk')
 </script>
 
 <template>
-  <UiCharacterSheet v-model="sheet" :system="system" :attributes="attributes" :skills="skills" :flavor="flavor" @reset="character.reset" @apply-archetype="character.applyArchetype({ flavor })" />
+  <UiCharacterSheet v-model="sheet" :system="system" :attributes="attributes" :skills="skills" :flavor="flavor" :can-reset="hasContent" @reset="character.reset" @apply-archetype="character.applyArchetype({ flavor })" />
 </template>

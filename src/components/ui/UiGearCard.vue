@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import type { CharacterGear } from '@/data/characters/types'
 import { cbrPnkGearColumns, cbrPnkLoadLevels } from '@/data/characters/cbr-pnk-sheet'
 import UiSegments from './UiSegments.vue'
+import UiDiamondChoice from './UiDiamondChoice.vue'
 
 const gear = defineModel<CharacterGear>({ required: true })
 const level = computed(() => cbrPnkLoadLevels.find((item) => item.value === gear.value.level)!)
@@ -13,6 +14,11 @@ const total = computed(() =>
 )
 const state = computed(() =>
   total.value > level.value.load ? 'red' : total.value === level.value.load ? 'yellow' : 'empty')
+function selectGear(name: string, selected: boolean) {
+  gear.value.selected = selected
+    ? [...gear.value.selected.filter((item) => item !== name), name]
+    : gear.value.selected.filter((item) => item !== name)
+}
 </script>
 
 <template>
@@ -29,17 +35,27 @@ const state = computed(() =>
     <p class="load-description">{{ level.description }}</p>
     <div class="gear-columns">
       <div v-for="(column, columnIndex) in cbrPnkGearColumns" :key="columnIndex" class="gear-column">
-        <label v-for="item in column" :key="item.name" class="gear-item">
-          <input v-model="gear.selected" type="checkbox" :value="item.name" :aria-label="item.name" />
-          <span class="diamonds" aria-hidden="true"><span v-for="mark in item.load" :key="mark" /></span>
-          <span class="item-text">{{ item.name }}<small v-if="item.description">{{ item.description }}</small></span>
-        </label>
+        <UiDiamondChoice
+          v-for="item in column"
+          :key="item.name"
+          class="gear-item"
+          :model-value="gear.selected.includes(item.name)"
+          :label="item.name"
+          :count="item.load"
+          @update:model-value="selectGear(item.name, $event)"
+        >
+          {{ item.name }}<small v-if="item.description">{{ item.description }}</small>
+        </UiDiamondChoice>
         <div v-if="columnIndex === 1" class="extra-load" role="group" aria-label="Extra load">
           <div class="extra-marks">
-            <label v-for="(_, index) in gear.extra" :key="index" class="extra-mark">
-              <input v-model="gear.extra[index]" type="checkbox" :aria-label="`Extra load ${index + 1}`" />
-              <span class="diamonds" aria-hidden="true"><span /></span>
-            </label>
+            <UiDiamondChoice
+              v-for="(_, index) in gear.extra"
+              :key="index"
+              v-model="gear.extra[index]!"
+              class="extra-mark"
+              :label="`Extra load ${index + 1}`"
+              compact
+            />
           </div>
           <span class="item-text">Extra load</span>
         </div>
@@ -109,31 +125,18 @@ output { font-weight: 700; white-space: nowrap; }
 .load-description { margin-block: var(--space-2) var(--space-4); font-size: 0.75rem; }
 .gear-columns { display: grid; gap: var(--space-3); }
 .gear-column { min-width: 0; }
-.gear-item, .extra-load {
+.extra-load {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   min-height: var(--control-height);
   padding-block: var(--space-2);
 }
-.gear-item, .extra-mark { position: relative; cursor: pointer; }
-input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: inherit;
+.gear-card[data-state='yellow'] {
+  --diamond-selected: var(--color-on-accent);
+  --diamond-selected-decoration: underline;
 }
-.diamonds { display: flex; flex-shrink: 0; gap: var(--space-3); padding-inline: var(--space-1); }
-.diamonds > span { width: 1rem; height: 1rem; border: 2px solid currentColor; transform: rotate(45deg); }
-input:checked + .diamonds > span { background: var(--color-signal); }
-.gear-item:has(input:checked) .item-text, .extra-load:has(input:checked) .item-text { color: var(--color-signal); }
-.gear-card[data-state='yellow'] input:checked + .diamonds > span {
-  background: var(--color-on-accent);
-}
-.gear-card[data-state='yellow'] .gear-item:has(input:checked) .item-text,
+.extra-load:has(input:checked) .item-text { color: var(--color-signal); }
 .gear-card[data-state='yellow'] .extra-load:has(input:checked) .item-text {
   color: var(--color-on-accent);
   text-decoration: underline;
@@ -146,18 +149,11 @@ input:checked + .diamonds > span { background: var(--color-signal); }
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
-input:focus-visible + .diamonds { outline: 3px solid var(--color-focus); outline-offset: 4px; }
-.gear-item:hover .diamonds > span, .extra-mark:hover .diamonds > span { box-shadow: 0 0 0 2px currentColor; }
 .item-text { min-width: 0; font-family: var(--font-display); font-weight: var(--theme-name-weight); font-size: 1.125rem; text-transform: uppercase; overflow-wrap: anywhere; }
 small { display: block; font-family: var(--font-body); font-weight: 400; font-size: 0.625rem; line-height: 1.35; margin-top: var(--space-1); }
 .extra-load { flex-wrap: wrap; gap: var(--space-2); }
 .extra-marks { display: flex; }
-.extra-mark { display: grid; align-items: center; justify-items: start; width: var(--control-height); height: var(--control-height); }
 .gear-card:not([data-state='empty']) :deep(legend) { color: var(--gear-ink); }
 @media (min-width: 40rem) { .gear-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 24rem) { .gear-card { padding: var(--space-4); } }
-@media (forced-colors: active) {
-  input { position: static; width: 1.5rem; height: 1.5rem; min-height: 0; opacity: 1; appearance: auto; flex-shrink: 0; }
-  .diamonds { display: none; }
-}
 </style>

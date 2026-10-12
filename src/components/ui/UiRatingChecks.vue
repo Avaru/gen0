@@ -62,6 +62,7 @@ span {
   pointer-events: none;
 }
 input:checked + span {
+  border-width: 2px 3px 4px 1px;
   border-color: var(--color-on-accent);
   background: var(--color-signal);
   color: var(--color-on-accent);
@@ -73,6 +74,15 @@ label:hover span {
 input:focus-visible + span {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
+}
+@media screen {
+  input:not(:checked) + span {
+    opacity: 0.7;
+  }
+  label:hover input:not(:checked) + span,
+  input:not(:checked):focus-visible + span {
+    opacity: 1;
+  }
 }
 @media (forced-colors: active) {
   input {

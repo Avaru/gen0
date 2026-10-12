@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import UiDiamondChoice from './UiDiamondChoice.vue'
 import type { CharacterHarm } from '@/data/characters/types'
 
 const harm = defineModel<CharacterHarm[]>({ required: true })
@@ -27,6 +28,7 @@ const state = computed(() => {
     </div>
     <div v-for="row in harm" :key="row.level" class="harm-row">
       <label class="level" :for="`harm-${row.level}`">{{ row.level }}</label>
+      <span class="print-value">{{ row.description }}</span>
       <input
         :id="`harm-${row.level}`"
         v-model="row.description"
@@ -35,14 +37,14 @@ const state = computed(() => {
         :aria-label="`Level ${row.level} harm description`"
       />
       <div class="marks" role="group" :aria-label="`Level ${row.level} harm slots`">
-        <label v-for="(_, index) in row.marks" :key="index" class="mark">
-          <input
-            v-model="row.marks[index]"
-            type="checkbox"
-            :aria-label="`Level ${row.level} harm slot ${index + 1}`"
-          />
-          <span aria-hidden="true" />
-        </label>
+        <UiDiamondChoice
+          v-for="(_, index) in row.marks"
+          :key="index"
+          v-model="row.marks[index]!"
+          class="mark"
+          :label="`Level ${row.level} harm slot ${index + 1}`"
+          compact
+        />
       </div>
       <span class="penalty">{{ row.level === 1 ? '▼E' : row.level === 2 ? '−' : 'OUT' }}</span>
     </div>
@@ -53,6 +55,7 @@ const state = computed(() => {
 .harm-card {
   --harm-fill: var(--theme-panel-fill);
   --harm-ink: var(--color-text);
+  --diamond-selected: var(--harm-ink);
   position: relative;
   min-width: 0;
   padding: var(--space-6);
@@ -143,40 +146,6 @@ h2 {
   justify-content: flex-end;
   min-width: calc(2 * var(--control-height));
 }
-.mark {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: var(--control-height);
-  height: var(--control-height);
-  cursor: pointer;
-}
-.mark input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: inherit;
-}
-.mark span {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid currentColor;
-  transform: rotate(45deg);
-  pointer-events: none;
-}
-.mark input:checked + span {
-  background: var(--harm-ink);
-}
-.mark input:focus-visible + span {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
-}
-.mark:hover span {
-  box-shadow: 0 0 0 2px currentColor;
-}
 .penalty {
   font-size: 0.625rem;
   text-align: right;
@@ -185,19 +154,6 @@ h2 {
 @media (max-width: 24rem) {
   .harm-card {
     padding: var(--space-4);
-  }
-}
-@media (forced-colors: active) {
-  .mark input {
-    position: static;
-    width: 1.5rem;
-    height: 1.5rem;
-    min-height: 0;
-    opacity: 1;
-    appearance: auto;
-  }
-  .mark span {
-    display: none;
   }
 }
 </style>

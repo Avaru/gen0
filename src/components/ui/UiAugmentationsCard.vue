@@ -30,6 +30,7 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
       :class="{ glitched: augmentation.glitched }"
     >
       <span class="marker" aria-hidden="true">▸</span>
+      <span class="print-value">{{ augmentation.description }}</span>
       <input
         v-model="augmentation.description"
         :class="{ filled: !!augmentation.description.trim() }"

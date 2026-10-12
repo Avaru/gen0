@@ -60,11 +60,12 @@ export interface CharacterSheet {
   runner: { alias: string; description: string; archetypeId?: Archetype['id'] }
   attributeRatings: (Omit<Rating, 'value'> & { value: SheetRating })[]
   skillRatings: (Omit<Rating, 'value'> & { value: SheetRating })[]
-  expertises: { skillId: Id; values: string[] }[]
+  expertises: { skillId: Id; values: string[]; custom?: string }[]
   glitches: { attributeId: Id; marked: boolean }[]
   harm: CharacterHarm[]
   gear: CharacterGear
   stress: number
+  specialArmor: boolean
   augmentations: { description: string; glitched: boolean }[]
 }
 /** Expertise is a suggested choice, not automatically granted alongside its rating. */

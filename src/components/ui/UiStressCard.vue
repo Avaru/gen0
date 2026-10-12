@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import UiDiamondChoice from './UiDiamondChoice.vue'
 import { cbrPnkStressComplications } from '@/data/characters/cbr-pnk-sheet'
 
 const stress = defineModel<number>({ required: true })
-function change(position: number, event: Event) {
-  stress.value = (event.target as HTMLInputElement).checked ? position : position - 1
+function change(position: number, selected: boolean) {
+  stress.value = selected ? position : position - 1
 }
 </script>
 
@@ -16,15 +17,15 @@ function change(position: number, event: Event) {
       <span>Flashback: ⚡ or ⚡⚡+</span>
     </p>
     <div class="track" role="group" aria-label="Stress slots">
-      <label v-for="position in 7" :key="position" :class="{ last: position === 7 }">
-        <input
-          type="checkbox"
-          :checked="stress >= position"
-          :aria-label="`Stress slot ${position}`"
-          @change="change(position, $event)"
-        />
-        <span aria-hidden="true" />
-      </label>
+      <UiDiamondChoice
+        v-for="position in 7"
+        :key="position"
+        :class="{ last: position === 7 }"
+        :model-value="stress >= position"
+        :label="`Stress slot ${position}`"
+        compact
+        @update:model-value="change(position, $event)"
+      />
     </div>
     <div class="overload" :class="{ active: stress === 7 }">
       <p>
@@ -100,47 +101,16 @@ h2 {
   height: 2px;
   background: var(--color-text);
 }
-.track label {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: var(--control-height);
-  cursor: pointer;
+.track {
+  --diamond-size: 1.25rem;
+  --diamond-empty: var(--theme-panel-fill);
 }
-.track input {
-  position: absolute;
-  inset: 0;
+.track > .diamond-choice {
   width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: inherit;
 }
-.track span {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid var(--color-text);
-  background: var(--theme-panel-fill);
-  transform: rotate(45deg);
-  pointer-events: none;
-  transition: var(--control-color-transition);
-}
-.track .last span {
-  outline: 2px solid var(--color-muted);
-  outline-offset: 4px;
-}
-.track input:checked + span {
-  background: var(--color-signal);
-}
-.track .last input:checked + span {
-  background: var(--color-hot);
-}
-.track input:focus-visible + span {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 4px;
-}
-.track label:hover span {
-  box-shadow: 0 0 0 2px var(--color-text);
+.track .last {
+  --diamond-outline: 2px solid var(--color-muted);
+  --diamond-selected: var(--color-hot);
 }
 .overload {
   font-size: var(--font-small-control-size);
@@ -175,15 +145,6 @@ li + li {
   }
 }
 @media (forced-colors: active) {
-  .track input {
-    position: static;
-    width: 1.5rem;
-    height: 1.5rem;
-    min-height: 0;
-    opacity: 1;
-    appearance: auto;
-  }
-  .track span,
   .track::before {
     display: none;
   }

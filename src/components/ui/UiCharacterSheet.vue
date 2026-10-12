@@ -7,12 +7,13 @@ import UiWorkspace from './UiWorkspace.vue'
 import UiToggle from './UiToggle.vue'
 import UiHarmCard from './UiHarmCard.vue'
 import UiStressCard from './UiStressCard.vue'
+import UiResistanceCard from './UiResistanceCard.vue'
 import UiAugmentationsCard from './UiAugmentationsCard.vue'
 import UiGearCard from './UiGearCard.vue'
 import UiRunnerCard from './UiRunnerCard.vue'
 import type { Flavor } from '@/generator/options'
 
-withDefaults(defineProps<{ system: System; attributes: Attribute[]; skills: Skill[]; flavor?: Flavor }>(), {
+withDefaults(defineProps<{ system: System; attributes: Attribute[]; skills: Skill[]; flavor?: Flavor; canReset: boolean }>(), {
   flavor: 'cyberpunk',
 })
 const sheet = defineModel<CharacterSheet>({ required: true })
@@ -31,7 +32,7 @@ function approachState(id: string) {
   <form class="sheet" aria-label="CBR+PNK character sheet" @submit.prevent>
     <UiWorkspace>
       <div class="sheet-column">
-        <UiRunnerCard v-model="sheet.runner" :flavor="flavor" @reset="$emit('reset')" @apply-archetype="$emit('applyArchetype')" />
+        <UiRunnerCard v-model="sheet.runner" :flavor="flavor" :can-reset="canReset" @reset="$emit('reset')" @apply-archetype="$emit('applyArchetype')" />
         <section class="approaches" aria-labelledby="approaches-heading">
           <h2 id="approaches-heading">{{ system.attributeLabel }}</h2>
           <div
@@ -74,6 +75,7 @@ function approachState(id: string) {
         </section>
         <UiHarmCard v-model="sheet.harm" />
         <UiStressCard v-model="sheet.stress" />
+        <UiResistanceCard v-model="sheet.specialArmor" />
       </div>
       <div class="sheet-column">
         <section class="skills" aria-labelledby="skills-heading">
@@ -92,21 +94,24 @@ function approachState(id: string) {
               String(sheet.skillRatings.find((item) => item.definitionId === skill.id)?.value ?? 0)
             "
           >
-            <label class="skill-name" :for="skill.id">
-              {{ skill.name }}
-              <small v-if="skill.requiredModuleIds.some((id) => id !== system.coreModuleId)"
-                >Weird</small
-              >
-            </label>
-            <UiRatingChecks
-              v-if="sheet.skillRatings.find((item) => item.definitionId === skill.id)"
-              :id="skill.id"
-              v-model="sheet.skillRatings.find((item) => item.definitionId === skill.id)!.value"
-              :label="skill.name"
-            />
+            <div class="skill-stat">
+              <label class="skill-name" :for="skill.id">
+                {{ skill.name }}
+                <small v-if="skill.requiredModuleIds.some((id) => id !== system.coreModuleId)"
+                  >Weird</small
+                >
+              </label>
+              <UiRatingChecks
+                v-if="sheet.skillRatings.find((item) => item.definitionId === skill.id)"
+                :id="skill.id"
+                v-model="sheet.skillRatings.find((item) => item.definitionId === skill.id)!.value"
+                :label="skill.name"
+              />
+            </div>
             <UiExpertiseChoices
               v-if="sheet.expertises.find((item) => item.skillId === skill.id)"
               v-model="sheet.expertises.find((item) => item.skillId === skill.id)!.values"
+              v-model:custom="sheet.expertises.find((item) => item.skillId === skill.id)!.custom"
               class="expertises"
               :label="skill.name"
               :options="cbrPnkExpertiseOptions[skill.key] ?? []"
@@ -120,7 +125,80 @@ function approachState(id: string) {
   </form>
 </template>
 
+<style>
+@property --sheet-hover-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+</style>
+
 <style scoped>
+@media screen {
+  .sheet {
+    --sheet-hover-transition: --sheet-hover-opacity 300ms ease-out;
+    --sheet-hover-animation-state: running;
+  }
+  .sheet :deep(:is(input[type='text'], textarea, label:not(.hazard):has(> input) > span:first-of-type:not(.diamonds), label.hazard)) {
+    background-image: repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--sheet-hover-ink, #fff) calc(var(--sheet-hover-opacity) * 100%), transparent) 0 8px,
+      transparent 8px 16px
+    );
+    transition: var(--control-color-transition), var(--sheet-hover-transition);
+  }
+  .sheet :deep(:is(label:not(.hazard):hover:has(> input) > span:first-of-type:not(.diamonds), label.hazard:hover)) {
+    --sheet-hover-opacity: 1;
+    animation: sheet-hazard-slide 12s linear infinite;
+    animation-play-state: var(--sheet-hover-animation-state);
+  }
+  .sheet :deep(:is(input[type='text'], textarea)) {
+    --sheet-hover-ink: currentColor;
+  }
+  .sheet :deep(:is(input[type='text']:hover, textarea:hover)) {
+    --sheet-hover-opacity: 0.16;
+    animation: sheet-hazard-slide 12s linear infinite;
+    animation-play-state: var(--sheet-hover-animation-state);
+  }
+  .sheet :deep(:is(label:not(.hazard):has(> input:focus) > span:first-of-type:not(.diamonds), label.hazard:has(> input:focus))) {
+    --sheet-hover-opacity: 0.25;
+  }
+  .sheet :deep(:is(input[type='text']:focus, textarea:focus)) {
+    --sheet-hover-opacity: 0.08;
+  }
+  @keyframes sheet-hazard-slide {
+    to {
+      background-position: 22.627px 0;
+    }
+  }
+  /* Hover decoration stays separate from keyboard focus. */
+  .sheet :deep(label:hover:has(> input:not(:focus-visible))) {
+    outline: none;
+  }
+  .sheet :deep(label:not(.last, .diamond-choice):hover > input:not(:focus-visible) + span) {
+    outline: none;
+    box-shadow: none;
+  }
+  .sheet :deep(.expertise-choice:hover span) {
+    border-bottom-style: dashed;
+    text-decoration: none;
+  }
+  .sheet :deep(.expertise-choice:nth-child(3n + 2):hover span) {
+    border-bottom-style: dotted;
+  }
+  .sheet :deep(label.hazard:hover .track) {
+    border-color: var(--color-control-border);
+  }
+  .sheet :deep(label.hazard:hover input:checked + .track) {
+    border-color: var(--color-on-accent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet {
+      --sheet-hover-transition: none;
+      --sheet-hover-animation-state: paused;
+    }
+  }
+}
 .description {
   font-size: var(--font-small-control-size);
   text-transform: uppercase;
@@ -271,8 +349,8 @@ h2 {
   line-height: 1.35;
 }
 .skill {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+  grid-template-columns: minmax(6rem, max-content) minmax(0, 1fr);
+  align-items: end;
   gap: var(--space-2);
   padding: var(--space-2);
   margin-top: var(--space-2);
@@ -307,6 +385,7 @@ h2 {
   );
 }
 .skill-name {
+  max-width: 7rem;
   font-size: 1.375rem;
 }
 .skill-name small {
@@ -316,17 +395,30 @@ h2 {
   font-size: 0.65rem;
   text-transform: uppercase;
 }
+.skill-stat {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-2);
+}
 .expertises {
   min-width: 0;
-  grid-column: 1 / -1;
+  grid-column: 2;
+  align-self: end;
 }
-@media (min-width: 40rem) {
-  .skill {
-    grid-template-columns: minmax(7rem, 1fr) auto minmax(0, 1.5fr);
-    gap: var(--space-2);
+@media screen and (min-width: 56rem) {
+  .skill-stat {
+    display: contents;
+  }
+  .skill-name {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+  .skill .rating {
+    grid-column: 1;
+    grid-row: 2;
   }
   .expertises {
-    grid-column: auto;
+    grid-row: 2;
   }
 }
 /* Contents keep the existing single-column order on phones. */
@@ -349,9 +441,12 @@ h2 {
   order: 4;
 }
 .augmentations-card {
-  order: 6;
+  order: 7;
 }
 .gear-card {
+  order: 6;
+}
+.resistance-card {
   order: 5;
 }
 @media (min-width: 56rem) {

@@ -1,0 +1,416 @@
+/* Print only the default-scheme character sheet. Other pages/themes keep their styles. */
+.print-value {
+  display: none;
+}
+
+@page character-sheet {
+  size: A4 portrait;
+  margin: 8mm;
+}
+
+@media print {
+  :root:has(.shell[data-theme='cyberpunk'] .sheet) {
+    color-scheme: light;
+    background: white;
+    overflow: visible;
+    --control-height: 4mm;
+    --space-1: 0.6mm;
+    --space-2: 1mm;
+    --space-3: 1.2mm;
+    --space-4: 1.6mm;
+    --space-6: 2mm;
+    --space-8: 4mm;
+    --font-control-size: 7pt;
+    --font-small-control-size: 6.5pt;
+  }
+
+  body:has(.shell[data-theme='cyberpunk'] .sheet) {
+    page: character-sheet;
+    min-width: 0;
+    margin: 0;
+    background: white;
+
+    > :not(#app),
+    .skip,
+    .shell > header,
+    .sheet button,
+    .sheet .actions,
+    .sheet dialog,
+    .sheet [role='alert'] {
+      display: none !important;
+    }
+
+    .shell {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .sheet {
+      /* Four ink levels: writing guides, rules, structure, and character/selected data. */
+      --print-ghost: #d6d6d6;
+      --print-rules: #888;
+      --print-structure: #666;
+      --print-ink: #000;
+      width: 194mm;
+      font-size: 6.5pt;
+      line-height: 1.3;
+    }
+
+    .sheet,
+    .sheet * {
+      color: var(--print-ink) !important;
+      background: none !important;
+      box-shadow: none !important;
+      text-shadow: none !important;
+      border-color: var(--print-structure) !important;
+      outline: none !important;
+      transition: none !important;
+      animation: none !important;
+    }
+
+    .sheet .workspace {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      gap: 4mm;
+    }
+
+    .sheet .sheet-column {
+      display: flex;
+      flex-direction: column;
+      gap: 2mm;
+      min-width: 0;
+    }
+
+    .sheet section {
+      padding: 1.75mm;
+      border: 0.3mm solid black;
+      border-radius: 0;
+      break-inside: avoid;
+    }
+
+    .sheet section::after,
+    .sheet .approach::after,
+    .sheet .skill::before,
+    .sheet .skill::after,
+    .sheet legend::before {
+      display: none;
+    }
+
+    .sheet h2 {
+      font-size: 14pt;
+      margin-bottom: 2mm;
+    }
+
+    .sheet .runner-header h2 {
+      margin: 0;
+    }
+
+    .sheet .approach,
+    .sheet .skill {
+      padding: 0.8mm;
+      margin-top: 0.8mm;
+      border-width: 0 0 0.2mm;
+      break-inside: avoid;
+    }
+
+    .sheet .approach-name,
+    .sheet .skill-name {
+      font-size: 11pt;
+    }
+
+    .sheet .approach-negative {
+      font-size: 8pt;
+    }
+
+    .sheet .approach-title {
+      flex-wrap: wrap;
+    }
+
+    .sheet .approach[data-state='glitched'] {
+      border-left: 1mm double black;
+    }
+
+    .sheet .skill {
+      grid-template-columns: max-content minmax(0, 1fr) auto;
+      gap: 1mm;
+      padding: 1mm 0;
+      margin-top: 1mm;
+    }
+
+    .sheet .skill-stat {
+      display: contents;
+    }
+
+    .sheet .skill-name {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .sheet .skill-stat > .rating {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .sheet .expertises {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: center;
+    }
+
+    .sheet .expertise-rule {
+      padding: 0;
+    }
+
+    .sheet .approach-rating,
+    .sheet .rating {
+      align-items: center;
+      gap: 1mm;
+    }
+
+    .sheet .rating label,
+    .sheet .rating span {
+      width: 5mm;
+      height: 5mm;
+      min-height: 0;
+      flex-shrink: 0;
+    }
+
+    .sheet .rating span {
+      font-size: 10pt;
+      line-height: 1;
+      border: 0;
+    }
+
+    .sheet .rating input:not(:checked) + span {
+      border: 0.2mm solid black;
+      color: var(--print-ghost) !important;
+    }
+
+    .sheet .rating input:checked + span {
+      border: 0.8mm double black;
+      font-weight: 800;
+    }
+
+    .sheet .skill {
+      align-items: center;
+    }
+
+    .sheet .expertise-choice {
+      opacity: 0.16;
+    }
+
+    .sheet .expertise-choice:has(input:checked) {
+      order: -1;
+      opacity: 1;
+    }
+
+    .sheet .expertise-choice span {
+      border: 0;
+      min-height: 0;
+      font-size: 7.5pt;
+      padding: 0.4mm 0.5mm;
+    }
+
+    .sheet .expertise-choice input:checked + span {
+      border: 0.3mm solid black;
+      padding-left: 3mm;
+      font-weight: 700;
+    }
+
+    .sheet .expertise-choice input:checked + span::before {
+      top: 0.5mm;
+      left: 0.5mm;
+      font-size: 7pt;
+    }
+
+    .sheet .custom-expertise.filled {
+      order: -1;
+      border: 0.3mm solid black;
+    }
+
+    .sheet .custom-print-value {
+      min-height: 0;
+      padding: 0.4mm 0.5mm 0.4mm 3mm;
+      border: 0;
+      font-size: 7.5pt;
+    }
+
+    .sheet .custom-expertise.filled::before {
+      top: 0.5mm;
+      left: 0.5mm;
+      font-size: 7pt;
+    }
+
+    .sheet label.hazard {
+      height: 5mm;
+      min-height: 0;
+      padding: 0 1mm;
+      font-size: 6.5pt;
+      gap: 1mm;
+    }
+
+    .sheet label.hazard .track {
+      width: 3.5mm;
+      height: 3.5mm;
+      border: 0.2mm solid black;
+    }
+
+    .sheet label.hazard input:checked + .track {
+      border: 0.7mm double black;
+    }
+
+    .sheet label.hazard input:checked + .track::after {
+      display: block;
+      content: '✓';
+      width: auto;
+      height: auto;
+      margin: auto;
+      font-size: 8pt;
+      line-height: 1;
+    }
+
+    .sheet .harm-row {
+      grid-template-columns: 4mm minmax(0, 1fr) auto 6mm;
+    }
+
+    .sheet .level {
+      font-size: 11pt;
+    }
+
+    .sheet .diamonds > span {
+      display: grid;
+      place-items: center;
+      width: 3mm;
+      height: 3mm;
+      border: 0.3mm solid black;
+    }
+
+    .sheet input:checked + .diamonds > span::after {
+      content: '✓';
+      transform: rotate(-45deg);
+      font: bold 8pt / 1 sans-serif;
+    }
+
+    .sheet .stress-card .track {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      overflow: visible;
+      margin-block: 2mm;
+    }
+
+    .sheet .stress-card .track::before {
+      left: calc(100% / 14);
+      right: calc(100% / 14);
+      width: auto;
+      height: 0;
+      border-top: 0.2mm solid black;
+    }
+
+    .sheet .stress-card .track .last .diamonds > span {
+      outline: 0.2mm solid black !important;
+      outline-offset: 0.6mm;
+    }
+
+    .sheet .overload.active {
+      border-left: 1mm double black;
+      padding-left: 1.5mm;
+    }
+
+    .sheet .segments span {
+      min-height: 4mm;
+      padding: 1mm;
+      font-size: 8pt;
+    }
+
+    .sheet .segments input:checked + span {
+      border-bottom: 0.8mm double black;
+      font-weight: 800;
+    }
+
+    .sheet .gear-columns {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2mm;
+    }
+
+    .sheet .gear-item,
+    .sheet .extra-load {
+      min-height: 3.5mm;
+      gap: 1.5mm;
+      padding-block: 0.6mm;
+      break-inside: avoid;
+    }
+
+    .sheet .gear-item .item-text,
+    .sheet .extra-load .item-text {
+      font-size: 8pt;
+    }
+
+    .sheet .gear-item small {
+      line-height: 1.2;
+    }
+
+    .sheet .gear-card[data-state='red'],
+    .sheet .gear-card[data-state='yellow'] {
+      border-top: 0.8mm double black;
+    }
+
+    .sheet .augmentation-row {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 1mm;
+      padding-block: 1mm;
+    }
+
+    .sheet .augmentation-row > :last-child {
+      grid-column: 2;
+      justify-self: end;
+    }
+
+    .sheet :is(.rule, .rules, .overload, .load-description, .expertise-rule, .costs, .approach-panel > .description, .gear-item small, .resistance-card .method-heading, .resistance-card .armor-heading, .resistance-card .example, .resistance-card .outcomes) {
+      font-size: 5.5pt;
+      line-height: 1.3;
+    }
+
+    .sheet :is(.rule, .rules, .overload, .load-description, .expertise-rule, .costs, .approach-panel > .description, .gear-item small, .resistance-card .method-heading, .resistance-card .armor-heading, .resistance-card .example, .resistance-card .outcomes),
+    .sheet :is(.rule, .rules, .overload, .load-description, .expertise-rule, .costs, .approach-panel > .description, .gear-item small, .resistance-card .method-heading, .resistance-card .armor-heading, .resistance-card .example, .resistance-card .outcomes) * {
+      color: var(--print-rules) !important;
+    }
+
+    .sheet :is(.rating input:checked + span, .expertise-choice input:checked + span, .custom-expertise.filled, label.hazard:has(input:checked), label.hazard input:checked + .track, .mark input:checked + span, input:checked + .diamonds > span, .segments input:checked + span, .approach[data-state='glitched'], .overload.active, .gear-card[data-state='red'], .gear-card[data-state='yellow']) {
+      border-color: var(--print-ink) !important;
+    }
+
+    .sheet .overload.active strong {
+      color: var(--print-ink) !important;
+    }
+
+    .sheet .resistance-card .methods {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2mm;
+    }
+
+    .sheet .rules {
+      margin-block: 0 2mm;
+    }
+
+    .sheet .rules li + li {
+      margin-top: 1.5mm;
+    }
+
+    .sheet .print-value {
+      display: block;
+      min-height: 4mm;
+      padding: 1mm;
+      border-bottom: 0.2mm solid black;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .sheet .print-value + input,
+    .sheet .print-value + textarea {
+      display: none;
+    }
+
+    .sheet .runner-description {
+      min-height: 10mm;
+    }
+  }
+}

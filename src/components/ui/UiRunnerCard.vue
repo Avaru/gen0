@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
 import type { CharacterSheet } from '@/data/characters/types'
 import type { Flavor } from '@/generator/options'
@@ -8,17 +8,23 @@ import UiButton from './UiButton.vue'
 import UiChoicePicker from './UiChoicePicker.vue'
 const archetypes = cbrPnkCatalogue.archetypes.map(item => ({ id: item.id, label: item.name, group: '' }))
 
-const props = defineProps<{ flavor: Flavor }>()
+const props = defineProps<{ flavor: Flavor; canReset: boolean }>()
 const runner = defineModel<CharacterSheet['runner']>({ required: true })
 const error = ref('')
+const confirmingReset = ref(false)
+watch(() => props.canReset, (canReset) => {
+  if (!canReset) confirmingReset.value = false
+})
 const emit = defineEmits<{ reset: []; applyArchetype: [] }>()
 
 function reset() {
+  confirmingReset.value = false
   emit('reset')
   error.value = ''
 }
 
 function generate(archetypeId: string) {
+  confirmingReset.value = false
   error.value = ''
   try {
     const result = generateNames('runners', 1, { flavor: props.flavor, runnerArchetypeId: archetypeId })[0]
@@ -33,6 +39,19 @@ function generate(archetypeId: string) {
     error.value = cause instanceof Error ? cause.message : 'Could not generate a runner.'
   }
 }
+
+function regenerate(field: 'alias' | 'description') {
+  error.value = ''
+  try {
+    const result = generateNames('runners', 1, { flavor: props.flavor })[0]
+    if (!result) return
+    runner.value[field] = field === 'alias'
+      ? result.primary
+      : [result.details, result.title, result.appearance].filter(Boolean).join('\n')
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : 'Could not generate a runner.'
+  }
+}
 </script>
 
 <template>
@@ -41,13 +60,30 @@ function generate(archetypeId: string) {
       <h2 id="runner-heading">Runner</h2>
       <div class="actions">
         <UiChoicePicker :searchable="false" trigger-id="runner-generate" trigger-label="Generate" label="Archetype" plural="archetypes" :model-value="runner.archetypeId ?? ''" :options="archetypes" @update:model-value="generate" />
-        <UiButton variant="secondary" @click="reset">Reset</UiButton>
+        <UiButton v-if="canReset && confirmingReset" variant="destructive" @click="reset">really?</UiButton>
+        <UiButton v-if="canReset" variant="secondary" @click="confirmingReset = !confirmingReset">{{ confirmingReset ? 'nah.' : 'Reset' }}</UiButton>
       </div>
     </header>
     <label for="runner-alias">Alias</label>
-    <input id="runner-alias" v-model="runner.alias" type="text" />
+    <div class="runner-field">
+      <span class="print-value">{{ runner.alias }}</span>
+      <input id="runner-alias" v-model="runner.alias" type="text" />
+      <UiButton class="regenerate" variant="secondary" aria-label="Regenerate alias" title="Regenerate alias" @click="regenerate('alias')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
+        </svg>
+      </UiButton>
+    </div>
     <label for="runner-description">Name &amp; description</label>
-    <textarea id="runner-description" v-model="runner.description" rows="5" />
+    <div class="runner-field">
+      <span class="print-value runner-description">{{ runner.description }}</span>
+      <textarea id="runner-description" v-model="runner.description" rows="7" />
+      <UiButton class="regenerate" variant="secondary" aria-label="Regenerate name and description" title="Regenerate name and description" @click="regenerate('description')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
+        </svg>
+      </UiButton>
+    </div>
     <p v-if="error" role="alert">{{ error }}</p>
   </section>
 </template>
@@ -79,6 +115,7 @@ function generate(archetypeId: string) {
 }
 .runner-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
@@ -98,6 +135,36 @@ label {
   font-size: var(--font-small-control-size);
   text-transform: uppercase;
 }
+.runner-field {
+  position: relative;
+  min-width: 0;
+}
+.runner-field > .regenerate {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.runner-field > .regenerate::before,
+.runner-field > .regenerate::after {
+  display: none;
+}
+.runner-card .runner-field > .regenerate:hover:enabled,
+.runner-card .runner-field > .regenerate:active:enabled {
+  background: transparent;
+  color: var(--color-accent);
+}
+@media print {
+  .regenerate {
+    display: none !important;
+  }
+}
 input,
 textarea {
   box-sizing: border-box;
@@ -105,6 +172,7 @@ textarea {
   min-width: 0;
   min-height: 44px;
   padding: var(--space-2);
+  padding-right: calc(44px + var(--space-2));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -116,6 +184,7 @@ textarea {
 }
 .actions {
   display: flex;
+  margin-left: auto;
   gap: var(--space-2);
 }
 .actions :deep(button.primary),

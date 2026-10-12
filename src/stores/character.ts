@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
 import { cbrPnkExpertiseAliases, cbrPnkExpertiseOptions, cbrPnkGearColumns } from '@/data/characters/cbr-pnk-sheet'
 import { composeAugmentation } from '@/patterns/cyberpunk/augmentations/augmentations'
@@ -18,6 +18,7 @@ function isUsableSheet(value: unknown, blank: CharacterSheet): value is Characte
     rating === null || rating === 0 || rating === 1 || rating === 2
   return (
     saved.systemId === blank.systemId &&
+    (saved.specialArmor === undefined || typeof saved.specialArmor === 'boolean') &&
     (saved.runner === undefined ||
       (saved.runner !== null &&
         typeof saved.runner.alias === 'string' &&
@@ -52,7 +53,8 @@ function isUsableSheet(value: unknown, blank: CharacterSheet): value is Characte
       (row, i) =>
         row?.skillId === blank.expertises[i]?.skillId &&
         Array.isArray(row.values) &&
-        row.values.every((item) => typeof item === 'string'),
+        row.values.every((item) => typeof item === 'string') &&
+        (row.custom === undefined || typeof row.custom === 'string'),
     ) &&
     Array.isArray(saved.glitches) &&
     saved.glitches.length === blank.glitches.length &&
@@ -90,6 +92,7 @@ export const useCharacterStore = defineStore('character', () => {
     systemId: system.id,
     runner: { alias: '', description: '' },
     stress: 0,
+    specialArmor: false,
     gear: { level: 'medium', selected: [], extra: [false, false, false, false] },
     augmentations: Array.from({ length: 3 }, () => ({ description: '', glitched: false })),
     attributeRatings: attributes.map((item) => ({ definitionId: item.id, value: null })),
@@ -104,10 +107,24 @@ export const useCharacterStore = defineStore('character', () => {
   })
   const blank = createBlankSheet()
   const sheet = ref(blank)
+  const hasContent = computed(() => {
+    const value = sheet.value
+    return Boolean(
+      value.runner.alias || value.runner.description || value.runner.archetypeId ||
+      value.stress || value.specialArmor || value.gear.level !== 'medium' || value.gear.selected.length ||
+      value.gear.extra.some(Boolean) ||
+      value.attributeRatings.some((row) => (row.value ?? 0) > 0) ||
+      value.skillRatings.some((row) => (row.value ?? 0) > 0) ||
+      value.expertises.some((row) => row.values.length || row.custom?.trim()) ||
+      value.glitches.some((row) => row.marked) ||
+      value.harm.some((row) => row.description || row.marks.some(Boolean)) ||
+      value.augmentations.some((row) => row.description || row.glitched),
+    )
+  })
   try {
     const saved: unknown = JSON.parse(localStorage.getItem(storageKey) ?? 'null')
     if (isUsableSheet(saved, blank))
-      sheet.value = { ...saved, runner: saved.runner ?? blank.runner, gear: saved.gear ? { ...saved.gear, level: saved.gear.level || 'medium' } : blank.gear }
+      sheet.value = { ...saved, specialArmor: saved.specialArmor ?? false, runner: saved.runner ?? blank.runner, gear: saved.gear ? { ...saved.gear, level: saved.gear.level || 'medium' } : blank.gear }
   } catch {
     // Missing access or invalid JSON leaves the sheet blank.
   }
@@ -169,5 +186,5 @@ export const useCharacterStore = defineStore('character', () => {
   function reset() {
     sheet.value = createBlankSheet()
   }
-  return { system: ref(system), attributes: ref(attributes), skills: ref(skills), sheet, applyArchetype, reset }
+  return { system: ref(system), attributes: ref(attributes), skills: ref(skills), sheet, hasContent, applyArchetype, reset }
 })
