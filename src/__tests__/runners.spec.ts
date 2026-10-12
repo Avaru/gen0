@@ -29,7 +29,7 @@ describe('Runners', () => {
     const professions = load(DATA.RUNNER_TRAITS, { flavor }).filter((entry) => entry.tags.includes('runner') && entry.type === 'profession')
     for (let i = 0; i < 100; i++) {
       const runner = runners({ flavor })
-      const mainTitle = runner.title!.split(/ turned | previously a | aspiring to become a /)[0]!
+      const mainTitle = runner.secondary!.split(/ turned | previously a | aspiring to become a /)[0]!
       const profession = [...professions].sort((a, b) => b.value.length - a.value.length).find((entry) => mainTitle.endsWith(entry.value))!
       expect(profession).toBeDefined()
       expect(runner.archetypeId).toBe(profession.archetypeId)
@@ -44,7 +44,7 @@ describe('Runners', () => {
       for (let i = 0; i < 10; i++) {
         const runner = runners({ flavor, runnerArchetypeId: archetype.id })
         expect(runner.archetypeId).toBe(archetype.id)
-        const mainTitle = runner.title!.split(/ turned | previously a | aspiring to become a /)[0]!
+        const mainTitle = runner.secondary!.split(/ turned | previously a | aspiring to become a /)[0]!
         const labels = matches.length ? matches.map(entry => entry.value) : [archetype.name]
         expect(labels.some(label => mainTitle.endsWith(label))).toBe(true)
       }
@@ -149,7 +149,7 @@ describe('Runners', () => {
       const name = runner.details!.replace('By day: ', '').split(', ')[0]!
       expect(given.some((value) => name.startsWith(`${value} `))).toBe(true)
       expect(family.some((value) => name.endsWith(` ${value}`))).toBe(true)
-      expect(runner.title).not.toContain('Technomancer')
+      expect(runner.secondary).not.toContain('Technomancer')
       expect(runner.appearance).not.toMatch(/\b(Norm|Elf|Dwarf|Ork|Troll)\b/)
     }
   })

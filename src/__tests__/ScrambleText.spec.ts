@@ -89,7 +89,7 @@ describe('scrambled name reveal', () => {
 
   it('reveals every detail field with its name and keeps finished detail text available throughout', async () => {
     const result = {
-      primary: 'Neon Fox', title: 'Decker', age: 'Age: 28',
+      primary: 'Neon Fox', secondary: 'Decker', age: 'Age: 28',
       appearance: 'Chrome eyes', details: 'Works alone', rating: 0,
     }
     const wrapper = mount(GeneratorResults, {
@@ -114,11 +114,29 @@ describe('scrambled name reveal', () => {
     expect(wrapper.findAll('.name div .overlay')).toHaveLength(10)
   })
 
+  it('keeps the runner archetype in the secondary row regardless of the details toggle', async () => {
+    reduced = true
+    const wrapper = mount(GeneratorResults, {
+      props: {
+        results: [{ primary: 'Neon Fox', secondary: 'Martial Artist', appearance: 'Chrome eyes', details: 'Works alone' }],
+        category: 'runners', busy: false, label: 'Runners', error: '', showDetails: true,
+      },
+    })
+    await wrapper.setProps({ showDetails: false })
+    expect(wrapper.findAll('.source').map(source => source.text())).toEqual(['Neon Fox', 'Martial Artist'])
+    expect(wrapper.get('.secondary').text()).toBe('Martial Artist')
+    await wrapper.setProps({ showDetails: true })
+    expect(wrapper.findAll('.source').map(source => source.text())).toEqual([
+      'Neon Fox', 'Martial Artist', 'Chrome eyes', 'Works alone',
+    ])
+    expect(wrapper.get('.secondary').text()).toBe('Martial Artist')
+  })
+
   it('shows all detail fields immediately without animation under reduced motion', async () => {
     reduced = true
     const wrapper = mount(GeneratorResults, {
       props: {
-        results: [{ primary: 'Neon Fox', title: 'Decker', age: 'Age: 28', appearance: 'Chrome eyes', details: 'Works alone', rating: 4 }],
+        results: [{ primary: 'Neon Fox', secondary: 'Decker', age: 'Age: 28', appearance: 'Chrome eyes', details: 'Works alone', rating: 4 }],
         busy: false, label: 'Names', error: '', showDetails: true,
       },
     })

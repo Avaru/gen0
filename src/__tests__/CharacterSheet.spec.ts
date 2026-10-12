@@ -59,7 +59,7 @@ describe('editable CBR+PNK sheet', () => {
     expect(store.sheet.runner.angle).toBe('Learn the truth')
     expect(store.hasContent).toBe(true)
     expect(useCharacterStore(createPinia()).sheet.runner.angle).toBe('Learn the truth')
-    vi.spyOn(generators, 'generateNames').mockReturnValue([{ primary: 'Handle', title: 'Role' }])
+    vi.spyOn(generators, 'generateNames').mockReturnValue([{ primary: 'Handle', secondary: 'Role' }])
     const random = vi.spyOn(Math, 'random').mockReturnValue(0)
     await chooseArchetype(wrapper, 'hacker')
     expect(store.sheet.runner.angle).toBe('Get out')
@@ -179,7 +179,7 @@ describe('editable CBR+PNK sheet', () => {
         {
           primary: 'New alias',
           details: 'Real name: New name',
-          title: 'New role',
+          secondary: 'New role',
           appearance: 'New appearance',
           archetypeId: 'driver',
         },
@@ -216,7 +216,7 @@ describe('editable CBR+PNK sheet', () => {
         runner: {
           ...before.runner,
           alias: 'New alias',
-          description: 'New role\nReal name: New name\nNew appearance',
+          description: 'Real name: New name\nNew appearance',
         },
       })
       expect(wrapper.get('#runner-description').element).toHaveProperty(
@@ -444,7 +444,7 @@ describe('editable CBR+PNK sheet', () => {
         angle: expect.any(String),
         alias: result.primary,
         archetypeId: result.archetypeId,
-        description: `${result.title}\n${result.details}\n${result.appearance}`,
+        description: `${result.details}\n${result.appearance}`,
       })
       expect(
         JSON.stringify({
@@ -474,7 +474,7 @@ describe('editable CBR+PNK sheet', () => {
       const source = JSON.stringify(cbrPnkCatalogue)
       vi.spyOn(probability, 'p').mockReturnValue(false)
       vi.spyOn(generators, 'generateNames').mockReturnValue([
-        { primary: 'Handle', title: 'Role', archetypeId: id },
+        { primary: 'Handle', secondary: 'Role', details: 'By day: Real name', appearance: 'Chrome eyes', archetypeId: id },
       ])
       const pinia = createPinia()
       const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
@@ -536,7 +536,7 @@ describe('editable CBR+PNK sheet', () => {
       )
       expect(store.sheet.runner).toEqual({
         alias: 'Handle',
-        description: 'Role',
+        description: 'By day: Real name\nChrome eyes',
         archetypeId: id,
         angle: expect.any(String),
       })

@@ -62,8 +62,8 @@ defineExpose({
       <li v-for="(result, index) in results" :key="index">
         <div class="name">
           <strong><UiScrambleText :text="result.primary" :replay-key="result" v-bind="revealTiming(index)" /></strong>
+          <div v-if="result.secondary && (category === 'runners' || showDetails)" class="secondary" :class="{ 'runner-secondary': category === 'runners' }"><UiScrambleText :text="result.secondary" :replay-key="result" v-bind="revealTiming(index)" /></div>
           <template v-if="showDetails">
-            <div v-if="result.title" :class="{ 'runner-archetype': category === 'runners' }"><UiScrambleText :text="result.title" :replay-key="result" v-bind="revealTiming(index)" /></div>
             <div v-if="result.age"><UiScrambleText :text="result.age" :replay-key="result" v-bind="revealTiming(index)" /></div>
             <div v-if="result.appearance"><UiScrambleText :text="result.appearance" :replay-key="result" v-bind="revealTiming(index)" /></div>
             <div v-if="result.details" class="details"><UiScrambleText :text="result.details" :replay-key="result" v-bind="revealTiming(index)" /></div>
@@ -170,8 +170,8 @@ strong {
   margin-top: var(--space-1);
   font-size: 0.9375rem;
 }
-.name .runner-archetype {
-  font-family: var(--font-runner-archetype);
+.name .runner-secondary {
+  font-family: var(--font-runner-secondary);
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.25;

@@ -5,7 +5,7 @@ export interface GeneratedAttributes {
   age?: string
   appearance?: string
   details?: string
-  title?: string
+  secondary?: string
   rating?: number
 }
 export interface Generated extends GeneratedAttributes {

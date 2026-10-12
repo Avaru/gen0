@@ -19,8 +19,8 @@ export const runners = (options: GenerationOptions = {}): Generated => {
   const jobs = characters.tag('runner')
   const details = characters.tag('character')
 
-  const title: string[] = []
-  if (p(0.5)) title.push(capitalize(jobs.type('level').take().value))
+  const secondary: string[] = []
+  if (p(0.5)) secondary.push(capitalize(jobs.type('level').take().value))
   const matching = options.runnerArchetypeId
     ? load(DATA.RUNNER_TRAITS, options).filter(entry => entry.tags.includes('runner') && entry.type === 'profession' && entry.archetypeId === options.runnerArchetypeId)
     : undefined
@@ -28,9 +28,9 @@ export const runners = (options: GenerationOptions = {}): Generated => {
   const profession = matching
     ? matching.length ? new Bits(matching).take() : { value: archetype?.name ?? '', archetypeId: archetype?.id }
     : jobs.type('profession').take()
-  title.push(capitalize(profession.value))
+  secondary.push(capitalize(profession.value))
   if (p(0.1))
-    title.push(
+    secondary.push(
       randomFromWeighted(['turned', 'previously a', 'aspiring to become a']),
       capitalize(jobs.type('profession').take().value),
     )
@@ -48,7 +48,7 @@ export const runners = (options: GenerationOptions = {}): Generated => {
   return {
     primary,
     archetypeId: profession.archetypeId,
-    title: title.join(' '),
+    secondary: secondary.join(' '),
     appearance: appearance.join(', '),
     details: `By day: ${genericName(options, false)}${job ? `, ${job}` : ''}`,
   }

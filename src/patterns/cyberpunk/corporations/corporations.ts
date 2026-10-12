@@ -48,13 +48,13 @@ export function corporations(options: GenerationOptions = {}): Generated {
   const primary = corporationName(options)
   const parameters = CORPORATION_PARAMETERS[size]
   const employees = randomRounded(parameters.EMPLOYEES_MIN, parameters.EMPLOYEES_MAX)
-  let title: string | undefined
+  let secondary: string | undefined
   if (p() && size !== CORPORATION_SIZE.AAA) {
     const relation = new Bits(load(DATA.NAME_FRAGMENTS, options), {
       tag: 'corporation',
       type: 'relation',
     })
-    title = `${capitalize(relation.take().value)} of ${corporationName({ ...options, knownParent: true })}`
+    secondary = `${capitalize(relation.take().value)} of ${corporationName({ ...options, knownParent: true })}`
   }
   const details = [`${Intl.NumberFormat().format(employees)} Employees`, `CEO: ${genericName(options, false)}`]
   if (size !== CORPORATION_SIZE.A) {
@@ -72,7 +72,7 @@ export function corporations(options: GenerationOptions = {}): Generated {
     if (size === CORPORATION_SIZE.AAA) details.push('Events:')
     details.push(...history.map(event => `${event.year}: ${event.text}`))
   }
-  return { primary, details: details.join('\n'), title }
+  return { primary, details: details.join('\n'), secondary }
 }
 
 export function knownCorporation(options: GenerationOptions = {}): Generated {

@@ -32,7 +32,7 @@ export const characters = (
     } else {
       title.push(dayjob(options))
     }
-    character.title = title.join('')
+    character.secondary = title.join('')
   }
 
   return character

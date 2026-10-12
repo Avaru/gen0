@@ -127,8 +127,8 @@ describe('migrated generator', () => {
     const knownNames = load(DATA.NAME_FRAGMENTS, { flavor: 'shadowrun' })
       .filter((bit) => bit.tags.includes('corporation') && bit.type === 'name')
       .map((bit) => bit.value)
-    expect(knownNames.some((name) => shadowrun.title?.includes(name))).toBe(true)
-    expect(knownNames.some((name) => generic.title?.includes(name))).toBe(false)
+    expect(knownNames.some((name) => shadowrun.secondary?.includes(name))).toBe(true)
+    expect(knownNames.some((name) => generic.secondary?.includes(name))).toBe(false)
   })
 
   it('generates only selected genders and keeps Russian name parts consistent', () => {
@@ -180,7 +180,7 @@ describe('migrated generator', () => {
       flavor: 'shadowrun',
       corporationSizes: [CORPORATION_SIZE.A],
     })
-    expect(minor!.title).toContain(' of ')
+    expect(minor!.secondary).toContain(' of ')
   })
 
   it('keeps pools independent and rejects empty selections and invalid requests', () => {
