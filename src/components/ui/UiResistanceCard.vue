@@ -4,21 +4,25 @@ const specialArmor = defineModel<boolean>({ required: true })
 </script>
 
 <template>
-  <section class="resistance-card" :data-state="specialArmor ? 'yellow' : 'empty'" aria-labelledby="resistance-heading">
-    <h2 id="resistance-heading">Resistance/Armor</h2>
+  <section
+    class="resistance-card"
+    :data-state="specialArmor ? 'yellow' : 'empty'"
+    aria-labelledby="resistance-heading"
+  >
+    <h2 id="resistance-heading">Resist/Armor</h2>
     <p class="rule">
       Convey how you are RESISTING to reduce the severity of a Consequence or, at the GM’s
       discretion, avoid it entirely. Then choose a method:
     </p>
     <div class="methods">
       <div class="deplete">
-        <p class="method-heading">Mark and deplete either:</p>
+        <p class="method-heading">Mark and deplete either a fitting type of armor or</p>
         <UiDiamondChoice v-model="specialArmor" class="special-armor" label="Special Armor">
-          Special Armor
+          special armor
         </UiDiamondChoice>
-        <p class="example">E.g. Envision a defensive use for your Augmentation.</p>
-        <p class="armor-heading">A fitting type of armor</p>
-        <p class="example">What does it look like?</p>
+        <p class="example">
+          E.g. Envision a defensive use for your Augmentation // what does the armor look like?
+        </p>
       </div>
       <div class="roll">
         <p class="method-heading">
@@ -27,9 +31,9 @@ const specialArmor = defineModel<boolean>({ required: true })
         </p>
         <ul class="outcomes">
           <li>6,6 EZ. THAT’S IT.</li>
-          <li>6 SOLID. MARK <span aria-label="1 stress">⚡</span>.</li>
-          <li>4/5 NOT BAD. MARK <span aria-label="2 stress">⚡⚡</span>.</li>
-          <li>1–3 CLOSE. MARK <span aria-label="3 stress">⚡⚡⚡</span>.</li>
+          <li>6 SOLID. MARK <span aria-label="1 stress">⚡︎</span>.</li>
+          <li>4/5 NOT BAD. MARK <span aria-label="2 stress">⚡︎⚡︎</span>.</li>
+          <li>1–3 CLOSE. MARK <span aria-label="3 stress">⚡︎⚡︎⚡︎</span>.</li>
         </ul>
       </div>
     </div>
@@ -70,7 +74,7 @@ const specialArmor = defineModel<boolean>({ required: true })
 h2 {
   margin-bottom: var(--space-4);
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 10cqi, 2.5rem);
+  font-size: clamp(2rem, 6vw, 3.5rem);
   font-weight: var(--theme-heading-weight);
   text-transform: uppercase;
   letter-spacing: -0.02em;
@@ -84,11 +88,11 @@ h2 {
 }
 .rule,
 .example {
-  font-size: 0.625rem;
+  font-size: var(--font-sheet-rule-size);
   line-height: 1.35;
 }
 .rule {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
 }
 .methods {
   display: grid;
@@ -98,9 +102,7 @@ h2 {
   min-width: 0;
 }
 .method-heading,
-.armor-heading,
-.special-armor,
-.outcomes {
+.special-armor {
   font-family: var(--font-display);
   font-size: var(--font-small-control-size);
   font-weight: 650;
@@ -108,6 +110,7 @@ h2 {
   line-height: 1.35;
 }
 .method-heading {
+  font-size: var(--font-sheet-rule-size);
   margin-bottom: var(--space-3);
 }
 .special-armor {
@@ -120,20 +123,15 @@ h2 {
 .example {
   margin-top: var(--space-2);
 }
-.armor-heading {
-  margin-top: var(--space-6);
-  padding: var(--space-2) var(--space-3);
-  border-left: 0.5rem solid currentColor;
-}
 .outcomes {
-  margin: 0;
-  padding-left: 1.1em;
+  font-size: var(--font-sheet-rule-size);
+  line-height: 1.35;
+  margin-block: var(--space-4);
+  padding-left: var(--space-6);
+  list-style-type: '▸ ';
 }
 .outcomes li + li {
-  margin-top: var(--space-2);
-}
-.outcomes li::marker {
-  content: '› ';
+  margin-top: var(--space-1);
 }
 @container (min-width: 30rem) {
   .methods {
@@ -152,7 +150,6 @@ h2 {
   .rule,
   .example,
   .method-heading,
-  .armor-heading,
   .special-armor,
   .outcomes {
     font-size: 6.5pt;

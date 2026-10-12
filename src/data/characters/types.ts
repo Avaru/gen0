@@ -57,7 +57,7 @@ export interface CharacterGear {
 /** Editable sheet values stay blank until entered; blank is different from zero. */
 export interface CharacterSheet {
   systemId: Id
-  runner: { alias: string; description: string; archetypeId?: Archetype['id'] }
+  runner: { alias: string; description: string; archetypeId?: Archetype['id']; angle?: string }
   attributeRatings: (Omit<Rating, 'value'> & { value: SheetRating })[]
   skillRatings: (Omit<Rating, 'value'> & { value: SheetRating })[]
   expertises: { skillId: Id; values: string[]; custom?: string }[]

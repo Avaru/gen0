@@ -105,8 +105,8 @@ h2 {
   text-shadow: none;
 }
 .rule {
-  margin-bottom: var(--space-6);
-  font-size: 0.625rem;
+  margin-bottom: var(--space-4);
+  font-size: var(--font-sheet-rule-size);
   line-height: 1.35;
 }
 .columns {

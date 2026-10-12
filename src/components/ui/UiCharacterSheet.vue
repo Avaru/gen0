@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
 import type { Attribute, CharacterSheet, Skill, System } from '@/data/characters/types'
 import { cbrPnkApproachLabels, cbrPnkExpertiseOptions } from '@/data/characters/cbr-pnk-sheet'
 import UiExpertiseChoices from './UiExpertiseChoices.vue'
@@ -11,11 +12,55 @@ import UiResistanceCard from './UiResistanceCard.vue'
 import UiAugmentationsCard from './UiAugmentationsCard.vue'
 import UiGearCard from './UiGearCard.vue'
 import UiRunnerCard from './UiRunnerCard.vue'
+import UiRollReferenceCards from './UiRollReferenceCards.vue'
 import type { Flavor } from '@/generator/options'
 
-withDefaults(defineProps<{ system: System; attributes: Attribute[]; skills: Skill[]; flavor?: Flavor; canReset: boolean }>(), {
+const props = withDefaults(defineProps<{ system: System; attributes: Attribute[]; skills: Skill[]; flavor?: Flavor; canReset: boolean }>(), {
   flavor: 'cyberpunk',
 })
+const printMedia = window.matchMedia('print')
+const firstColumn = useTemplateRef('first-column')
+const secondColumn = useTemplateRef('second-column')
+function arrangePrintColumns(printing: boolean) {
+  const first = firstColumn.value
+  const second = secondColumn.value
+  if (!first || !second) return
+  const approaches = first.querySelector('.approaches') ?? second.querySelector('.approaches')
+  const augmentations = first.querySelector('.augmentations-card') ?? second.querySelector('.augmentations-card')
+  const workspace = first.parentElement
+  const references = workspace?.querySelector('.roll-reference-cards')
+  const skillHeading = second.querySelector('.skill-heading')
+  const expertiseRule = first.querySelector('.expertise-rule') ?? second.querySelector('.expertise-rule')
+  if (!approaches || !augmentations) return
+  // Move existing cards synchronously so the browser captures the new layout before printing.
+  if (printing && props.flavor !== 'cyberpunk2020-2077') {
+    first.append(augmentations)
+    second.append(approaches)
+    if (expertiseRule) approaches.append(expertiseRule)
+    if (references) second.append(references)
+  } else {
+    first.insertBefore(approaches, first.querySelector('.harm-card'))
+    second.append(augmentations)
+    if (expertiseRule && skillHeading) skillHeading.append(expertiseRule)
+    if (references) second.append(references)
+  }
+}
+function beforePrint() { arrangePrintColumns(true) }
+function afterPrint() { arrangePrintColumns(false) }
+function updatePrinting() { arrangePrintColumns(printMedia.matches) }
+onMounted(() => {
+  updatePrinting()
+  printMedia.addEventListener('change', updatePrinting)
+  window.addEventListener('beforeprint', beforePrint)
+  window.addEventListener('afterprint', afterPrint)
+})
+onBeforeUnmount(() => {
+  afterPrint()
+  printMedia.removeEventListener('change', updatePrinting)
+  window.removeEventListener('beforeprint', beforePrint)
+  window.removeEventListener('afterprint', afterPrint)
+})
+
 const sheet = defineModel<CharacterSheet>({ required: true })
 defineEmits<{ reset: []; applyArchetype: [] }>()
 function isGlitched(id: string) {
@@ -31,10 +76,10 @@ function approachState(id: string) {
 <template>
   <form class="sheet" aria-label="CBR+PNK character sheet" @submit.prevent>
     <UiWorkspace>
-      <div class="sheet-column">
+      <div ref="first-column" class="sheet-column">
         <UiRunnerCard v-model="sheet.runner" :flavor="flavor" :can-reset="canReset" @reset="$emit('reset')" @apply-archetype="$emit('applyArchetype')" />
         <section class="approaches" aria-labelledby="approaches-heading">
-          <h2 id="approaches-heading">{{ system.attributeLabel }}</h2>
+          <h2 id="approaches-heading">{{ system.attributeLabel }}<span class="print-skills-label"> // {{ system.skillLabel }}</span></h2>
           <div
             v-for="attribute in attributes"
             :key="attribute.id"
@@ -77,7 +122,7 @@ function approachState(id: string) {
         <UiStressCard v-model="sheet.stress" />
         <UiResistanceCard v-model="sheet.specialArmor" />
       </div>
-      <div class="sheet-column">
+      <div ref="second-column" class="sheet-column">
         <section class="skills" aria-labelledby="skills-heading">
           <div class="skill-heading">
             <h2 id="skills-heading">{{ system.skillLabel }}</h2>
@@ -98,7 +143,7 @@ function approachState(id: string) {
               <label class="skill-name" :for="skill.id">
                 {{ skill.name }}
                 <small v-if="skill.requiredModuleIds.some((id) => id !== system.coreModuleId)"
-                  >Weird</small
+                  >// Weird</small
                 >
               </label>
               <UiRatingChecks
@@ -120,6 +165,7 @@ function approachState(id: string) {
         </section>
         <UiGearCard v-model="sheet.gear" />
         <UiAugmentationsCard v-model="sheet.augmentations" />
+        <UiRollReferenceCards />
       </div>
     </UiWorkspace>
   </form>
@@ -336,16 +382,25 @@ h2 {
   flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--space-4);
-  padding-right: calc(var(--space-2) + 1px);
+}
+@media screen {
+  .sheet :deep(:is(section > h2, .runner-header > h2, .skill-heading > h2)) {
+    line-height: 1;
+    text-box-trim: trim-start;
+    text-box-edge: cap alphabetic;
+  }
+  .expertise-rule {
+    text-box-trim: trim-start;
+    text-box-edge: cap alphabetic;
+  }
 }
 .expertise-rule {
   flex: 1 1 10rem;
   max-width: 19rem;
   margin-left: auto;
-  padding-top: var(--space-4);
   text-align: right;
   color: var(--color-muted);
-  font-size: 0.625rem;
+  font-size: var(--font-sheet-rule-size);
   line-height: 1.35;
 }
 .skill {
@@ -388,12 +443,13 @@ h2 {
   max-width: 7rem;
   font-size: 1.375rem;
 }
+.skill-name:has(small) {
+  max-width: none;
+  white-space: nowrap;
+}
 .skill-name small {
-  display: block;
-  color: var(--color-muted);
-  font-family: var(--font-body);
-  font-size: 0.65rem;
-  text-transform: uppercase;
+  margin-left: var(--space-2);
+  font-size: clamp(0.75rem, 2.5vw, 1rem);
 }
 .skill-stat {
   display: grid;

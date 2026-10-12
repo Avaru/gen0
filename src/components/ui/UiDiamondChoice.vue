@@ -1,14 +1,15 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ label: string; count?: number; compact?: boolean }>(), {
+withDefaults(defineProps<{ label: string; count?: number; compact?: boolean; type?: 'checkbox' | 'radio'; name?: string; value?: string }>(), {
   count: 1,
   compact: false,
+  type: 'checkbox',
 })
 const selected = defineModel<boolean>({ required: true })
 </script>
 
 <template>
   <label class="diamond-choice" :class="{ compact }">
-    <input v-model="selected" type="checkbox" :aria-label="label" />
+    <input :checked="selected" :type="type" :name="name" :value="value" :aria-label="label" @change="selected = ($event.target as HTMLInputElement).checked" />
     <span class="diamonds" aria-hidden="true"><span v-for="mark in count" :key="mark" /></span>
     <span v-if="$slots.default" class="item-text"><slot /></span>
   </label>

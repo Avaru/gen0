@@ -1,4 +1,10 @@
 // Display text transcribed from the supplied runner-sheet image, not new mechanics.
+export const cbrPnkAngles = [
+  'Get out', 'Upgrade life',
+  'Make them pay', 'Learn the truth',
+  'Look after them', 'Take a stand',
+]
+
 export const cbrPnkApproachLabels: Record<string, { description: string; glitch: string }> = {
   aggressive: { description: 'Force · Intimidation · Destruction', glitch: 'Hesitation' },
   smart: { description: 'Creativity · Cunning · Perception', glitch: 'Disorientation' },

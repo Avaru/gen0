@@ -23,16 +23,16 @@ function selectGear(name: string, selected: boolean) {
 
 <template>
   <section class="gear-card" :data-state="state" aria-labelledby="gear-heading">
-    <div class="heading">
-      <h2 id="gear-heading">Load/Gear</h2>
-      <output aria-live="polite" aria-label="Total load">{{ total }} / {{ level.load }}</output>
-    </div>
+    <h2 id="gear-heading">Load/Gear</h2>
     <p class="rule">
       During the Run you may declare gear on-hand by marking it on your list—up to a number of
       items equal to your LOAD level. If an item is depleted, destroyed, or lost, cross it off the list.
     </p>
     <UiSegments v-model="gear.level" label="Load level" name="gear-load" :options="cbrPnkLoadLevels" />
-    <p class="load-description">{{ level.description }}</p>
+    <p class="load-description">
+      {{ level.description }}
+      <output aria-live="polite" aria-label="Total load">{{ total }} / {{ level.load }}</output>
+    </p>
     <div class="gear-columns">
       <div v-for="(column, columnIndex) in cbrPnkGearColumns" :key="columnIndex" class="gear-column">
         <UiDiamondChoice
@@ -98,15 +98,8 @@ function selectGear(name: string, selected: boolean) {
   background: var(--theme-panel-edge);
   pointer-events: none;
 }
-.heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-}
 h2 {
+  margin-bottom: var(--space-4);
   font-family: var(--font-display);
   font-size: clamp(2rem, 6vw, 3.5rem);
   font-weight: var(--theme-heading-weight);
@@ -120,9 +113,13 @@ h2 {
   color: var(--gear-ink);
   text-shadow: none;
 }
-output { font-weight: 700; white-space: nowrap; }
-.rule { margin-bottom: var(--space-4); font-size: 0.625rem; line-height: 1.35; }
-.load-description { margin-block: var(--space-2) var(--space-4); font-size: 0.75rem; }
+output { margin-left: var(--space-2); font-weight: 700; white-space: nowrap; }
+.rule {
+  margin-bottom: var(--space-4);
+  font-size: var(--font-sheet-rule-size);
+  line-height: 1.35;
+}
+.load-description { margin-block: var(--space-2); font-size: var(--font-sheet-rule-size); }
 .gear-columns { display: grid; gap: var(--space-3); }
 .gear-column { min-width: 0; }
 .extra-load {

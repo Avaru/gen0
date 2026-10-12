@@ -3,6 +3,10 @@
   display: none;
 }
 
+.print-skills-label {
+  display: none;
+}
+
 @page character-sheet {
   size: A4 portrait;
   margin: 8mm;
@@ -49,7 +53,7 @@
     .sheet {
       /* Four ink levels: writing guides, rules, structure, and character/selected data. */
       --print-ghost: #d6d6d6;
-      --print-rules: #888;
+      --print-rules: #aaa;
       --print-structure: #666;
       --print-ink: #000;
       width: 194mm;
@@ -77,13 +81,17 @@
     .sheet .sheet-column {
       display: flex;
       flex-direction: column;
-      gap: 2mm;
+      gap: 4mm;
       min-width: 0;
     }
 
+    .sheet .augmentations-card {
+      order: 1;
+    }
+
     .sheet section {
-      padding: 1.75mm;
-      border: 0.3mm solid black;
+      padding: 1mm;
+      border: 0;
       border-radius: 0;
       break-inside: avoid;
     }
@@ -101,8 +109,47 @@
       margin-bottom: 2mm;
     }
 
+    .sheet .roll-reference-card h2 {
+      font-size: 9pt;
+      margin-bottom: 1mm;
+    }
+
     .sheet .runner-header h2 {
       margin: 0;
+    }
+
+    .sheet .approaches {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2mm;
+    }
+
+    .sheet .approaches > h2 {
+      grid-column: 1 / -1;
+    }
+
+    .sheet .print-skills-label {
+      display: inline;
+    }
+
+    .sheet .skill-heading {
+      display: none;
+    }
+
+    .sheet .skills {
+      margin-top: -2mm;
+    }
+
+    .sheet .approaches > .expertise-rule {
+      grid-column: 1 / -1;
+      max-width: none;
+      margin-left: 0;
+      margin-top: 1mm;
+      text-align: left;
+    }
+
+    .sheet .approach {
+      min-width: 0;
     }
 
     .sheet .approach,
@@ -298,11 +345,23 @@
     }
 
     .sheet .stress-card .track::before {
-      left: calc(100% / 14);
-      right: calc(100% / 14);
-      width: auto;
+      display: none;
+    }
+
+    .sheet .stress-card .track > .diamond-choice:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: calc(50% + 2.2mm);
+      width: calc(100% - 4.4mm);
       height: 0;
       border-top: 0.2mm solid black;
+      transform: translateY(-50%);
+    }
+
+    .sheet .stress-card .track > .diamond-choice:nth-last-child(2)::after {
+      /* Leave room for the final slot's outer diamond. */
+      width: calc(100% - 5.5mm);
     }
 
     .sheet .stress-card .track .last .diamonds > span {
@@ -332,6 +391,7 @@
     }
 
     .sheet .gear-item,
+    .sheet .angle-options .diamond-choice,
     .sheet .extra-load {
       min-height: 3.5mm;
       gap: 1.5mm;
@@ -340,6 +400,7 @@
     }
 
     .sheet .gear-item .item-text,
+    .sheet .angle-options .item-text,
     .sheet .extra-load .item-text {
       font-size: 8pt;
     }
@@ -348,13 +409,8 @@
       line-height: 1.2;
     }
 
-    .sheet .gear-card[data-state='red'],
-    .sheet .gear-card[data-state='yellow'] {
-      border-top: 0.8mm double black;
-    }
-
     .sheet .augmentation-row {
-      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) auto;
       gap: 1mm;
       padding-block: 1mm;
     }
@@ -369,17 +425,17 @@
       line-height: 1.3;
     }
 
-    .sheet :is(.rule, .rules, .overload, .load-description, .expertise-rule, .costs, .approach-panel > .description, .gear-item small, .resistance-card .method-heading, .resistance-card .armor-heading, .resistance-card .example, .resistance-card .outcomes),
-    .sheet :is(.rule, .rules, .overload, .load-description, .expertise-rule, .costs, .approach-panel > .description, .gear-item small, .resistance-card .method-heading, .resistance-card .armor-heading, .resistance-card .example, .resistance-card .outcomes) * {
+    .sheet .gear-item small {
+      font-size: 5pt;
+    }
+
+    .sheet :is(.rule, .rules, .overload, .load-description, .expertise-rule, .costs, .approach-panel > .description, .gear-item small, .resistance-card .method-heading, .resistance-card .armor-heading, .resistance-card .example, .resistance-card .outcomes, .angle > p, .roll-reference-card > p, .roll-reference-card > .outcomes),
+    .sheet :is(.rule, .rules, .overload, .load-description, .expertise-rule, .costs, .approach-panel > .description, .gear-item small, .resistance-card .method-heading, .resistance-card .armor-heading, .resistance-card .example, .resistance-card .outcomes, .angle > p, .roll-reference-card > p, .roll-reference-card > .outcomes) * {
       color: var(--print-rules) !important;
     }
 
     .sheet :is(.rating input:checked + span, .expertise-choice input:checked + span, .custom-expertise.filled, label.hazard:has(input:checked), label.hazard input:checked + .track, .mark input:checked + span, input:checked + .diamonds > span, .segments input:checked + span, .approach[data-state='glitched'], .overload.active, .gear-card[data-state='red'], .gear-card[data-state='yellow']) {
       border-color: var(--print-ink) !important;
-    }
-
-    .sheet .overload.active strong {
-      color: var(--print-ink) !important;
     }
 
     .sheet .resistance-card .methods {
@@ -391,7 +447,7 @@
       margin-block: 0 2mm;
     }
 
-    .sheet .rules li + li {
+    .sheet .rules p + p {
       margin-top: 1.5mm;
     }
 

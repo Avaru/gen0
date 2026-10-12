@@ -142,6 +142,7 @@ function enter() {
               </button>
             </div>
           </section>
+          <slot />
         </div>
       </div>
     </dialog>

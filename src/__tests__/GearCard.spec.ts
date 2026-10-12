@@ -4,6 +4,9 @@ import { createPinia } from 'pinia'
 import { mount } from '@vue/test-utils'
 import CharacterView from '@/views/CharacterView.vue'
 import { useCharacterStore } from '@/stores/character'
+import { mockMedia } from './helpers/media'
+
+mockMedia()
 
 beforeEach(() => localStorage.clear())
 

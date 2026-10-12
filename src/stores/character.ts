@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
-import { cbrPnkExpertiseAliases, cbrPnkExpertiseOptions, cbrPnkGearColumns } from '@/data/characters/cbr-pnk-sheet'
+import { cbrPnkAngles, cbrPnkExpertiseAliases, cbrPnkExpertiseOptions, cbrPnkGearColumns } from '@/data/characters/cbr-pnk-sheet'
 import { composeAugmentation } from '@/patterns/cyberpunk/augmentations/augmentations'
 import { varyRatings } from '@/patterns/cyberpunk/runners/ratings'
 import { CONTENT, load } from '@/load'
@@ -23,6 +23,7 @@ function isUsableSheet(value: unknown, blank: CharacterSheet): value is Characte
       (saved.runner !== null &&
         typeof saved.runner.alias === 'string' &&
         typeof saved.runner.description === 'string' &&
+        (saved.runner.angle === undefined || cbrPnkAngles.includes(saved.runner.angle)) &&
         (saved.runner.archetypeId === undefined ||
           cbrPnkCatalogue.archetypes.some((item) => item.id === saved.runner.archetypeId)))) &&
     (saved.gear === undefined ||
@@ -110,7 +111,7 @@ export const useCharacterStore = defineStore('character', () => {
   const hasContent = computed(() => {
     const value = sheet.value
     return Boolean(
-      value.runner.alias || value.runner.description || value.runner.archetypeId ||
+      value.runner.alias || value.runner.description || value.runner.archetypeId || value.runner.angle ||
       value.stress || value.specialArmor || value.gear.level !== 'medium' || value.gear.selected.length ||
       value.gear.extra.some(Boolean) ||
       value.attributeRatings.some((row) => (row.value ?? 0) > 0) ||

@@ -8,28 +8,27 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
 <template>
   <section class="augmentations-card" aria-labelledby="augmentations-heading">
     <h2 id="augmentations-heading">Augmentations</h2>
-    <ul class="rules">
-      <li>
+    <div class="rules">
+      <p>
         Mark ⚡ to activate an enhanced capability
         <em>(e.g. therma-vision, wired reflexes, augmented strength)</em> or produce/conceal an
         specific compact asset <em>(chemicals, blade, nanobots)</em>. Can be combined with a
         <strong>Push</strong>.
-      </li>
-      <li>
+      </p>
+      <p>
         Mark <strong>Special Resistance</strong> to wield it against a fitting type of Consequence
         <em
           >(e.g. neural firewall, behavioral analyzer, toxin neutralizer, fireproof coating,
           etc)</em
         >.
-      </li>
-    </ul>
+      </p>
+    </div>
     <div
       v-for="(augmentation, index) in augmentations"
       :key="index"
       class="augmentation-row"
       :class="{ glitched: augmentation.glitched }"
     >
-      <span class="marker" aria-hidden="true">▸</span>
       <span class="print-value">{{ augmentation.description }}</span>
       <input
         v-model="augmentation.description"
@@ -82,28 +81,23 @@ h2 {
   overflow-wrap: anywhere;
 }
 .rules {
-  margin-bottom: var(--space-6);
-  padding-left: var(--space-4);
-  font-size: var(--font-small-control-size);
-  line-height: 1.5;
-  list-style-type: '▸ ';
+  margin-bottom: var(--space-4);
+  font-size: var(--font-sheet-rule-size);
+  line-height: 1.35;
 }
-.rules li + li {
-  margin-top: var(--space-4);
+.rules p + p {
+  margin-top: var(--space-2);
 }
 strong {
   text-transform: uppercase;
 }
 .augmentation-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-3);
   padding-block: var(--space-4);
   transition: var(--control-color-transition);
-}
-.marker {
-  color: var(--color-muted);
 }
 input {
   width: 100%;
@@ -128,10 +122,10 @@ input.filled {
 }
 @media (max-width: 40rem) {
   .augmentation-row {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
   .augmentation-row > :last-child {
-    grid-column: 2;
+    grid-column: 1;
     justify-self: end;
   }
 }

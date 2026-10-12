@@ -82,7 +82,7 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  font-size: var(--font-small-control-size);
+  font-size: var(--font-sheet-rule-size);
   text-transform: uppercase;
 }
 .track {
@@ -113,8 +113,8 @@ h2 {
   --diamond-selected: var(--color-hot);
 }
 .overload {
-  font-size: var(--font-small-control-size);
-  line-height: 1.5;
+  font-size: var(--font-sheet-rule-size);
+  line-height: 1.35;
 }
 .overload strong {
   text-transform: uppercase;
