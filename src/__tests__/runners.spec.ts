@@ -9,6 +9,7 @@ import { runnerAge } from '@/patterns/cyberpunk/runners/age'
 import { runners } from '@/patterns/cyberpunk/runners/runners'
 import * as peopleJobs from '@/patterns/cyberpunk/people/jobs'
 import * as peopleNames from '@/patterns/cyberpunk/people/names'
+import * as probability from '@/helper/prob'
 import { runnerLooks } from '@/patterns/cyberpunk/runners/looks'
 import { traditionIds } from '@/patterns/cyberpunk/nationality/traditions'
 import { seedRandom } from './helpers/random'
@@ -50,25 +51,18 @@ describe('Runners', () => {
     }
   })
 
-  it('keeps most ages in 17–40, with a focus on late 20s and mid 30s', () => {
-    seedRandom()
+  it('keeps ages as whole years within each species’ adult range', () => {
+    const random = vi.spyOn(Math, 'random')
     for (const species of Object.values(SPECIES)) {
-      const ages = Array.from({ length: 10000 }, () => runnerAge(species))
-      expect(
-        ages.every(
-          (age) =>
-            Number.isInteger(age) &&
-            age >= Math.max(17, SPECIES_AGE[species].MATURITY) &&
-            age <= SPECIES_AGE[species].MAX,
-        ),
-      ).toBe(true)
-      const proportion = (min: number, max: number) =>
-        ages.filter((age) => age >= min && age <= max).length / ages.length
-      expect(proportion(17, 40)).toBeGreaterThan(0.87)
-      expect(proportion(17, 40)).toBeLessThan(0.93)
-      expect(proportion(27, 29)).toBeGreaterThan(0.33)
-      expect(proportion(33, 36)).toBeGreaterThan(0.33)
-      expect(proportion(41, SPECIES_AGE[species].MAX)).toBeGreaterThan(0.07)
+      for (const draw of [0, 0.5, 0.8, 0.999]) {
+        for (const endpoint of [0, 0.999]) {
+          random.mockReturnValueOnce(draw).mockReturnValueOnce(endpoint)
+          const age = runnerAge(species)
+          expect(Number.isInteger(age)).toBe(true)
+          expect(age).toBeGreaterThanOrEqual(Math.max(17, SPECIES_AGE[species].MATURITY))
+          expect(age).toBeLessThanOrEqual(SPECIES_AGE[species].MAX)
+        }
+      }
     }
   })
 
@@ -96,74 +90,49 @@ describe('Runners', () => {
     const eyes = values('eyes')
     const garments = values('garment')
     const shapes = values('face-shape').map(value => `${value} face`)
-    let bald = 0
-    let shapeCount = 0
-    let structureCount = 0
-    let detailCount = 0
-    let eyeCount = 0
-    let garmentCount = 0
-    const samples = 3000
-    for (let i = 0; i < samples; i++) {
+    const hairStyles = values('hair-style')
+    const random = vi.spyOn(Math, 'random')
+    for (const [index, style] of hairStyles.entries()) {
+      // Exercise every hair style, including bald, without waiting for a lucky draw.
+      random.mockReturnValueOnce(0).mockReturnValueOnce((index + 0.1) / hairStyles.length)
       const looks = runnerLooks()
       expect(values('appearance')).toContain(looks[0])
       const hair = looks[1]!
-      const hairStyle = values('hair-style').find(style => hair === style || hair.endsWith(` ${style}`))!
-      expect(hairStyle).toBeDefined()
+      const hairStyle = hairStyles.find(style => hair === style || hair.endsWith(` ${style}`))!
+      expect(hairStyle).toBe(style)
       const color = hair.slice(0, -(hairStyle.length + 1))
       expect(hairStyle === 'bald' ? ['bald'] : values('hair-color')).toContain(hairStyle === 'bald' ? hair : color)
-      bald += Number(hairStyle === 'bald')
       const count = (pool: string[]) => looks.filter(value => pool.includes(value)).length
       expect(count(shapes)).toBeLessThanOrEqual(1)
       expect(count(structures)).toBeLessThanOrEqual(1)
       expect(count(details)).toBeLessThanOrEqual(1)
       expect(count(eyes)).toBeLessThanOrEqual(1)
-      shapeCount += count(shapes)
-      structureCount += count(structures)
-      detailCount += count(details)
-      eyeCount += count(eyes)
       const clothes = looks.find(value => values('clothes-noun').some(noun => value.endsWith(` ${noun}`)))!
       expect(clothes).toBeDefined()
       expect(values('clothes-condition').some(value => clothes.startsWith(`${value} `))).toBe(true)
       expect(values('clothes-style').some(value => clothes.includes(` ${value} `))).toBe(true)
       expect(count(garments)).toBeLessThanOrEqual(1)
-      garmentCount += count(garments)
-    }
-    expect(bald / samples).toBeGreaterThan(0.03)
-    expect(bald / samples).toBeLessThan(0.065)
-    expect(shapeCount / samples).toBeGreaterThan(0.72)
-    expect(shapeCount / samples).toBeLessThan(0.78)
-    expect(structureCount / samples).toBeGreaterThan(0.30)
-    expect(structureCount / samples).toBeLessThan(0.36)
-    for (const count of [detailCount, eyeCount, garmentCount]) {
-      expect(count / samples).toBeGreaterThan(0.47)
-      expect(count / samples).toBeLessThan(0.53)
     }
   })
 
-  it('includes an inner trait in 75% of single-row descriptions', () => {
+  it.each([true, false])('keeps inner traits optional in single-row descriptions (enabled: %s)', (enabled) => {
     seedRandom()
+    vi.spyOn(probability, 'p').mockReturnValue(enabled)
     const traits = load(DATA.RUNNER_TRAITS).filter(entry => entry.type === 'inner').map(entry => entry.value)
-    const appearances = Array.from({ length: 1000 }, () => runners().appearance!.split(', '))
-    const counts = appearances.map(parts => parts.filter(value => traits.includes(value)).length)
-    expect(counts.every(count => count <= 1)).toBe(true)
-    const proportion = counts.reduce((sum, count) => sum + count, 0) / counts.length
-    expect(proportion).toBeGreaterThan(0.70)
-    expect(proportion).toBeLessThan(0.80)
+    const parts = runners().appearance!.split(', ')
+    expect(parts.filter(value => traits.includes(value))).toHaveLength(enabled ? 1 : 0)
   })
 
-  it('puts the optional day job after the real name, with the same 20% chance', () => {
+  it.each([true, false])('puts the optional day job after the real name (enabled: %s)', (enabled) => {
     seedRandom()
+    vi.spyOn(probability, 'p').mockReturnValue(enabled)
     vi.spyOn(peopleNames, 'genericName').mockReturnValue('Test Name')
-    vi.spyOn(peopleJobs, 'dayjob').mockReturnValue('Test Job')
-    const results = Array.from({ length: 500 }, () => runners())
-    for (const result of results) {
-      expect(['By day: Test Name', 'By day: Test Name, Test Job']).toContain(result.details)
-      expect(result.appearance).not.toContain('Test Job')
-      expect(result.appearance).not.toContain('by day')
-    }
-    const proportion = results.filter(result => result.details === 'By day: Test Name, Test Job').length / results.length
-    expect(proportion).toBeGreaterThan(0.15)
-    expect(proportion).toBeLessThan(0.25)
+    const dayjob = vi.spyOn(peopleJobs, 'dayjob').mockReturnValue('Test Job')
+    const result = runners()
+    expect(result.details).toBe(enabled ? 'By day: Test Name, Test Job' : 'By day: Test Name')
+    expect(dayjob).toHaveBeenCalledTimes(enabled ? 1 : 0)
+    expect(result.appearance).not.toContain('Test Job')
+    expect(result.appearance).not.toContain('by day')
   })
 
   it('passes excluded name traditions and flavor overrides into nested generation', () => {

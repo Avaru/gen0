@@ -29,8 +29,7 @@ function eventPattern(template: string): RegExp {
   return new RegExp(`^${pattern}$`)
 }
 
-// Bulk generation needs room on slower deployment runners.
-describe('generated corporation details', { timeout: 60_000 }, () => {
+describe('generated corporation details', () => {
   it('limits the details to the requested company sizes in every flavor', () => {
     seedRandom()
     for (const { id: flavor } of flavors) {

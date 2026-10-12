@@ -8,8 +8,7 @@ import * as personalNames from '@/patterns/cyberpunk/people/names'
 
 afterEach(() => vi.restoreAllMocks())
 
-// Bulk generation needs room on slower deployment runners.
-describe('adapted content generators', { timeout: 60_000 }, () => {
+describe('adapted content generators', () => {
   it('uses the right category labels without changing category IDs', () => {
     for (const [flavor, label] of [
       ['cyberpunk', 'Device data'],
