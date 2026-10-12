@@ -157,7 +157,6 @@ function regenerate(field: 'alias' | 'description') {
         }}</UiButton>
       </div>
     </template>
-    <label for="runner-alias">Handle</label>
     <div class="runner-field">
       <UiSheetField id="runner-alias" v-model="runner.alias" variant="boxed" />
       <UiButton
@@ -182,8 +181,8 @@ function regenerate(field: 'alias' | 'description') {
           <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
         </svg>
       </UiButton>
+      <label for="runner-alias">Handle</label>
     </div>
-    <label for="runner-description">Details and looks</label>
     <div class="runner-field">
       <UiSheetField
         id="runner-description"
@@ -214,10 +213,10 @@ function regenerate(field: 'alias' | 'description') {
           <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
         </svg>
       </UiButton>
+      <label for="runner-description">Details and looks</label>
     </div>
     <fieldset class="angle">
-      <legend>Angle</legend>
-      <p>Convey what ultimately you run for:</p>
+      <legend>Angle // Convey what ultimately you run for:</legend>
       <div class="angle-options">
         <UiDiamondChoice
           v-for="option in cbrPnkAngles"
@@ -265,14 +264,13 @@ function regenerate(field: 'alias' | 'description') {
 }
 
 .runner-card {
-  --card-heading-gap: 0;
+  --card-heading-gap: var(--space-3);
   --field-end-padding: calc(var(--control-height) + var(--space-2));
   display: grid;
   gap: var(--space-2);
 }
 
-label,
-legend {
+label {
   font-family: var(--font-display);
   font-size: var(--font-small-control-size);
   text-transform: uppercase;
@@ -283,7 +281,7 @@ legend {
   padding: 0;
   border: 0;
 }
-.angle p {
+.angle legend {
   margin-block: var(--space-2);
   font-size: var(--font-sheet-rule-size);
   line-height: 1.35;
@@ -302,6 +300,15 @@ legend {
 .runner-field {
   position: relative;
   min-width: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+.runner-field :deep(.sheet-field) {
+  border: 0;
+  border-bottom: 3px solid currentColor;
+  border-left: var(--theme-panel-rule-width) solid var(--color-accent);
+  border-radius: 0;
+  background-color: transparent;
 }
 .runner-field > .regenerate {
   position: absolute;

@@ -41,7 +41,7 @@ describe('editable CBR+PNK sheet', () => {
     const card = wrapper.get('.runner-card')
     expect(card.get('label[for="runner-alias"]').text()).toBe('Handle')
     expect(card.get('label[for="runner-description"]').text()).toBe('Details and looks')
-    expect(card.get('.angle p').text()).toBe('Convey what ultimately you run for:')
+    expect(card.get('.angle legend').text()).toBe('Angle // Convey what ultimately you run for:')
     expect(
       card.findAll('input[name="runner-angle"]').map((input) => input.attributes('value')),
     ).toEqual([

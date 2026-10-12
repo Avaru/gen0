@@ -136,7 +136,7 @@
       margin-bottom: 2mm;
     }
     .sheet .runner-header {
-      margin-bottom: 0;
+      margin-bottom: 2mm;
     }
 
     .sheet .roll-reference-card h2 {
@@ -469,7 +469,7 @@
         .expertise-rule,
         .costs,
         .approach-panel > .description,
-        .angle > p,
+        .angle > legend,
         .gear-item small,
         .resistance-card .method-heading,
         .resistance-card .armor-heading,
@@ -498,7 +498,7 @@
         .resistance-card .armor-heading,
         .resistance-card .example,
         .resistance-card .outcomes,
-        .angle > p,
+        .angle > legend,
         .roll-reference-card > p,
         .roll-reference-card > .outcomes
       ),
@@ -516,7 +516,7 @@
         .resistance-card .armor-heading,
         .resistance-card .example,
         .resistance-card .outcomes,
-        .angle > p,
+        .angle > legend,
         .roll-reference-card > p,
         .roll-reference-card > .outcomes
       )
@@ -567,6 +567,12 @@
     .sheet .print-value + input,
     .sheet .print-value + textarea {
       display: none;
+    }
+
+    .sheet .runner-field .print-value {
+      border: 0;
+      border-bottom: 0.7mm solid var(--print-structure) !important;
+      border-left: 1mm solid var(--print-structure) !important;
     }
 
     .sheet .runner-description {

@@ -37,6 +37,12 @@
 * {
   box-sizing: border-box;
 }
+@media screen and (forced-colors: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-control-border) transparent;
+  }
+}
 body {
   margin: 0;
   min-width: min(20rem, 100%);
