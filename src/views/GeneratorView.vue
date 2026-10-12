@@ -75,6 +75,7 @@ async function generate(append = false, revealFirstName = false) {
       :results="results"
       :busy="busy"
       :label="category?.label ?? 'Generated names'"
+      :category="settings.category"
       :pending-pools="category?.pendingPools"
       :error="error"
       :show-details="showDetails"

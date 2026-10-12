@@ -8,6 +8,7 @@ const props = defineProps<{
   results: Generated[]
   busy: boolean
   label: string
+  category?: string
   error: string
   showDetails: boolean
   pendingPools?: readonly string[]
@@ -62,7 +63,7 @@ defineExpose({
         <div class="name">
           <strong><UiScrambleText :text="result.primary" :replay-key="result" v-bind="revealTiming(index)" /></strong>
           <template v-if="showDetails">
-            <div v-if="result.title"><UiScrambleText :text="result.title" :replay-key="result" v-bind="revealTiming(index)" /></div>
+            <div v-if="result.title" :class="{ 'runner-archetype': category === 'runners' }"><UiScrambleText :text="result.title" :replay-key="result" v-bind="revealTiming(index)" /></div>
             <div v-if="result.age"><UiScrambleText :text="result.age" :replay-key="result" v-bind="revealTiming(index)" /></div>
             <div v-if="result.appearance"><UiScrambleText :text="result.appearance" :replay-key="result" v-bind="revealTiming(index)" /></div>
             <div v-if="result.details" class="details"><UiScrambleText :text="result.details" :replay-key="result" v-bind="revealTiming(index)" /></div>
@@ -168,6 +169,14 @@ strong {
 .name div {
   margin-top: var(--space-1);
   font-size: 0.9375rem;
+}
+.name .runner-archetype {
+  font-family: var(--font-runner-archetype);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.025em;
+  color: var(--color-signal);
 }
 .error {
   color: var(--color-error);

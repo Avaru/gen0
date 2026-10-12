@@ -49,7 +49,7 @@ function generate(archetypeId: string) {
       angle: randomFrom(cbrPnkAngles),
       alias: result.primary,
       archetypeId,
-      description: [result.details, result.title, result.appearance].filter(Boolean).join('\n'),
+      description: [result.title, result.details, result.appearance].filter(Boolean).join('\n'),
     }
     emit('applyArchetype')
   } catch (cause) {
@@ -65,7 +65,7 @@ function regenerate(field: 'alias' | 'description') {
     runner.value[field] =
       field === 'alias'
         ? result.primary
-        : [result.details, result.title, result.appearance].filter(Boolean).join('\n')
+        : [result.title, result.details, result.appearance].filter(Boolean).join('\n')
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : 'Could not generate a runner.'
   }

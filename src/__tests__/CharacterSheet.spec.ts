@@ -216,7 +216,7 @@ describe('editable CBR+PNK sheet', () => {
         runner: {
           ...before.runner,
           alias: 'New alias',
-          description: 'Real name: New name\nNew role\nNew appearance',
+          description: 'New role\nReal name: New name\nNew appearance',
         },
       })
       expect(wrapper.get('#runner-description').element).toHaveProperty(
@@ -444,7 +444,7 @@ describe('editable CBR+PNK sheet', () => {
         angle: expect.any(String),
         alias: result.primary,
         archetypeId: result.archetypeId,
-        description: `${result.details}\n${result.title}\n${result.appearance}`,
+        description: `${result.title}\n${result.details}\n${result.appearance}`,
       })
       expect(
         JSON.stringify({
