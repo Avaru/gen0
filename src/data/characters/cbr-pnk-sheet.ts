@@ -39,7 +39,6 @@ export const cbrPnkStressComplications = [
 export const cbrPnkExpertiseAliases: Record<string, Record<string, string>> = {
   coding: { Hacking: 'Hack' },
   piloting: { Motorcycles: 'Bikes' },
-  analyze: { Situations: 'Situation' },
   'close-combat': { Katana: 'Weapon', 'Monofilament whip': 'Weapon' },
 }
 

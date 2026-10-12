@@ -17,7 +17,7 @@ describe('augmentations', () => {
       .toEqual(['infiltrator', 'face'])
   })
 
-  it.each(['mage', 'shaman', 'technomancer'])('keeps %s free of all augmentation links', (id) => {
+  it.each(['shaman', 'technomancer'])('keeps %s free of all augmentation links', (id) => {
     expect(augmentationData.filter((entry) => entry.archetypeIds.includes(id))).toEqual([])
   })
 

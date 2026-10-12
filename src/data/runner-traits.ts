@@ -510,7 +510,6 @@ export const runnerTraits: RawBit<
     id: 'vehicle-operator',
     flavorNames: { shadowrun: 'Rigger' },
   },
-  { tags: ['runner', 'shadowrun'], value: 'Mage', type: 'profession', archetypeId: 'mage' },
   { tags: ['runner'], value: 'Gun Nut', type: 'profession', archetypeId: 'marksman' },
   { tags: ['runner'], value: 'Sharpshooter', type: 'profession', archetypeId: 'marksman' },
   { tags: ['runner'], value: 'Veteran', type: 'level' },
@@ -535,7 +534,6 @@ export const runnerTraits: RawBit<
     type: 'profession',
     archetypeId: 'technomancer',
   },
-  { tags: ['runner', 'shadowrun'], value: 'Mage Adept', type: 'profession', archetypeId: 'mage' },
   {
     tags: ['runner'],
     value: 'Street Samurai',
@@ -545,7 +543,6 @@ export const runnerTraits: RawBit<
     flavorShortNames: { shadowrun: 'Sam' },
   },
   { tags: ['runner', 'shadowrun'], value: 'Adept', type: 'profession', archetypeId: 'brawler' },
-  { tags: ['runner', 'shadowrun'], value: 'Combat Mage', type: 'profession', archetypeId: 'mage' },
   {
     tags: ['runner'],
     value: 'Drone Operator',
@@ -587,6 +584,5 @@ export const runnerTraits: RawBit<
     id: 'vehicle-operator',
     flavorNames: { shadowrun: 'Rigger' },
   },
-  { tags: ['runner', 'shadowrun'], value: 'Mage', type: 'profession', archetypeId: 'mage' },
   { tags: ['runner'], value: 'Gun Nut', type: 'profession', archetypeId: 'marksman' },
 ]

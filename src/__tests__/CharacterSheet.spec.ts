@@ -590,7 +590,6 @@ describe('editable CBR+PNK sheet', () => {
         driver: ['Cars', 'Bikes'],
         face: ['Negotiate', 'Perform'],
         rigger: ['Electronics'],
-        analyst: ['People', 'Situation'],
         marksman: ['Rifle'],
         scientist: ['Biotech'],
         shaman: ['Artifacts'],

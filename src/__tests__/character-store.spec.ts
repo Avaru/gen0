@@ -218,10 +218,10 @@ describe('archetype augmentations', () => {
     'uses the $label name for a linked augmentation and saves it',
     async ({ id: flavor }) => {
       const store = useCharacterStore(createPinia())
-      store.sheet.runner.archetypeId = 'analyst'
+      store.sheet.runner.archetypeId = 'infiltrator'
       vi.spyOn(probability, 'p').mockReturnValue(false)
       const eligible = load(DATA.AUGMENTATIONS, { flavor }).filter((entry) =>
-        entry.archetypeIds.includes('analyst'),
+        entry.archetypeIds.includes('infiltrator'),
       )
       const thermalIndex = eligible.findIndex((entry) => entry.id === 'thermal-vision')
       expect(thermalIndex).toBeGreaterThanOrEqual(0)

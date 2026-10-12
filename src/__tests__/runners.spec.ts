@@ -19,7 +19,7 @@ afterEach(() => vi.restoreAllMocks())
 describe('Runners', () => {
   it('links every runner profession, including duplicates, to an existing archetype', () => {
     const professions = runnerTraits.filter((entry) => entry.tags.includes('runner') && entry.type === 'profession')
-    expect(professions).toHaveLength(26)
+    expect(professions).toHaveLength(22)
     const ids = cbrPnkCatalogue.archetypes.map((item) => item.id)
     for (const entry of professions) expect(ids).toContain(entry.archetypeId)
   })

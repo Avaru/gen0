@@ -42,7 +42,7 @@ export const augmentationData: AugmentationBit[] = [
   {
     id: 'thermal-vision',
     value: 'Thermal vision',
-    archetypeIds: ['marksman', 'infiltrator', 'analyst', 'street-samurai'],
+    archetypeIds: ['marksman', 'infiltrator', 'street-samurai'],
     flavorNames: { shadowrun: 'Thermographic vision', 'cyberpunk2020-2077': 'Thermal vision' },
     tags: [],
   },
@@ -73,7 +73,7 @@ export const augmentationData: AugmentationBit[] = [
   },
   {
     value: 'Behavioral analyzer',
-    archetypeIds: ['face', 'analyst'],
+    archetypeIds: ['face'],
     tags: [],
   },
   {
@@ -88,7 +88,7 @@ export const augmentationData: AugmentationBit[] = [
   },
   {
     value: 'Cybereyes',
-    archetypeIds: ['marksman', 'infiltrator', 'analyst', 'street-samurai'],
+    archetypeIds: ['marksman', 'infiltrator', 'street-samurai'],
     tags: [],
   },
   {
@@ -130,7 +130,7 @@ export const augmentationData: AugmentationBit[] = [
   {
     id: 'kiroshi-optics',
     value: 'Kiroshi Optics',
-    archetypeIds: ['marksman', 'infiltrator', 'analyst', 'street-samurai'],
+    archetypeIds: ['marksman', 'infiltrator', 'street-samurai'],
     tags: [],
   },
   {
@@ -239,33 +239,33 @@ export const augmentationData: AugmentationBit[] = [
   {
     id: 'commlink',
     value: 'Implanted communicator',
-    archetypeIds: ['face', 'hacker', 'rigger', 'analyst'],
+    archetypeIds: ['face', 'hacker', 'rigger'],
     flavorNames: { shadowrun: 'Implanted commlink' },
     tags: [],
   },
   {
     value: 'Low-light vision',
-    archetypeIds: ['marksman', 'infiltrator', 'analyst', 'street-samurai'],
+    archetypeIds: ['marksman', 'infiltrator', 'street-samurai'],
     tags: [],
   },
   {
     value: 'Vision magnification',
-    archetypeIds: ['marksman', 'analyst', 'driver'],
+    archetypeIds: ['marksman', 'driver'],
     tags: [],
   },
   {
     value: 'Flare compensation',
-    archetypeIds: ['marksman', 'analyst', 'driver'],
+    archetypeIds: ['marksman', 'driver'],
     tags: [],
   },
   {
     value: 'Cyberears',
-    archetypeIds: ['analyst', 'infiltrator'],
+    archetypeIds: ['infiltrator'],
     tags: [],
   },
   {
     value: 'Sound filter',
-    archetypeIds: ['analyst', 'infiltrator'],
+    archetypeIds: ['infiltrator'],
     tags: [],
   },
   {
@@ -317,7 +317,7 @@ export const augmentationData: AugmentationBit[] = [
   },
   {
     value: 'Simrig',
-    archetypeIds: ['analyst', 'face'],
+    archetypeIds: ['face'],
     details: 'Records sensory experiences for later playback.',
     tags: [],
   },
@@ -328,12 +328,12 @@ export const augmentationData: AugmentationBit[] = [
   },
   {
     value: 'Olfactory booster',
-    archetypeIds: ['analyst', 'infiltrator'],
+    archetypeIds: ['infiltrator'],
     tags: [],
   },
   {
     value: 'Chemical analyzer',
-    archetypeIds: ['analyst', 'scientist'],
+    archetypeIds: ['scientist'],
     tags: [],
   },
 ].map((entry) => ({ ...entry, type: 'kind' }))

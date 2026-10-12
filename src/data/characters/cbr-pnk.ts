@@ -166,11 +166,6 @@ export const cbrPnkCatalogue = {
       description: 'Enters secured places and avoids detection.',
     },
     {
-      id: 'analyst',
-      name: 'Analyst',
-      description: 'Examines evidence and reconstructs events.',
-    },
-    {
       id: 'marksman',
       name: 'Marksman',
       description: 'Specializes in precise ranged attacks.',
@@ -194,11 +189,6 @@ export const cbrPnkCatalogue = {
       id: 'technomancer',
       name: 'Technomancer',
       description: 'Combines technology with supernatural practice.',
-    },
-    {
-      id: 'mage',
-      name: 'Mage',
-      description: 'Practices magic.',
     },
     {
       id: 'street-samurai',
@@ -603,88 +593,6 @@ export const cbrPnkCatalogue = {
       expertiseSuggestions: [],
       notes: [
         'The extracted augmentation list ends with a trailing comma. No missing augmentation is invented.',
-      ],
-    },
-    {
-      id: 'cbr-pnk.profile.analyst',
-      archetypeId: 'analyst',
-      systemId: 'cbr-pnk',
-      requiredModuleIds: ['cbr-pnk.core'],
-      sourceBuild: 'Investigator',
-      mapping: 'direct',
-      attributeRatings: [
-        {
-          definitionId: 'cbr-pnk.attribute.aggressive',
-          value: 1,
-        },
-        {
-          definitionId: 'cbr-pnk.attribute.smart',
-          value: 2,
-        },
-        {
-          definitionId: 'cbr-pnk.attribute.empathic',
-          value: 1,
-        },
-        {
-          definitionId: 'cbr-pnk.attribute.stealthy',
-          value: 0,
-        },
-      ],
-      skillRatings: [
-        {
-          definitionId: 'cbr-pnk.skill.analyze',
-          value: 3,
-        },
-        {
-          definitionId: 'cbr-pnk.skill.athletics',
-          value: 0,
-        },
-        {
-          definitionId: 'cbr-pnk.skill.close-combat',
-          value: 1,
-        },
-        {
-          definitionId: 'cbr-pnk.skill.coding',
-          value: 0,
-        },
-        {
-          definitionId: 'cbr-pnk.skill.influence',
-          value: 1,
-        },
-        {
-          definitionId: 'cbr-pnk.skill.piloting',
-          value: 0,
-        },
-        {
-          definitionId: 'cbr-pnk.skill.ranged-combat',
-          value: 1,
-        },
-        {
-          definitionId: 'cbr-pnk.skill.rigging',
-          value: 0,
-        },
-        {
-          definitionId: 'cbr-pnk.skill.sciences',
-          value: 0,
-        },
-        {
-          definitionId: 'cbr-pnk.skill.streetwise',
-          value: 2,
-        },
-        {
-          definitionId: 'cbr-pnk.skill.attune',
-          value: 0,
-        },
-      ],
-      expertiseSuggestions: [
-        {
-          skillId: 'cbr-pnk.skill.analyze',
-          options: ['People', 'Situations'],
-          choose: 1,
-        },
-      ],
-      notes: [
-        'The source has no augmentation suggestions. Empty suggestions do not prohibit augmentations.',
       ],
     },
     {
