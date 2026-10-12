@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import type { Attribute, CharacterSheet, Skill, System } from '@/data/characters/types'
-import { cbrPnkApproachLabels } from '@/data/characters/cbr-pnk-sheet'
+import { cbrPnkApproachLabels, cbrPnkExpertiseOptions } from '@/data/characters/cbr-pnk-sheet'
+import UiExpertiseChoices from './UiExpertiseChoices.vue'
 import UiRatingChecks from './UiRatingChecks.vue'
 import UiWorkspace from './UiWorkspace.vue'
 import UiToggle from './UiToggle.vue'
 import UiHarmCard from './UiHarmCard.vue'
 import UiStressCard from './UiStressCard.vue'
 import UiAugmentationsCard from './UiAugmentationsCard.vue'
+import UiGearCard from './UiGearCard.vue'
+import UiRunnerCard from './UiRunnerCard.vue'
+import type { Flavor } from '@/generator/options'
 
-defineProps<{ system: System; attributes: Attribute[]; skills: Skill[] }>()
+withDefaults(defineProps<{ system: System; attributes: Attribute[]; skills: Skill[]; flavor?: Flavor }>(), {
+  flavor: 'cyberpunk',
+})
 const sheet = defineModel<CharacterSheet>({ required: true })
+defineEmits<{ reset: []; applyArchetype: [] }>()
 function isGlitched(id: string) {
   return sheet.value.glitches.find((item) => item.attributeId === id)?.marked ?? false
 }
@@ -24,6 +31,7 @@ function approachState(id: string) {
   <form class="sheet" aria-label="CBR+PNK character sheet" @submit.prevent>
     <UiWorkspace>
       <div class="sheet-column">
+        <UiRunnerCard v-model="sheet.runner" :flavor="flavor" @reset="$emit('reset')" @apply-archetype="$emit('applyArchetype')" />
         <section class="approaches" aria-labelledby="approaches-heading">
           <h2 id="approaches-heading">{{ system.attributeLabel }}</h2>
           <div
@@ -96,18 +104,16 @@ function approachState(id: string) {
               v-model="sheet.skillRatings.find((item) => item.definitionId === skill.id)!.value"
               :label="skill.name"
             />
-            <input
+            <UiExpertiseChoices
               v-if="sheet.expertises.find((item) => item.skillId === skill.id)"
-              v-model="sheet.expertises.find((item) => item.skillId === skill.id)!.value"
-              class="expertise"
-              :class="{
-                filled: !!sheet.expertises.find((item) => item.skillId === skill.id)?.value.trim(),
-              }"
-              type="text"
-              :aria-label="`${skill.name} expertise`"
+              v-model="sheet.expertises.find((item) => item.skillId === skill.id)!.values"
+              class="expertises"
+              :label="skill.name"
+              :options="cbrPnkExpertiseOptions[skill.key] ?? []"
             />
           </div>
         </section>
+        <UiGearCard v-model="sheet.gear" />
         <UiAugmentationsCard v-model="sheet.augmentations" />
       </div>
     </UiWorkspace>
@@ -244,8 +250,7 @@ h2 {
 }
 .approach-rating {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-3);
 }
 .skill-heading {
@@ -267,10 +272,39 @@ h2 {
 }
 .skill {
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+  align-items: start;
   gap: var(--space-2);
   padding: var(--space-2);
   margin-top: var(--space-2);
+}
+.skill::before {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: -1px;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  opacity: 0.45;
+  pointer-events: none;
+}
+.skill::after {
+  width: 2.5rem;
+  height: 4px;
+  opacity: 0.8;
+}
+.skill:nth-of-type(3n)::after {
+  width: 1.5rem;
+}
+.skill:not([data-state='0'])::after {
+  background: repeating-linear-gradient(
+    90deg,
+    currentColor 0 1px,
+    transparent 1px 4px,
+    currentColor 4px 6px,
+    transparent 6px 9px
+  );
 }
 .skill-name {
   font-size: 1.375rem;
@@ -282,35 +316,25 @@ h2 {
   font-size: 0.65rem;
   text-transform: uppercase;
 }
-.expertise {
-  width: 100%;
+.expertises {
   min-width: 0;
   grid-column: 1 / -1;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-subtle);
-  color: var(--color-text);
-  font-size: var(--font-control-size);
-}
-.expertise.filled {
-  background: var(--color-rating-one);
-  border-color: var(--color-rating-one);
-  color: var(--color-on-accent);
-  font-weight: 600;
 }
 @media (min-width: 40rem) {
   .skill {
     grid-template-columns: minmax(7rem, 1fr) auto minmax(0, 1.5fr);
     gap: var(--space-2);
   }
-  .expertise {
+  .expertises {
     grid-column: auto;
   }
 }
 /* Contents keep the existing single-column order on phones. */
 .sheet-column {
   display: contents;
+}
+.runner-card {
+  order: 0;
 }
 .approaches {
   order: 1;
@@ -325,13 +349,12 @@ h2 {
   order: 4;
 }
 .augmentations-card {
+  order: 6;
+}
+.gear-card {
   order: 5;
 }
 @media (min-width: 56rem) {
-  .approach-rating {
-    flex-direction: row;
-    align-items: center;
-  }
   .sheet-column {
     display: flex;
     flex-direction: column;
@@ -342,6 +365,19 @@ h2 {
 @media (max-width: 24rem) {
   section {
     padding: var(--space-4);
+  }
+  .approach {
+    padding-inline: var(--space-2);
+  }
+  .approach-rating {
+    gap: var(--space-2);
+  }
+  .approach-rating :deep(label.hazard) {
+    padding-inline: var(--space-1);
+    white-space: nowrap;
+  }
+  .approach-rating :deep(label.hazard .track) {
+    width: 2rem;
   }
 }
 </style>

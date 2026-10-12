@@ -13,7 +13,7 @@ function change(position: number, event: Event) {
     <p class="costs">
       <span>Push: ⚡⚡</span><span aria-hidden="true">/</span>
       <span>Assist: ⚡</span><span aria-hidden="true">/</span>
-      <span>Flashback: ⚡ or ⚡⚡+ (panel 3)</span>
+      <span>Flashback: ⚡ or ⚡⚡+</span>
     </p>
     <div class="track" role="group" aria-label="Stress slots">
       <label v-for="position in 7" :key="position" :class="{ last: position === 7 }">
@@ -38,7 +38,7 @@ function change(position: number, event: Event) {
       </ul>
       <p>
         While <strong>overloaded</strong> you can’t perform actions that would require ⚡.
-        <strong>Take a breather</strong> (panel 3) to relieve ⚡ and clear this status.
+        <strong>Take a breather</strong> to relieve ⚡ and clear this status.
       </p>
     </div>
   </section>

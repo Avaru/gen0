@@ -10,12 +10,12 @@ const version = __APP_VERSION__
 const route = useRoute()
 const main = useTemplateRef<HTMLElement>('main')
 const isAbout = computed(() => route.matched.some((record) => record.path.endsWith('/about')))
-const isCharacter = computed(() => route.matched.some((record) => record.path.endsWith('/char')))
+const isCharacter = computed(() => route.matched.some((record) => record.path === '/chars/cbrpnk'))
 const page = computed(() => isAbout.value ? 'about' : isCharacter.value ? 'char' : 'generator')
 // Announce the new page without taking focus from controls on settings changes.
 watch(() => route.matched, async (matched, previous) => {
   const pageKind = (records: typeof matched) => records.some(record => record.path.endsWith('/about'))
-    ? 'about' : records.some(record => record.path.endsWith('/char')) ? 'char' : 'generator'
+    ? 'about' : records.some(record => record.path === '/chars/cbrpnk') ? 'char' : 'generator'
   if (!previous.length || pageKind(matched) === pageKind(previous)) return
   await nextTick()
   main.value?.focus({ preventScroll: true })
@@ -36,10 +36,13 @@ const navigation = computed(() => {
     query: settingsQuery(settings),
   }
 })
-const characterNavigation = computed(() => ({
-  path: `${settingsPath(settingsFromRoute(route))}/char`,
-  query: settingsQuery(settingsFromRoute(route)),
-}))
+const characterNavigation = computed(() => {
+  const settings = settingsFromRoute(route)
+  return {
+    path: '/chars/cbrpnk',
+    query: settings.flavor === 'cyberpunk' ? {} : { flavor: settings.flavor },
+  }
+})
 const aboutNavigation = computed(() => ({
   path: `${settingsPath(settingsFromRoute(route))}/about`,
   query: settingsQuery(settingsFromRoute(route)),
@@ -51,13 +54,13 @@ const aboutNavigation = computed(() => ({
     <header>
       <nav aria-label="Main navigation">
         <RouterLink v-slot="{ href, navigate }" :to="navigation" custom>
-          <a :href="href" @click="navigateFromMenu($event, navigate)"><span class="link-label">{{ page === 'generator' ? 'About' : 'Back to generator' }}</span></a>
+          <a :href="href" @click="navigateFromMenu($event, navigate)"><span class="link-label">{{ page === 'generator' ? 'About' : 'Name generator' }}</span></a>
         </RouterLink>
         <RouterLink v-if="isCharacter" v-slot="{ href, navigate }" :to="aboutNavigation" custom>
           <a :href="href" @click="navigateFromMenu($event, navigate)"><span class="link-label">About</span></a>
         </RouterLink>
         <RouterLink v-slot="{ href, navigate }" :to="characterNavigation" custom>
-          <a :href="href" :aria-current="isCharacter ? 'page' : undefined" @click="navigateFromMenu($event, navigate)"><span class="link-label">char</span></a>
+          <a :href="href" :aria-current="isCharacter ? 'page' : undefined" @click="navigateFromMenu($event, navigate)"><span class="link-label">CBR+PNK</span></a>
         </RouterLink>
       </nav>
       <UiBrandTitle :theme="theme" />

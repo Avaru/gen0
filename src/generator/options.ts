@@ -26,6 +26,7 @@ export function normalizeSelections<T extends string>(
 }
 
 export interface GenerationOptions {
+  runnerArchetypeId?: string
   flavor?: Flavor
   // Overrides take priority over a flavor; exclusion takes priority over inclusion.
   includeTags?: string[]

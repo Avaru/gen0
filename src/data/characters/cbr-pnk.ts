@@ -1027,8 +1027,10 @@ export const cbrPnkCatalogue = {
           choose: 1,
         },
       ],
-      suggestedAugmentationIds: ['appearance-scrambler', 'toxin-fangs'],
-      notes: [],
+      suggestedAugmentationIds: [],
+      notes: [
+        'No augmentation links by design. Original source suggestions retained for reference only: appearance-scrambler, toxin-fangs.',
+      ],
     },
     {
       id: 'cbr-pnk.profile.technomancer',
@@ -1108,8 +1110,9 @@ export const cbrPnkCatalogue = {
           choose: 1,
         },
       ],
-      suggestedAugmentationIds: ['pheromone-excretor', 'wireless-datajack'],
+      suggestedAugmentationIds: [],
       notes: [
+        'No augmentation links by design. Original source suggestions retained for reference only: pheromone-excretor, wireless-datajack.',
         'Source expertise is Spirits; renamed archetype does not change its mechanical focus.',
       ],
     },

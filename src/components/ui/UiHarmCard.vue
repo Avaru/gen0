@@ -4,9 +4,13 @@ import type { CharacterHarm } from '@/data/characters/types'
 
 const harm = defineModel<CharacterHarm[]>({ required: true })
 const state = computed(() => {
-  const filled = harm.value.filter((row) => row.marks.every(Boolean))
-  if (filled.some((row) => row.level >= 2)) return 'red'
-  return filled.length ? 'yellow' : 'empty'
+  const lowerLevelsFull = [1, 2].every((level) =>
+    harm.value.some((row) => row.level === level && row.marks.every(Boolean)),
+  )
+  if (lowerLevelsFull || harm.value.some((row) => row.level === 3 && row.marks.some(Boolean)))
+    return 'red'
+  if (harm.value.some((row) => row.level === 2 && row.marks.some(Boolean))) return 'yellow'
+  return harm.value.some((row) => row.level === 1 && row.marks.some(Boolean)) ? 'cyan' : 'empty'
 })
 </script>
 
@@ -60,6 +64,10 @@ const state = computed(() => {
   background-image: var(--theme-panel-texture);
   color: var(--harm-ink);
   transition: var(--control-color-transition);
+}
+.harm-card[data-state='cyan'] {
+  --harm-fill: var(--color-signal);
+  --harm-ink: var(--color-on-accent);
 }
 .harm-card[data-state='yellow'] {
   --harm-fill: var(--color-rating-one);

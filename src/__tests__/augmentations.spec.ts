@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
 import { augmentationAttributes, augmentationData } from '@/data/augmentations'
 import { availableCategories, generateNames } from '@/generator/categories'
 import { flavors } from '@/generator/options'
@@ -9,6 +10,36 @@ import { seedRandom } from './helpers/random'
 afterEach(() => vi.restoreAllMocks())
 
 describe('augmentations', () => {
+  it('uses the agreed Sandevistan and Fingertip compartment links', () => {
+    expect(augmentationData.find((entry) => entry.value === 'Sandevistan')?.archetypeIds)
+      .toEqual(['brawler', 'marksman', 'street-samurai'])
+    expect(augmentationData.find((entry) => entry.value === 'Fingertip compartment')?.archetypeIds)
+      .toEqual(['infiltrator', 'face'])
+  })
+
+  it.each(['mage', 'shaman', 'technomancer'])('keeps %s free of all augmentation links', (id) => {
+    expect(augmentationData.filter((entry) => entry.archetypeIds.includes(id))).toEqual([])
+    expect(cbrPnkCatalogue.archetypeSystemProfiles
+      .filter((profile) => profile.archetypeId === id)
+      .flatMap((profile) => profile.suggestedAugmentationIds)).toEqual([])
+  })
+
+  it('links each augmentation only to existing archetypes, without duplicate links', () => {
+    const ids = cbrPnkCatalogue.archetypes.map((archetype) => archetype.id)
+    for (const entry of augmentationData) {
+      expect(entry.archetypeIds.length).toBeGreaterThan(0)
+      expect(new Set(entry.archetypeIds).size).toBe(entry.archetypeIds.length)
+      for (const id of entry.archetypeIds) expect(ids).toContain(id)
+    }
+  })
+
+  it.each(flavors)('retains archetype links when loading $label flavor labels', ({ id: flavor }) => {
+    const entries = load(CONTENT.AUGMENTATIONS, { flavor })
+    expect(entries.map((entry) => entry.archetypeIds)).toEqual(
+      augmentationData.map((entry) => entry.archetypeIds),
+    )
+  })
+
   it('appears under Equipment in every flavor and generates coherent details', () => {
     seedRandom(971)
     for (const { id: flavor } of flavors) {

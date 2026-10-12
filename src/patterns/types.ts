@@ -1,4 +1,7 @@
+import type { Archetype } from '@/data/characters/types'
+
 export interface GeneratedAttributes {
+  archetypeId?: Archetype['id']
   age?: string
   appearance?: string
   details?: string

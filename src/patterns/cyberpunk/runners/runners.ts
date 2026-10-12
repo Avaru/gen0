@@ -1,3 +1,4 @@
+import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
 import { capitalize } from '@/helper/capitalize'
 import { isFlavorEnabled, type GenerationOptions } from '@/generator/options'
 import Bits from '@/builders/Bits'
@@ -20,7 +21,14 @@ export const runners = (options: GenerationOptions = {}): Generated => {
 
   const title: string[] = []
   if (p(0.5)) title.push(capitalize(jobs.type('level').take().value))
-  title.push(capitalize(jobs.type('profession').take().value))
+  const matching = options.runnerArchetypeId
+    ? load(SHADOWRUN.CHARACTERS, options).filter(entry => entry.tags.includes('runner') && entry.type === 'profession' && entry.archetypeId === options.runnerArchetypeId)
+    : undefined
+  const archetype = cbrPnkCatalogue.archetypes.find(item => item.id === options.runnerArchetypeId)
+  const profession = matching
+    ? matching.length ? new Bits(matching).take() : { value: archetype?.name ?? '', archetypeId: archetype?.id }
+    : jobs.type('profession').take()
+  title.push(capitalize(profession.value))
   if (p(0.1))
     title.push(
       randomFromWeighted(['turned', 'previously a', 'aspiring to become a']),
@@ -38,6 +46,7 @@ export const runners = (options: GenerationOptions = {}): Generated => {
 
   return {
     primary,
+    archetypeId: profession.archetypeId,
     title: title.join(' '),
     appearance: appearance.join(', '),
     details: `Real name: ${genericName(options, false)}`,

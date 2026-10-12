@@ -48,14 +48,22 @@ export type CharacterHarm =
   | { level: 1 | 2; description: string; marks: [boolean, boolean] }
   | { level: 3; description: string; marks: [boolean] }
 
+export interface CharacterGear {
+  level: 'light' | 'medium' | 'heavy'
+  selected: string[]
+  extra: boolean[]
+}
+
 /** Editable sheet values stay blank until entered; blank is different from zero. */
 export interface CharacterSheet {
   systemId: Id
+  runner: { alias: string; description: string; archetypeId?: Archetype['id'] }
   attributeRatings: (Omit<Rating, 'value'> & { value: SheetRating })[]
   skillRatings: (Omit<Rating, 'value'> & { value: SheetRating })[]
-  expertises: { skillId: Id; value: string }[]
+  expertises: { skillId: Id; values: string[] }[]
   glitches: { attributeId: Id; marked: boolean }[]
   harm: CharacterHarm[]
+  gear: CharacterGear
   stress: number
   augmentations: { description: string; glitched: boolean }[]
 }

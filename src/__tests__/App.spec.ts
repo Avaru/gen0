@@ -21,6 +21,7 @@ beforeAll(() => Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
 }))
 const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
 beforeEach(() => {
+  localStorage.clear()
   scroll.mockClear()
   scrollTo.mockClear()
 })
@@ -41,9 +42,8 @@ async function setup(url = '/', attachTo?: HTMLElement) {
     routes: [
       { path: '/', component: GeneratorView },
       { path: '/about', component: AboutView },
-      { path: '/char', component: CharacterView },
+      { path: '/chars/cbrpnk', component: CharacterView },
       { path: '/:flavor/:category/about', component: AboutView },
-      { path: '/:flavor/:category/char', component: CharacterView },
       { path: '/:flavor/:category?', component: GeneratorView },
     ],
   })
@@ -63,7 +63,7 @@ describe('name generator interface', () => {
       await chooseCategory(wrapper, 'russian')
       await flushPromises()
       expect(scrollTo).not.toHaveBeenCalled()
-      for (const label of ['About', 'char', 'char', 'About', 'Back to generator']) {
+      for (const label of ['About', 'CBR+PNK', 'CBR+PNK', 'About', 'Name generator']) {
         const link = wrapper.findAll('nav a').find(link => link.text() === label)!
         await link.trigger('click')
         await flushPromises()
@@ -87,29 +87,43 @@ describe('name generator interface', () => {
     }
   })
 
+  it.each([
+    ['/cyberpunk/german?gender=f', '/chars/cbrpnk'],
+    ['/shadowrun/corporations?size=a', '/chars/cbrpnk?flavor=shadowrun'],
+    ['/cyberpunk2020-2077/german?gender=f', '/chars/cbrpnk?flavor=cyberpunk2020-2077'],
+  ])('carries only a non-default flavor from %s to the sheet', async (url, expected) => {
+    const { wrapper, router } = await setup(url)
+    const link = wrapper.findAll('nav a').find(item => item.text() === 'CBR+PNK')!
+    expect(link.attributes('href')).toBe(expected)
+    await link.trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.fullPath).toBe(expected)
+    wrapper.unmount()
+  })
+
   it('opens the character sheet with the current theme, retains edits across navigation, and returns to settings', async () => {
     const { wrapper, router } = await setup('/cyberpunk2020-2077/german?gender=f', document.body)
     try {
-      await wrapper.get('nav a[href$="/char?gender=f"]').trigger('click')
+      await wrapper.get('nav a[href^="/chars/cbrpnk?"]').trigger('click')
       await flushPromises()
-      expect(router.currentRoute.value.fullPath).toBe('/cyberpunk2020-2077/german/char?gender=f')
+      expect(router.currentRoute.value.fullPath).toBe('/chars/cbrpnk?flavor=cyberpunk2020-2077')
       expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk2077')
       expect(document.activeElement).toBe(wrapper.get('main').element)
       const rating = '[aria-label="Aggressive rating 2"]'
       await wrapper.get(rating).setValue(true)
-      await wrapper.get('nav a[href$="/about?gender=f"]').trigger('click')
+      await wrapper.get('nav a[href$="/runners/about"]').trigger('click')
       await flushPromises()
-      await wrapper.get('nav a[href$="/char?gender=f"]').trigger('click')
+      await wrapper.get('nav a[href^="/chars/cbrpnk?"]').trigger('click')
       await flushPromises()
       expect(wrapper.get(rating).element).toHaveProperty('checked', true)
       expect(wrapper.get('[aria-label="Aggressive rating 1"]').element).toHaveProperty('checked', true)
       await wrapper.get('nav a').trigger('click')
       await flushPromises()
-      expect(router.currentRoute.value.fullPath).toBe('/cyberpunk2020-2077/german?gender=f')
+      expect(router.currentRoute.value.fullPath).toBe('/cyberpunk2020-2077/runners')
     } finally { wrapper.unmount() }
   })
-  it('supports an empty character sheet on a direct /char link', async () => {
-    const { wrapper } = await setup('/char')
+  it('supports an empty character sheet on a direct /chars/cbrpnk link', async () => {
+    const { wrapper } = await setup('/chars/cbrpnk')
     expect(wrapper.get('h1').text()).toBe('CBR+PNK Runner sheet')
     expect(wrapper.findAll('h1')).toHaveLength(1)
     expect(wrapper.get('header .caption').text()).toBe('CBR+PNK Runner sheet')

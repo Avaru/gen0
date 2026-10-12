@@ -99,7 +99,6 @@ strong {
   align-items: center;
   gap: var(--space-3);
   padding-block: var(--space-4);
-  border-bottom: 2px solid currentColor;
   transition: var(--control-color-transition);
 }
 .marker {

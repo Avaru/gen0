@@ -1,4 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { shadowrunCharacters } from '@/data/shadowrun-characters'
+import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
+import { load, SHADOWRUN } from '@/load'
 import { flavors } from '@/generator/options'
 import { getNamePools } from '@/builders/namePools'
 import { SPECIES, SPECIES_AGE } from '@/patterns/cyberpunk/_secondary/helpers'
@@ -10,6 +13,40 @@ import { seedRandom } from './helpers/random'
 afterEach(() => vi.restoreAllMocks())
 
 describe('Runners', () => {
+  it('links every runner profession, including duplicates, to an existing archetype', () => {
+    const professions = shadowrunCharacters.filter((entry) => entry.tags.includes('runner') && entry.type === 'profession')
+    expect(professions).toHaveLength(26)
+    const ids = cbrPnkCatalogue.archetypes.map((item) => item.id)
+    for (const entry of professions) expect(ids).toContain(entry.archetypeId)
+  })
+
+  it.each(flavors)('keeps the main profession link through $label flavor naming and secondary professions', ({ id: flavor }) => {
+    seedRandom()
+    const professions = load(SHADOWRUN.CHARACTERS, { flavor }).filter((entry) => entry.tags.includes('runner') && entry.type === 'profession')
+    for (let i = 0; i < 100; i++) {
+      const runner = runners({ flavor })
+      const mainTitle = runner.title!.split(/ turned | previously a | aspiring to become a /)[0]!
+      const profession = [...professions].sort((a, b) => b.value.length - a.value.length).find((entry) => mainTitle.endsWith(entry.value))!
+      expect(profession).toBeDefined()
+      expect(runner.archetypeId).toBe(profession.archetypeId)
+    }
+  })
+
+  it.each(flavors)('generates each selected archetype with $label flavor professions', ({ id: flavor }) => {
+    seedRandom()
+    const professions = load(SHADOWRUN.CHARACTERS, { flavor }).filter(entry => entry.tags.includes('runner') && entry.type === 'profession')
+    for (const archetype of cbrPnkCatalogue.archetypes) {
+      const matches = professions.filter(entry => entry.archetypeId === archetype.id)
+      for (let i = 0; i < 10; i++) {
+        const runner = runners({ flavor, runnerArchetypeId: archetype.id })
+        expect(runner.archetypeId).toBe(archetype.id)
+        const mainTitle = runner.title!.split(/ turned | previously a | aspiring to become a /)[0]!
+        const labels = matches.length ? matches.map(entry => entry.value) : [archetype.name]
+        expect(labels.some(label => mainTitle.endsWith(label))).toBe(true)
+      }
+    }
+  })
+
   it('keeps most ages in 17–40, with a focus on late 20s and mid 30s', () => {
     seedRandom()
     for (const species of Object.values(SPECIES)) {

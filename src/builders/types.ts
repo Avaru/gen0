@@ -1,3 +1,4 @@
+import type { Archetype } from '@/data/characters/types'
 import type { Flavor } from '@/generator/options'
 
 export enum GENUS {
@@ -9,6 +10,7 @@ export enum GENUS {
 
 export type RawBit<Type extends string = string> = {
   id?: string
+  archetypeId?: Archetype['id']
   value: string
   shortValue?: string
   flavorNames?: Partial<Record<Flavor, string>>
