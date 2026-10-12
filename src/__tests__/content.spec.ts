@@ -1,10 +1,10 @@
 import { seedRandom } from './helpers/random'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { availableCategories, generateNames } from '@/generator/categories'
-import { CONTENT, load, SHADOWRUN } from '@/load'
+import { DATA, load } from '@/builders/load'
 import { deviceContents, weapons } from '@/patterns/cyberpunk/content/content'
 import * as weaponNames from '@/patterns/cyberpunk/content/weaponName'
-import * as personalNames from '@/patterns/cyberpunk/_secondary/names'
+import * as personalNames from '@/patterns/cyberpunk/people/names'
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -23,7 +23,7 @@ describe('adapted content generators', { timeout: 60_000 }, () => {
   })
 
   it('filters setting details, resolves shared terms, and honors exclusions', () => {
-    for (const list of Object.values(CONTENT).filter((list) => list !== CONTENT.AUGMENTATIONS)) {
+    for (const list of [DATA.WEAPONS, DATA.FOOD_MENU, DATA.SHOPS, DATA.DEVICE_DATA, DATA.PLACES]) {
       expect(
         load(list).every(
           (bit) => !bit.tags.includes('shadowrun') && !bit.tags.includes('cyberpunk2020-2077'),
@@ -40,25 +40,25 @@ describe('adapted content generators', { timeout: 60_000 }, () => {
         }).some((bit) => bit.tags.includes('shadowrun')),
       ).toBe(false)
     }
-    expect(load(CONTENT.SHOPS).find((bit) => bit.id === 'shop-network-specialist')?.value).toBe(
+    expect(load(DATA.SHOPS).find((bit) => bit.id === 'shop-network-specialist')?.value).toBe(
       'Netrunner',
     )
     expect(
-      load(CONTENT.SHOPS, { flavor: 'shadowrun' }).find(
+      load(DATA.SHOPS, { flavor: 'shadowrun' }).find(
         (bit) => bit.id === 'shop-network-specialist',
       )?.value,
     ).toBe('Decker')
     expect(
-      load(CONTENT.DEVICE_DATA, { flavor: 'cyberpunk2020-2077' }).find(
+      load(DATA.DEVICE_DATA, { flavor: 'cyberpunk2020-2077' }).find(
         (bit) => bit.type === 'storage' && bit.flavorNames?.shadowrun === 'commlink memory',
       )?.value,
     ).toBe('data shard')
     expect(
-      load(CONTENT.WEAPONS, { flavor: 'shadowrun' }).some((bit) => bit.value === 'Tech rifle'),
+      load(DATA.WEAPONS, { flavor: 'shadowrun' }).some((bit) => bit.value === 'Tech rifle'),
     ).toBe(false)
-    expect(load(CONTENT.FOOD_MENU).some((bit) => bit.value === 'Kibble')).toBe(false)
+    expect(load(DATA.FOOD_MENU).some((bit) => bit.value === 'Kibble')).toBe(false)
     expect(
-      load(CONTENT.FOOD_MENU, { flavor: 'cyberpunk2020-2077' }).some(
+      load(DATA.FOOD_MENU, { flavor: 'cyberpunk2020-2077' }).some(
         (bit) => bit.value === 'Kibble',
       ),
     ).toBe(true)
@@ -76,7 +76,7 @@ describe('adapted content generators', { timeout: 60_000 }, () => {
     expect(names).toMatch(/ from .* to /)
     expect(names).toMatch(/photo|video|snapshot/)
     expect(names).toMatch(/model|plan|report|analysis|blueprint|drawing/i)
-    const banned = load(SHADOWRUN.NAMES, { flavor: 'shadowrun' })
+    const banned = load(DATA.NAME_FRAGMENTS, { flavor: 'shadowrun' })
       .filter((bit) => bit.tags.includes('known-corporation'))
       .map((bit) => bit.value)
     expect(
@@ -86,7 +86,7 @@ describe('adapted content generators', { timeout: 60_000 }, () => {
 
   it('names people half the time using their gender and inherited settings', () => {
     const options = { flavor: 'shadowrun' as const, excludeTags: ['shadowrun'] }
-    const subjects = load(CONTENT.DEVICE_DATA, options).filter((bit) => bit.type === 'subject')
+    const subjects = load(DATA.DEVICE_DATA, options).filter((bit) => bit.type === 'subject')
     const nameSpy = vi.spyOn(personalNames, 'givenName')
     for (const value of ['woman', 'man', 'parent']) {
       const index = subjects.findIndex((bit) => bit.value === value)
@@ -119,7 +119,7 @@ describe('adapted content generators', { timeout: 60_000 }, () => {
         .mockReturnValueOnce(0).mockReturnValueOnce(roll)
       expect(deviceContents().primary).toMatch(pattern)
     }
-    const subjects = load(CONTENT.DEVICE_DATA).filter((bit) => bit.type === 'subject')
+    const subjects = load(DATA.DEVICE_DATA).filter((bit) => bit.type === 'subject')
     const index = subjects.findIndex((bit) => bit.value === 'car')
     const nameSpy = vi.spyOn(personalNames, 'givenName')
     vi.spyOn(Math, 'random').mockReturnValue(0)
@@ -130,7 +130,7 @@ describe('adapted content generators', { timeout: 60_000 }, () => {
   })
 
   it('avoids firearm modifications on melee weapons', () => {
-    const list = load(CONTENT.WEAPONS)
+    const list = load(DATA.WEAPONS)
     const melee = list
       .filter((bit) => bit.type === 'kind')
       .findIndex((bit) => bit.tags.includes('melee'))
@@ -156,7 +156,7 @@ describe('adapted content generators', { timeout: 60_000 }, () => {
   })
 
   it('reports an empty required pool rather than producing broken data', () => {
-    const subjects = load(CONTENT.DEVICE_DATA).filter((bit) => bit.type === 'subject')
+    const subjects = load(DATA.DEVICE_DATA).filter((bit) => bit.type === 'subject')
     // Ordinary pool tags can be excluded explicitly.
     vi.spyOn(Math, 'random').mockReturnValue(0.2)
     expect(subjects.length).toBeGreaterThan(0)

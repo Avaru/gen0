@@ -1,10 +1,10 @@
 import Bits from '@/builders/Bits'
-import { load, CONTENT } from '@/load'
+import { load, DATA } from '@/builders/load'
 import { p } from '@/helper/prob'
 import type { GenerationOptions } from '@/generator/options'
 
 function weaponNameParts(options: GenerationOptions): string[] {
-  const data = new Bits(load(CONTENT.WEAPONS, options))
+  const data = new Bits(load(DATA.WEAPONS, options))
   const name = [data.type('model').take().value]
   if (p(0.6)) name.push(`“${data.type('series').take().value}”`)
   return name
@@ -19,7 +19,7 @@ export function weaponName(options: GenerationOptions = {}): string {
 export function weaponProductName(options: GenerationOptions = {}): string {
   const name = weaponNameParts(options)
   if (name.length === 1) {
-    name.push(new Bits(load(CONTENT.WEAPONS, options), { type: 'kind' }).take().value)
+    name.push(new Bits(load(DATA.WEAPONS, options), { type: 'kind' }).take().value)
   }
   return name.join(' ')
 }

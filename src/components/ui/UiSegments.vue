@@ -34,7 +34,7 @@ fieldset {
 legend {
   padding: 0;
   margin-bottom: var(--space-2);
-  color: var(--color-muted);
+  color: var(--control-label-color, var(--color-muted));
   font-size: 0.8125rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -89,8 +89,11 @@ span {
   font-weight: 600;
 }
 input:checked + span {
-  background: var(--color-signal);
-  color: var(--color-on-accent);
+  background: var(--segment-selected-fill, var(--color-signal));
+  color: var(--segment-selected-ink, var(--color-on-accent));
+  text-decoration: var(--segment-selected-decoration, none);
+  text-underline-offset: 0.2em;
+  border-bottom-color: var(--segment-selected-border, transparent);
 }
 label:hover input:not(:checked) + span {
   background: var(--color-subtle);
@@ -99,26 +102,8 @@ label:active input:not(:checked) + span {
   background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
 }
 input:focus-visible + span {
-  outline: 3px solid var(--color-focus);
+  outline: var(--control-focus-width) solid var(--control-focus-color, var(--color-focus));
   outline-offset: 2px;
-}
-[data-theme='cyberpunk2077'] span {
-  text-transform: uppercase;
-  color: var(--color-hot);
-  border-bottom-color: var(--color-hot);
-}
-[data-theme='cyberpunk2077'] .segments {
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-[data-theme='cyberpunk2077'] input:checked + span {
-  color: var(--color-signal);
-  background: transparent;
-  border-bottom-color: var(--color-signal);
-}
-[data-theme='cyberpunk2077'] label:hover span {
-  background: var(--color-subtle);
 }
 @media (max-width: 24rem) {
   span {

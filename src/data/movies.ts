@@ -1,6 +1,6 @@
 import type { RawBit } from "@/builders/types"
 
-export const shadowrunMovie: RawBit<never>[] = [
+export const movieData: RawBit<never>[] = [
   {"tags": ["character-end"], "value": "puncher"},
   {"tags": ["character-end"], "value": "killer"},
   {"tags": ["character-end"], "value": "kicker"},

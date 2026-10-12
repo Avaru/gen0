@@ -9,6 +9,13 @@
   --space-1: 0.25rem;
   --color-rating-one: #eeff00;
   --font-sheet-rule-size: 0.625rem;
+  --font-sheet-heading-size: clamp(2rem, 6vw, 3.5rem);
+  --sheet-card-padding: var(--space-6);
+  --sheet-card-edge-offset: 7px;
+  --sheet-card-edge-width: 3rem;
+  --sheet-card-edge-height: 5px;
+  --control-focus-width: 3px;
+  --control-focus-offset: 3px;
   --font-expertise: 'Rajdhani', 'Arial Narrow', sans-serif;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -48,7 +55,7 @@ button:disabled {
   opacity: 0.65;
 }
 :focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: var(--control-focus-width) solid var(--control-focus-color, var(--color-focus));
   outline-offset: 3px;
 }
 h1,
@@ -74,4 +81,10 @@ h2 {
 
 :root:has(dialog[open]) {
   overflow: hidden;
+}
+
+@media screen and (max-width: 24rem) {
+  :root {
+    --sheet-card-padding: var(--space-4);
+  }
 }

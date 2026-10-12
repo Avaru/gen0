@@ -24,7 +24,6 @@
   --color-hot: #ff6761;
   --color-on-page: #11171b;
   --color-link-background: #11171b;
-  --color-disabled: #7b858b;
   --theme-check-shape: polygon(0 0, 100% 0, 100% 100%, 0 100%);
   --theme-panel-shadow: 6px 6px 0 #11171b;
   --theme-panel-fill: var(--color-surface);
@@ -36,7 +35,6 @@
   --theme-name-color: var(--color-text);
   --theme-name-weight: 700;
   --theme-heading-slant: -6deg;
-  --theme-brand-shadow: 2px 0 var(--color-page), 4px 0 var(--color-hot), -3px 2px var(--color-signal);
   --theme-heading-shadow: 2px 1px 0 #254448;
   --theme-rule: repeating-linear-gradient(135deg, var(--color-on-page) 0 4px, transparent 4px 9px);
   --theme-page-texture:

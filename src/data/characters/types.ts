@@ -1,5 +1,3 @@
-import type { Flavor as FlavorId } from '@/generator/options'
-
 /** Framework-independent generator catalogue. IDs are stable; labels are editable. */
 export type Id = string
 export interface System {
@@ -8,12 +6,6 @@ export interface System {
   attributeLabel: string
   skillLabel: string
   coreModuleId: Id
-}
-export interface SystemModule {
-  id: Id
-  systemId: Id
-  name: string
-  defaultEnabled: boolean
 }
 /** Attributes belong to a system, never to a flavor or generic archetype. */
 export interface Attribute {
@@ -85,78 +77,14 @@ export interface ArchetypeSystemProfile {
   attributeRatings: Rating[]
   skillRatings: Rating[]
   expertiseSuggestions: ExpertiseSuggestion[]
-  suggestedAugmentationIds: Id[]
   notes: string[]
 }
-export interface AugmentationCategory {
-  id: Id
-  name: string
-  description: string
-}
-/** Generic capabilities: categories do not imply a numeric bonus or a game rule. */
-export interface Augmentation {
-  id: Id
-  name: string
-  categoryIds: Id[]
-  categorizationBasis: 'inferred-from-name'
-  notes: string[]
-}
-export interface AugmentationSystemBinding {
-  augmentationId: Id
-  systemId: Id
-  name: string
-  requiredModuleIds: Id[]
-}
-/** Flavor means setting/aesthetic, independently of rules system or optional modules. */
-export interface CharacterFlavor {
-  id: FlavorId
-  name: string
-  description: string
-}
-/** Which mechanical aspects exist for this particular flavor/system pairing. */
-export interface FlavorSystem {
-  flavorId: FlavorId
-  systemId: Id
-  enabled: boolean
-  availableAttributeIds: Id[]
-  availableSkillIds: Id[]
-  supportsAugmentations: boolean
-}
-export interface FlavorArchetype {
-  flavorId: FlavorId
-  archetypeId: Id
-  enabled: boolean
-  nameOverride: string | null
-  descriptionOverride: string | null
-}
-/** Flavor availability uses explicit allowlists; no entry means unavailable. */
-export interface FlavorAugmentation {
-  flavorId: FlavorId
-  augmentationId: Id
-  enabled: boolean
-  nameOverride: string | null
-}
-export interface CharacterGeneratorContext {
-  systemId: Id
-  enabledModuleIds: Id[]
-  /** null selects the unconfigured catalogue, without flavor overrides. */
-  flavorId: FlavorId | null
-}
+/** Only definitions consumed by runner generation and the editable sheet. */
 export interface CharacterCatalogue {
-  schemaVersion: 1
   sources: { id: Id; title: string; url: string; note: string }[]
   systems: System[]
-  systemModules: SystemModule[]
   attributes: Attribute[]
   skills: Skill[]
   archetypes: Archetype[]
   archetypeSystemProfiles: ArchetypeSystemProfile[]
-  augmentationCategories: AugmentationCategory[]
-  augmentations: Augmentation[]
-  augmentationSystemBindings: AugmentationSystemBinding[]
-  flavors: CharacterFlavor[]
-  flavorSystems: FlavorSystem[]
-  flavorArchetypes: FlavorArchetype[]
-  flavorAugmentations: FlavorAugmentation[]
-  unmappedArchetypes: { archetypeId: Id; systemId: Id; reason: string }[]
 }

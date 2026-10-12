@@ -9,7 +9,7 @@ import App from '../App.vue'
 import GeneratorView from '../views/GeneratorView.vue'
 import AboutView from '../views/AboutView.vue'
 import CharacterView from '../views/CharacterView.vue'
-import { createPinia } from 'pinia'
+import { createTestPinia as createPinia } from './helpers/pinia'
 
 mockDialog()
 const media = mockMedia()
@@ -42,7 +42,7 @@ async function setup(url = '/', attachTo?: HTMLElement) {
     routes: [
       { path: '/', component: GeneratorView },
       { path: '/about', component: AboutView },
-      { path: '/chars/cbrpnk', component: CharacterView },
+      { path: '/chars/cbrpnk', meta: { flavor: 'cyberpunk' }, component: CharacterView },
       { path: '/:flavor/:category/about', component: AboutView },
       { path: '/:flavor/:category?', component: GeneratorView },
     ],
@@ -89,39 +89,52 @@ describe('name generator interface', () => {
 
   it.each([
     ['/cyberpunk/german?gender=f', '/chars/cbrpnk'],
-    ['/shadowrun/corporations?size=a', '/chars/cbrpnk?flavor=shadowrun'],
-    ['/cyberpunk2020-2077/german?gender=f', '/chars/cbrpnk?flavor=cyberpunk2020-2077'],
-  ])('carries only a non-default flavor from %s to the sheet', async (url, expected) => {
+    ['/shadowrun/corporations?size=a', '/chars/cbrpnk'],
+    ['/cyberpunk2020-2077/german?gender=f', '/chars/cbrpnk'],
+  ])('switches to Generic from %s when opening the sheet', async (url, expected) => {
     const { wrapper, router } = await setup(url)
     const link = wrapper.findAll('nav a').find(item => item.text() === 'CBR+PNK')!
     expect(link.attributes('href')).toBe(expected)
     await link.trigger('click')
     await flushPromises()
     expect(router.currentRoute.value.fullPath).toBe(expected)
+    expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
+    expect(wrapper.find('nav a[href="/cyberpunk/runners"]').exists()).toBe(true)
     wrapper.unmount()
   })
 
-  it('opens the character sheet with the current theme, retains edits across navigation, and returns to settings', async () => {
+  it('opens the character sheet in Generic, retains edits across navigation, and returns to Generic', async () => {
     const { wrapper, router } = await setup('/cyberpunk2020-2077/german?gender=f', document.body)
     try {
-      await wrapper.get('nav a[href^="/chars/cbrpnk?"]').trigger('click')
+      await wrapper.get('nav a[href="/chars/cbrpnk"]').trigger('click')
       await flushPromises()
-      expect(router.currentRoute.value.fullPath).toBe('/chars/cbrpnk?flavor=cyberpunk2020-2077')
-      expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk2077')
+      expect(router.currentRoute.value.fullPath).toBe('/chars/cbrpnk')
+      expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
       expect(document.activeElement).toBe(wrapper.get('main').element)
       const rating = '[aria-label="Aggressive rating 2"]'
       await wrapper.get(rating).setValue(true)
       await wrapper.get('nav a[href$="/runners/about"]').trigger('click')
       await flushPromises()
-      await wrapper.get('nav a[href^="/chars/cbrpnk?"]').trigger('click')
+      await wrapper.get('nav a[href="/chars/cbrpnk"]').trigger('click')
       await flushPromises()
       expect(wrapper.get(rating).element).toHaveProperty('checked', true)
       expect(wrapper.get('[aria-label="Aggressive rating 1"]').element).toHaveProperty('checked', true)
       await wrapper.get('nav a').trigger('click')
       await flushPromises()
-      expect(router.currentRoute.value.fullPath).toBe('/cyberpunk2020-2077/runners')
+      expect(router.currentRoute.value.fullPath).toBe('/cyberpunk/runners')
     } finally { wrapper.unmount() }
   })
+  it.each(['shadowrun', 'cyberpunk2020-2077'])(
+    'keeps the sheet Generic when a direct link or query update requests %s', async (flavor) => {
+      const { wrapper, router } = await setup(`/chars/cbrpnk?flavor=${flavor}`)
+      expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
+      expect(wrapper.find('nav a[href="/cyberpunk/runners"]').exists()).toBe(true)
+      await router.replace({ path: '/chars/cbrpnk', query: { flavor: 'cyberpunk2020-2077' } })
+      await flushPromises()
+      expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
+      wrapper.unmount()
+    },
+  )
   it('supports an empty character sheet on a direct /chars/cbrpnk link', async () => {
     const { wrapper } = await setup('/chars/cbrpnk')
     expect(wrapper.get('h1').text()).toBe('CBR+PNK Runner sheet')
@@ -324,7 +337,7 @@ describe('name generator interface', () => {
     expect(router.currentRoute.value.path).toBe('/cyberpunk2020-2077/german/about')
     expect(wrapper.get('h1').text()).toBe('About gen 0')
     expect(wrapper.text()).toContain('Anton Katzer')
-    expect(wrapper.get('.shell').attributes('data-theme')).toBe('cyberpunk2077')
+    expect(wrapper.get('.shell').attributes('data-theme')).toBe('cyberpunk')
     expect(wrapper.find('#category').exists()).toBe(false)
     await wrapper.get('nav a').trigger('click')
     await flushPromises()
@@ -339,16 +352,16 @@ describe('name generator interface', () => {
     direct.wrapper.unmount()
   })
 
-  it('restores flavor themes from links, selection changes, and Back/Forward', async () => {
+  it('keeps the shared appearance while restoring flavors from links and Back/Forward', async () => {
     const { wrapper, router } = await setup('/?flavor=cyberpunk2020-2077&category=runners')
     const theme = () => wrapper.get('.shell').attributes('data-theme')
-    expect(theme()).toBe('cyberpunk2077')
+    expect(theme()).toBe('cyberpunk')
     await wrapper.get('input[name="flavor"][value="shadowrun"]').setValue(true)
     await flushPromises()
     expect(theme()).toBe('cyberpunk')
     router.back()
     await flushPromises()
-    expect(theme()).toBe('cyberpunk2077')
+    expect(theme()).toBe('cyberpunk')
     router.forward()
     await flushPromises()
     expect(theme()).toBe('cyberpunk')

@@ -61,7 +61,7 @@ export function settingsQuery(settings: GeneratorSettings): Record<string, strin
 export function settingsFromRoute(route: RouteLocationNormalizedLoaded): GeneratorSettings {
   return normalizeGeneratorSettings({
     ...route.query,
-    flavor: route.params.flavor ?? route.query.flavor,
+    flavor: route.meta.flavor ?? route.params.flavor ?? route.query.flavor,
     category: route.params.category ?? route.query.category,
   })
 }

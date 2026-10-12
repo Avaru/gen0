@@ -4,12 +4,12 @@ import Bits from '@/builders/Bits'
 import { genitivS } from '@/helper/de/genitivS'
 import { p } from '@/helper/prob'
 import { replacePlaceholder } from '@/helper/replacePlaceholder'
-import { load, SHADOWRUN } from '@/load'
+import { load, DATA } from '@/builders/load'
 import { getNamePools } from '@/builders/namePools'
 import type { Generated } from '@/patterns/types'
 
 export function restaurants(options: GenerationOptions = {}): Generated {
-  const food = new Bits(load(SHADOWRUN.FOOD, options))
+  const food = new Bits(load(DATA.FOOD, options))
 
   const pattern: string[] = []
   if (p(0.4)) {
@@ -49,8 +49,8 @@ export function restaurants(options: GenerationOptions = {}): Generated {
 }
 
 export function bars(options: GenerationOptions = {}): Generated {
-  const bars = new Bits(load(SHADOWRUN.NAMES, options), { tag: 'bar' })
-  const food = new Bits(load(SHADOWRUN.FOOD, options))
+  const bars = new Bits(load(DATA.NAME_FRAGMENTS, options), { tag: 'bar' })
+  const food = new Bits(load(DATA.FOOD, options))
 
   const getDetail = () =>
     replacePlaceholder(
@@ -77,7 +77,7 @@ export function bars(options: GenerationOptions = {}): Generated {
   } else {
     const owners = p(0.3)
       ? new Bits(getNamePools(options).get(undefined, 'given'))
-      : new Bits(load(SHADOWRUN.NAMES, options), { tag: 'runner' })
+      : new Bits(load(DATA.NAME_FRAGMENTS, options), { tag: 'runner' })
     primary = genitivS(capitalize(owners.take().value), true)
     if (p(0.25)) {
       primary += ' and ' + genitivS(capitalize(owners.take().value), true)

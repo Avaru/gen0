@@ -2,15 +2,15 @@ import { seedRandom } from './helpers/random'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { generateNames } from '@/generator/categories'
 import { flavors, isFlavorEnabled } from '@/generator/options'
-import { load, RL, SHADOWRUN } from '@/load'
-import { SPECIES, pickSpecies } from '@/patterns/cyberpunk/_secondary/helpers'
+import { load, DATA } from '@/builders/load'
+import { SPECIES, pickSpecies } from '@/patterns/cyberpunk/people/species'
 import { corporations } from '@/patterns/cyberpunk/corporations/corporations'
 import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 import { randomRounded } from '@/helper/randomRounded'
 import { GENUS } from '@/builders/types'
 import Bits from '@/builders/Bits'
 import { getName } from '@/generator/names'
-import { shadowrunCharacters } from '@/data/shadowrun-characters'
+import { runnerTraits } from '@/data/runner-traits'
 import { cyberpunkCorporations } from '@/data/cyberpunk-corporations'
 
 afterEach(() => vi.restoreAllMocks())
@@ -29,27 +29,28 @@ describe('migrated generator', () => {
       'tamil',
     ]
     expect(
-      load(RL.NAMES_MODERN, options).filter(
+      load(DATA.PERSONAL_NAMES, options).filter(
         (bit) => !bit.tags.some((tag) => additions.includes(tag)),
       ),
     ).toHaveLength(19478)
-    expect(load(SHADOWRUN.NAMES, options)).toHaveLength(2179)
-    expect(load(SHADOWRUN.CHARACTERS, options)).toHaveLength(373)
-    expect(load(SHADOWRUN.FOOD, options)).toHaveLength(611)
-    expect(load(SHADOWRUN.MOVIE, options)).toHaveLength(517)
+    expect(load(DATA.NAME_FRAGMENTS, options)).toHaveLength(2179)
+    // Includes the user's hair, face, and clothing words, with outer entries removed.
+    expect(load(DATA.RUNNER_TRAITS, options)).toHaveLength(479)
+    expect(load(DATA.FOOD, options)).toHaveLength(611)
+    expect(load(DATA.MOVIES, options)).toHaveLength(517)
   })
 
   it('filters flavor entries and allows explicit inclusion and exclusion', () => {
-    for (const list of Object.values(SHADOWRUN)) {
+    for (const list of Object.values(DATA)) {
       expect(load(list).some((bit) => bit.tags.includes('shadowrun'))).toBe(false)
     }
     expect(
-      load(SHADOWRUN.NAMES, { includeTags: ['shadowrun'] }).some(
+      load(DATA.NAME_FRAGMENTS, { includeTags: ['shadowrun'] }).some(
         (bit) => bit.value === 'Aztechnology',
       ),
     ).toBe(true)
     expect(
-      load(SHADOWRUN.NAMES, { flavor: 'shadowrun', excludeTags: ['shadowrun'] }).some(
+      load(DATA.NAME_FRAGMENTS, { flavor: 'shadowrun', excludeTags: ['shadowrun'] }).some(
         (bit) => bit.value === 'Aztechnology',
       ),
     ).toBe(false)
@@ -65,16 +66,16 @@ describe('migrated generator', () => {
 
   it('keeps movie experience terms in their own flavors and respects overrides', () => {
     for (const { id: flavor } of flavors) {
-      const values = load(SHADOWRUN.MOVIE, { flavor }).map((bit) => bit.value)
+      const values = load(DATA.MOVIES, { flavor }).map((bit) => bit.value)
       expect(values.includes('BTL trip')).toBe(flavor === 'shadowrun')
       expect(values.includes('Braindance')).toBe(flavor === 'cyberpunk2020-2077')
       expect(values.includes('XBD')).toBe(flavor === 'cyberpunk2020-2077')
     }
-    const included = load(SHADOWRUN.MOVIE, {
+    const included = load(DATA.MOVIES, {
       includeTags: ['cyberpunk2020-2077'],
     }).map((bit) => bit.value)
     expect(included).toEqual(expect.arrayContaining(['Braindance', 'XBD']))
-    const excluded = load(SHADOWRUN.MOVIE, {
+    const excluded = load(DATA.MOVIES, {
       flavor: 'cyberpunk2020-2077',
       includeTags: ['cyberpunk2020-2077'],
       excludeTags: ['cyberpunk2020-2077'],
@@ -85,25 +86,25 @@ describe('migrated generator', () => {
 
   it('uses setting names and short names without changing the source lists', () => {
     const role = (flavor: 'cyberpunk' | 'shadowrun' | 'cyberpunk2020-2077', id: string) =>
-      load(SHADOWRUN.CHARACTERS, { flavor }).find((bit) => bit.id === id)!
+      load(DATA.RUNNER_TRAITS, { flavor }).find((bit) => bit.id === id)!
     expect(role('cyberpunk', 'network-specialist').value).toBe('Netrunner')
     expect(role('shadowrun', 'network-specialist').value).toBe('Decker')
     expect(role('shadowrun', 'street-samurai').shortValue).toBe('Sam')
     expect(role('cyberpunk2020-2077', 'job-contact').value).toBe('Fixer')
     expect(role('shadowrun', 'job-contact').value).toBe('Johnson')
-    expect(shadowrunCharacters.find((bit) => bit.id === 'network-specialist')?.value).toBe(
+    expect(runnerTraits.find((bit) => bit.id === 'network-specialist')?.value).toBe(
       'Netrunner',
     )
     expect(getName({ value: 'Shared', tags: [] }, 'shadowrun', 'short')).toBe('Shared')
     for (const { id: flavor } of flavors) {
       expect(
-        load(SHADOWRUN.CHARACTERS, { flavor }).some((bit) => bit.value === 'Technomancer'),
+        load(DATA.RUNNER_TRAITS, { flavor }).some((bit) => bit.value === 'Technomancer'),
       ).toBe(flavor === 'shadowrun')
     }
   })
 
   it('combines both Cyberpunk corporation lists and keeps settings separate', () => {
-    const known = load(SHADOWRUN.NAMES, { flavor: 'cyberpunk2020-2077' }).filter((bit) =>
+    const known = load(DATA.NAME_FRAGMENTS, { flavor: 'cyberpunk2020-2077' }).filter((bit) =>
       bit.tags.includes('known-corporation'),
     )
     expect(known).toHaveLength(cyberpunkCorporations.length)
@@ -111,7 +112,7 @@ describe('migrated generator', () => {
     expect(known.some((bit) => bit.value === 'Arasaka')).toBe(true)
     expect(known.some((bit) => bit.value === 'Aztechnology')).toBe(false)
     expect(
-      load(SHADOWRUN.NAMES, { flavor: 'shadowrun' }).some((bit) => bit.value === 'Arasaka'),
+      load(DATA.NAME_FRAGMENTS, { flavor: 'shadowrun' }).some((bit) => bit.value === 'Arasaka'),
     ).toBe(false)
     const results = generateNames('known-corporations', 20, { flavor: 'cyberpunk2020-2077' })
     expect(results.every((result) => known.some((bit) => bit.value === result.primary))).toBe(true)
@@ -123,7 +124,7 @@ describe('migrated generator', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.45)
     const shadowrun = corporations({ corporationSize: CORPORATION_SIZE.A, flavor: 'shadowrun' })
     const generic = corporations({ corporationSize: CORPORATION_SIZE.A })
-    const knownNames = load(SHADOWRUN.NAMES, { flavor: 'shadowrun' })
+    const knownNames = load(DATA.NAME_FRAGMENTS, { flavor: 'shadowrun' })
       .filter((bit) => bit.tags.includes('corporation') && bit.type === 'name')
       .map((bit) => bit.value)
     expect(knownNames.some((name) => shadowrun.title?.includes(name))).toBe(true)
@@ -132,7 +133,7 @@ describe('migrated generator', () => {
 
   it('generates only selected genders and keeps Russian name parts consistent', () => {
     seedRandom()
-    const data = load(RL.NAMES_MODERN).filter((bit) => bit.tags.includes('russian'))
+    const data = load(DATA.PERSONAL_NAMES).filter((bit) => bit.tags.includes('russian'))
     for (const genders of [[GENUS.F], [GENUS.M], [GENUS.M, GENUS.F]] as const) {
       const seen = new Set<'m' | 'f'>()
       const results = generateNames('russian', 50, { genders })

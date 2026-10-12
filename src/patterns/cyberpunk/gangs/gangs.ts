@@ -4,12 +4,12 @@ import Bits from '@/builders/Bits'
 import { p } from '@/helper/prob'
 import { randomRounded } from '@/helper/randomRounded'
 import { randomFromWeighted } from '@/helper/weightedRandomFrom'
-import { load, SHADOWRUN } from '@/load'
+import { load, DATA } from '@/builders/load'
 import { type Generated } from '@/patterns/types'
-import { genericName } from '../_secondary/names'
+import { genericName } from '../people/names'
 
 export const gang = (options: GenerationOptions = {}): Generated => {
-  const names = new Bits(load(SHADOWRUN.NAMES, options), { tag: 'gang' })
+  const names = new Bits(load(DATA.NAME_FRAGMENTS, options), { tag: 'gang' })
 
   let primary = p() ? 'The ' : ''
 

@@ -79,49 +79,7 @@ label:hover input:checked + .track {
   background: var(--color-accent-hover);
 }
 input:focus-visible + .track {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
-}
-[data-theme='cyberpunk2077'] label {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.035em;
-}
-[data-theme='cyberpunk2077'] .track {
-  width: 2.5rem;
-  height: 1rem;
-  padding: 0;
-  border: 0;
-  background: var(--color-control-border);
-  clip-path: var(--theme-check-shape);
-  position: relative;
-}
-[data-theme='cyberpunk2077'] .track::before {
-  transition: var(--control-color-transition);
-  content: '';
-  position: absolute;
-  inset: 1px;
-  background: var(--color-surface);
-  clip-path: var(--theme-check-shape);
-}
-[data-theme='cyberpunk2077'] .track::after {
-  position: relative;
-  width: 50%;
-  height: 100%;
-  background: var(--color-hot);
-  clip-path: var(--theme-check-shape);
-}
-[data-theme='cyberpunk2077'] input:checked + .track::after {
-  background: var(--color-signal);
-}
-[data-theme='cyberpunk2077'] label:hover input + .track {
-  background: var(--color-signal);
-}
-[data-theme='cyberpunk2077'] label:hover .track::before {
-  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
-}
-[data-theme='cyberpunk2077'] input:focus-visible ~ span:last-child {
-  outline: 3px solid var(--color-focus);
+  outline: var(--control-focus-width) solid var(--control-focus-color, var(--color-focus));
   outline-offset: 3px;
 }
 label.hazard {
@@ -159,7 +117,20 @@ label.hazard input:checked + .track {
   );
 }
 label.hazard:hover {
-  outline: 1px solid currentColor;
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, currentColor 12%, transparent) 0 8px,
+    transparent 8px 16px
+  );
+}
+@media screen and (max-width: 24rem) {
+  label.hazard {
+    padding-inline: var(--space-1);
+    white-space: nowrap;
+  }
+  label.hazard .track {
+    width: 2rem;
+  }
 }
 @media (forced-colors: active) {
   input {
@@ -170,8 +141,7 @@ label.hazard:hover {
     appearance: auto;
   }
   .track,
-  label.hazard .track,
-  [data-theme='cyberpunk2077'] .track {
+  label.hazard .track {
     display: none;
   }
   label:has(input:focus-visible) {

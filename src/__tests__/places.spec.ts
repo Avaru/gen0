@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { availableCategories, generateNames } from '@/generator/categories'
-import { CONTENT, SHADOWRUN, load } from '@/load'
+import { DATA, load } from '@/builders/load'
 import { flavors } from '@/generator/options'
 import { seedRandom } from './helpers/random'
 import { placeData } from '@/data/places'
@@ -21,14 +21,14 @@ describe('place categories', () => {
   it('composes names from the migrated bases and existing suffixes and street types', () => {
     seedRandom()
     for (const { id: flavor } of flavors) {
-      const bases = load(CONTENT.PLACES, { flavor }).filter(bit => bit.type === 'name').map(bit => bit.value)
-      const suffixes = load(SHADOWRUN.NAMES, { flavor }).filter(bit => bit.tags.includes('city') && bit.type === 'suffix').map(bit => bit.value)
+      const bases = load(DATA.PLACES, { flavor }).filter(bit => bit.type === 'name').map(bit => bit.value)
+      const suffixes = load(DATA.NAME_FRAGMENTS, { flavor }).filter(bit => bit.tags.includes('city') && bit.type === 'suffix').map(bit => bit.value)
       const prefixes = [
-        ...load(SHADOWRUN.NAMES, { flavor }).filter(bit => bit.tags.includes('location') && bit.type === 'prefix').map(bit => bit.value),
-        ...load(CONTENT.PLACES, { flavor }).filter(bit => bit.type === 'ordinal').map(bit => bit.value),
+        ...load(DATA.NAME_FRAGMENTS, { flavor }).filter(bit => bit.tags.includes('location') && bit.type === 'prefix').map(bit => bit.value),
+        ...load(DATA.PLACES, { flavor }).filter(bit => bit.type === 'ordinal').map(bit => bit.value),
       ]
-      const brands = load(SHADOWRUN.NAMES, { flavor }).filter(bit => bit.tags.includes('known-corporation')).map(bit => bit.value)
-      const kinds = load(CONTENT.DEVICE_DATA, { flavor }).filter(bit => bit.type === 'street-kind').map(bit => bit.value)
+      const brands = load(DATA.NAME_FRAGMENTS, { flavor }).filter(bit => bit.tags.includes('known-corporation')).map(bit => bit.value)
+      const kinds = load(DATA.DEVICE_DATA, { flavor }).filter(bit => bit.type === 'street-kind').map(bit => bit.value)
       const cityNames = new Set(bases.flatMap(base => [
         base, ...suffixes.map(suffix => `${base} ${suffix}`),
       ]))
@@ -53,10 +53,10 @@ describe('place categories', () => {
     const magical = placeData.filter(bit => bit.tags.includes('shadowrun')).map(bit => bit.value)
     expect(magical).toHaveLength(5)
     for (const flavor of ['cyberpunk', 'cyberpunk2020-2077'] as const) {
-      expect(load(CONTENT.PLACES, { flavor }).some(bit => magical.includes(bit.value))).toBe(false)
+      expect(load(DATA.PLACES, { flavor }).some(bit => magical.includes(bit.value))).toBe(false)
     }
-    expect(load(CONTENT.PLACES, { includeTags: ['shadowrun'] }).some(bit => magical.includes(bit.value))).toBe(true)
-    expect(load(CONTENT.PLACES, { flavor: 'shadowrun', includeTags: ['shadowrun'], excludeTags: ['shadowrun'] }).some(bit => magical.includes(bit.value))).toBe(false)
+    expect(load(DATA.PLACES, { includeTags: ['shadowrun'] }).some(bit => magical.includes(bit.value))).toBe(true)
+    expect(load(DATA.PLACES, { flavor: 'shadowrun', includeTags: ['shadowrun'], excludeTags: ['shadowrun'] }).some(bit => magical.includes(bit.value))).toBe(false)
     seedRandom()
     for (const id of ['cities', 'streets']) {
       const results = generateNames(id, 100, { flavor: 'shadowrun', excludeTags: ['shadowrun'] })

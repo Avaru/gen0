@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { shadowrunMovie } from '@/data/shadowrun-movie'
-import * as loader from '@/load'
+import { movieData } from '@/data/movies'
+import * as loader from '@/builders/load'
 import * as probability from '@/helper/prob'
 import { movies } from '@/patterns/cyberpunk/entertainment/entertainment'
 
@@ -9,7 +9,7 @@ afterEach(() => vi.restoreAllMocks())
 function useExistingFragments() {
   const values = ['Chronicles', 'with chainsaws', 'Army', 'Action', 'plagiarized', '2']
   vi.spyOn(loader, 'load').mockReturnValue(
-    shadowrunMovie.filter((entry) => values.includes(entry.value)),
+    movieData.filter((entry) => values.includes(entry.value)),
   )
 }
 
@@ -18,7 +18,7 @@ describe('movie title phrases', () => {
     const values = ['No time to', verb, 'Action', 'plagiarized']
     vi.spyOn(Math, 'random').mockReturnValue(0.99)
     vi.spyOn(loader, 'load').mockReturnValue(
-      shadowrunMovie.filter((entry) => values.includes(entry.value)),
+      movieData.filter((entry) => values.includes(entry.value)),
     )
     vi.spyOn(probability, 'p')
       .mockReturnValueOnce(false)
@@ -51,7 +51,7 @@ describe('movie title phrases', () => {
       .mockReturnValueOnce(true)
       .mockReturnValue(false)
     expect(movies().primary).toBe(title)
-    expect(shadowrunMovie.find((entry) => entry.value === 'with chainsaws')?.tags)
+    expect(movieData.find((entry) => entry.value === 'with chainsaws')?.tags)
       .not.toContain('title-object-start')
   })
 

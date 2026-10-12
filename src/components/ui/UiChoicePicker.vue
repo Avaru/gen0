@@ -2,15 +2,18 @@
 import { computed, nextTick, ref, useId } from 'vue'
 import UiButton from './UiButton.vue'
 
-const props = withDefaults(defineProps<{
-  modelValue: string
-  options: readonly { id: string; label: string; group: string }[]
-  label?: string
-  plural?: string
-  triggerLabel?: string
-  searchable?: boolean
-  triggerId?: string
-}>(), { label: 'Category', plural: 'categories', triggerId: 'category', searchable: true })
+const props = withDefaults(
+  defineProps<{
+    modelValue: string
+    options: readonly { id: string; label: string; group: string }[]
+    label?: string
+    plural?: string
+    triggerLabel?: string
+    searchable?: boolean
+    triggerId?: string
+  }>(),
+  { label: 'Category', plural: 'categories', triggerId: 'category', searchable: true },
+)
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 const id = useId()
 const dialog = ref<HTMLDialogElement>()
@@ -21,23 +24,24 @@ const closeButton = ref<HTMLButtonElement>()
 const query = ref('')
 const opened = ref(false)
 let chosen: string | undefined
-const selected = computed(() => props.options.find(option => option.id === props.modelValue))
+const selected = computed(() => props.options.find((option) => option.id === props.modelValue))
 const filtered = computed(() => {
   const terms = query.value.trim().toLocaleLowerCase().split(/\s+/)
-  return props.options.filter(option =>
-    terms.every(term => `${option.label} ${option.group}`.toLocaleLowerCase().includes(term)),
+  return props.options.filter((option) =>
+    terms.every((term) => `${option.label} ${option.group}`.toLocaleLowerCase().includes(term)),
   )
 })
-const groups = computed(() => [...new Set(filtered.value.map(option => option.group))])
+const groups = computed(() => [...new Set(filtered.value.map((option) => option.group))])
 
 async function open() {
   query.value = ''
   await nextTick()
   dialog.value?.showModal()
   opened.value = true
-  const initialFocus = props.searchable && window.matchMedia('(min-width: 40rem) and (pointer: fine)').matches
-    ? search.value
-    : closeButton.value
+  const initialFocus =
+    props.searchable && window.matchMedia('(min-width: 40rem) and (pointer: fine)').matches
+      ? search.value
+      : closeButton.value
   initialFocus?.focus({ preventScroll: true })
 }
 function close() {
@@ -45,7 +49,7 @@ function close() {
 }
 function closed() {
   opened.value = false
-  const button = trigger.value ?? actionTrigger.value?.$el as HTMLButtonElement | undefined
+  const button = trigger.value ?? (actionTrigger.value?.$el as HTMLButtonElement | undefined)
   button?.focus({ preventScroll: true })
   if (chosen !== undefined) {
     emit('update:modelValue', chosen)
@@ -77,7 +81,16 @@ function enter() {
 <template>
   <div class="picker">
     <span v-if="!triggerLabel" :id="`${id}-label`" class="label">{{ label }}</span>
-    <UiButton v-if="triggerLabel" :id="triggerId" ref="actionTrigger" aria-haspopup="dialog" :aria-expanded="opened" :aria-controls="`${id}-dialog`" @click="open">{{ triggerLabel }}</UiButton>
+    <UiButton
+      v-if="triggerLabel"
+      :id="triggerId"
+      ref="actionTrigger"
+      aria-haspopup="dialog"
+      :aria-expanded="opened"
+      :aria-controls="`${id}-dialog`"
+      @click="open"
+      >{{ triggerLabel }}</UiButton
+    >
     <button
       v-else
       :id="triggerId"
@@ -92,7 +105,19 @@ function enter() {
       @click="open"
     >
       <span :id="`${id}-value`">{{ selected?.label ?? `Choose ${label.toLowerCase()}` }}</span>
-      <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <svg
+        class="arrow"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
+      >
         <path d="M7 17 17 7M7 7h10v10" />
       </svg>
     </button>
@@ -106,7 +131,15 @@ function enter() {
       <div class="panel">
         <header>
           <h2 :id="`${id}-heading`">Choose {{ label.toLowerCase() }}</h2>
-          <button ref="closeButton" class="close" type="button" :aria-label="`Close ${label.toLowerCase()} picker`" @click="close">✕</button>
+          <button
+            ref="closeButton"
+            class="close"
+            type="button"
+            :aria-label="`Close ${label.toLowerCase()} picker`"
+            @click="close"
+          >
+            ✕
+          </button>
         </header>
         <div v-if="searchable" class="search">
           <label :for="`${id}-search`">Search {{ plural }}</label>
@@ -121,15 +154,23 @@ function enter() {
             @keydown.enter.prevent="enter"
           />
           <p class="match-status" role="status" aria-atomic="true">
-            {{ filtered.length ? `${filtered.length} ${plural}` : `No ${plural} found. Try another search.` }}
+            {{
+              filtered.length
+                ? `${filtered.length} ${plural}`
+                : `No ${plural} found. Try another search.`
+            }}
           </p>
         </div>
         <div :id="`${id}-choices`" class="groups">
-          <section v-for="(group, index) in groups" :key="group" :aria-labelledby="group ? `${id}-group-${index}` : undefined">
+          <section
+            v-for="(group, index) in groups"
+            :key="group"
+            :aria-labelledby="group ? `${id}-group-${index}` : undefined"
+          >
             <h3 v-if="group" :id="`${id}-group-${index}`">{{ group }}</h3>
             <div class="choices">
               <button
-                v-for="option in filtered.filter(item => item.group === group)"
+                v-for="option in filtered.filter((item) => item.group === group)"
                 :key="option.id"
                 type="button"
                 :data-category="label === 'Category' ? option.id : undefined"
@@ -138,7 +179,9 @@ function enter() {
                 @click="choose(option.id)"
               >
                 <span>{{ option.label }}</span>
-                <span v-if="option.id === modelValue" class="current">Selected <span aria-hidden="true">✓</span></span>
+                <span v-if="option.id === modelValue" class="current"
+                  >Selected <span aria-hidden="true">✓</span></span
+                >
               </button>
             </div>
           </section>
@@ -199,44 +242,6 @@ button:not(.primary):hover {
 }
 button:not(.primary):active {
   background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
-}
-[data-theme='cyberpunk2077'] .trigger {
-  position: relative;
-  isolation: isolate;
-  border: 0;
-  background: transparent;
-  color: var(--color-hot);
-  text-transform: uppercase;
-  letter-spacing: 0.035em;
-}
-[data-theme='cyberpunk2077'] .trigger::before,
-[data-theme='cyberpunk2077'] .trigger::after {
-  transition: var(--control-color-transition);
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  clip-path: var(--theme-action-shape);
-}
-[data-theme='cyberpunk2077'] .trigger::before {
-  z-index: -2;
-  background: var(--color-control-border);
-}
-[data-theme='cyberpunk2077'] .trigger::after {
-  z-index: -1;
-  inset: 1px 1px 1px 4px;
-  background: var(--color-surface);
-}
-[data-theme='cyberpunk2077'] .trigger:hover::before {
-  background: var(--color-signal);
-}
-[data-theme='cyberpunk2077'] .trigger:active::after {
-  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
-}
-@media (forced-colors: active) {
-  [data-theme='cyberpunk2077'] .trigger {
-    border: 1px solid ButtonText;
-  }
 }
 dialog {
   position: fixed;

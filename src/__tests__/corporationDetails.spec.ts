@@ -4,8 +4,8 @@ import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 import { flavors } from '@/generator/options'
 import { corporationEvents } from '@/data/corporation-events'
 import { seedRandom } from './helpers/random'
-import { load, SHADOWRUN, CONTENT } from '@/load'
-import * as personalNames from '@/patterns/cyberpunk/_secondary/names'
+import { load, DATA } from '@/builders/load'
+import * as personalNames from '@/patterns/cyberpunk/people/names'
 import * as weaponNames from '@/patterns/cyberpunk/content/weaponName'
 
 afterEach(() => vi.restoreAllMocks())
@@ -115,7 +115,7 @@ describe('generated corporation details', { timeout: 60_000 }, () => {
   it('uses excluded personal-name pools and flavor rules for nested details', () => {
     seedRandom()
     const options = { flavor: 'cyberpunk2020-2077' as const, excludeTags: ['shadowrun', 'german', 'japanese'] }
-    const banned = load(SHADOWRUN.NAMES, { flavor: 'shadowrun' })
+    const banned = load(DATA.NAME_FRAGMENTS, { flavor: 'shadowrun' })
       .filter(bit => bit.tags.includes('known-corporation'))
       .map(bit => bit.value)
     const personSpy = vi.spyOn(personalNames, 'genericName')
@@ -134,7 +134,7 @@ describe('generated corporation details', { timeout: 60_000 }, () => {
   })
 
   it('includes a weapon type even when a product uses a numeric model without a series', () => {
-    const models = load(CONTENT.WEAPONS).filter(bit => bit.type === 'model')
+    const models = load(DATA.WEAPONS).filter(bit => bit.type === 'model')
     const index = models.findIndex(bit => bit.value === '200')
     expect(index).toBeGreaterThanOrEqual(0)
     vi.spyOn(Math, 'random')
@@ -145,7 +145,7 @@ describe('generated corporation details', { timeout: 60_000 }, () => {
   })
 
   it('omits the type when a weapon product has a quoted series', () => {
-    const data = load(CONTENT.WEAPONS)
+    const data = load(DATA.WEAPONS)
     const model = data.find(bit => bit.type === 'model')!.value
     const series = data.find(bit => bit.type === 'series')!.value
     const random = vi.spyOn(Math, 'random').mockReturnValue(0)

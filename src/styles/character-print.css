@@ -85,8 +85,32 @@
       min-width: 0;
     }
 
+    .sheet .runner-card {
+      order: 0;
+    }
     .sheet .augmentations-card {
       order: 1;
+    }
+    .sheet .harm-card {
+      order: 2;
+    }
+    .sheet .stress-card {
+      order: 3;
+    }
+    .sheet .resistance-card {
+      order: 4;
+    }
+    .sheet .approaches {
+      order: 0;
+    }
+    .sheet .skills {
+      order: 1;
+    }
+    .sheet .gear-card {
+      order: 2;
+    }
+    .sheet .roll-reference-cards {
+      order: 3;
     }
 
     .sheet section {
@@ -106,7 +130,13 @@
 
     .sheet h2 {
       font-size: 14pt;
+      margin-bottom: 0;
+    }
+    .sheet .card-heading {
       margin-bottom: 2mm;
+    }
+    .sheet .runner-header {
+      margin-bottom: 0;
     }
 
     .sheet .roll-reference-card h2 {
@@ -124,7 +154,7 @@
       column-gap: 2mm;
     }
 
-    .sheet .approaches > h2 {
+    .sheet .approaches > .card-heading {
       grid-column: 1 / -1;
     }
 
@@ -140,7 +170,8 @@
       margin-top: -2mm;
     }
 
-    .sheet .approaches > .expertise-rule {
+    .sheet .approaches > .print-expertise-rule {
+      display: block;
       grid-column: 1 / -1;
       max-width: none;
       margin-left: 0;
@@ -324,20 +355,6 @@
       font-size: 11pt;
     }
 
-    .sheet .diamonds > span {
-      display: grid;
-      place-items: center;
-      width: 3mm;
-      height: 3mm;
-      border: 0.3mm solid black;
-    }
-
-    .sheet input:checked + .diamonds > span::after {
-      content: '✓';
-      transform: rotate(-45deg);
-      font: bold 8pt / 1 sans-serif;
-    }
-
     .sheet .stress-card .track {
       grid-template-columns: repeat(7, minmax(0, 1fr));
       overflow: visible;
@@ -387,16 +404,39 @@
 
     .sheet .gear-columns {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-rows: auto;
       gap: 2mm;
+    }
+
+    .sheet .gear-column {
+      grid-auto-rows: auto;
+      align-content: start;
+      column-gap: 1.5mm;
+    }
+
+    .sheet .gear-item,
+    .sheet .extra-load {
+      /* A rotated 3mm square is about 4.25mm tall; leave space between rows. */
+      min-height: 5mm;
+      padding-block: 0.4mm;
+    }
+
+    .sheet .extra-mark {
+      width: 4mm;
+      height: 4mm;
+      min-height: 4mm;
     }
 
     .sheet .gear-item,
     .sheet .angle-options .diamond-choice,
     .sheet .extra-load {
-      min-height: 3.5mm;
       gap: 1.5mm;
-      padding-block: 0.6mm;
       break-inside: avoid;
+    }
+
+    .sheet .angle-options .diamond-choice {
+      min-height: 3.5mm;
+      padding-block: 0.6mm;
     }
 
     .sheet .gear-item .item-text,
@@ -420,7 +460,22 @@
       justify-self: end;
     }
 
-    .sheet :is(.rule, .rules, .overload, .load-description, .expertise-rule, .costs, .approach-panel > .description, .gear-item small, .resistance-card .method-heading, .resistance-card .armor-heading, .resistance-card .example, .resistance-card .outcomes) {
+    .sheet
+      :is(
+        .rule,
+        .rules,
+        .overload,
+        .load-description,
+        .expertise-rule,
+        .costs,
+        .approach-panel > .description,
+        .angle > p,
+        .gear-item small,
+        .resistance-card .method-heading,
+        .resistance-card .armor-heading,
+        .resistance-card .example,
+        .resistance-card .outcomes
+      ) {
       font-size: 5.5pt;
       line-height: 1.3;
     }
@@ -429,12 +484,61 @@
       font-size: 5pt;
     }
 
-    .sheet :is(.rule, .rules, .overload, .load-description, .expertise-rule, .costs, .approach-panel > .description, .gear-item small, .resistance-card .method-heading, .resistance-card .armor-heading, .resistance-card .example, .resistance-card .outcomes, .angle > p, .roll-reference-card > p, .roll-reference-card > .outcomes),
-    .sheet :is(.rule, .rules, .overload, .load-description, .expertise-rule, .costs, .approach-panel > .description, .gear-item small, .resistance-card .method-heading, .resistance-card .armor-heading, .resistance-card .example, .resistance-card .outcomes, .angle > p, .roll-reference-card > p, .roll-reference-card > .outcomes) * {
+    .sheet
+      :is(
+        .rule,
+        .rules,
+        .overload,
+        .load-description,
+        .expertise-rule,
+        .costs,
+        .approach-panel > .description,
+        .gear-item small,
+        .resistance-card .method-heading,
+        .resistance-card .armor-heading,
+        .resistance-card .example,
+        .resistance-card .outcomes,
+        .angle > p,
+        .roll-reference-card > p,
+        .roll-reference-card > .outcomes
+      ),
+    .sheet
+      :is(
+        .rule,
+        .rules,
+        .overload,
+        .load-description,
+        .expertise-rule,
+        .costs,
+        .approach-panel > .description,
+        .gear-item small,
+        .resistance-card .method-heading,
+        .resistance-card .armor-heading,
+        .resistance-card .example,
+        .resistance-card .outcomes,
+        .angle > p,
+        .roll-reference-card > p,
+        .roll-reference-card > .outcomes
+      )
+      * {
       color: var(--print-rules) !important;
     }
 
-    .sheet :is(.rating input:checked + span, .expertise-choice input:checked + span, .custom-expertise.filled, label.hazard:has(input:checked), label.hazard input:checked + .track, .mark input:checked + span, input:checked + .diamonds > span, .segments input:checked + span, .approach[data-state='glitched'], .overload.active, .gear-card[data-state='red'], .gear-card[data-state='yellow']) {
+    .sheet
+      :is(
+        .rating input:checked + span,
+        .expertise-choice input:checked + span,
+        .custom-expertise.filled,
+        label.hazard:has(input:checked),
+        label.hazard input:checked + .track,
+        .mark input:checked + span,
+        input:checked + .diamonds > span,
+        .segments input:checked + span,
+        .approach[data-state='glitched'],
+        .overload.active,
+        .gear-card[data-state='red'],
+        .gear-card[data-state='yellow']
+      ) {
       border-color: var(--print-ink) !important;
     }
 

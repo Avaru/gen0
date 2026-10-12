@@ -1,15 +1,32 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ label: string; count?: number; compact?: boolean; type?: 'checkbox' | 'radio'; name?: string; value?: string }>(), {
-  count: 1,
-  compact: false,
-  type: 'checkbox',
-})
+withDefaults(
+  defineProps<{
+    label: string
+    count?: number
+    compact?: boolean
+    type?: 'checkbox' | 'radio'
+    name?: string
+    value?: string
+  }>(),
+  {
+    count: 1,
+    compact: false,
+    type: 'checkbox',
+  },
+)
 const selected = defineModel<boolean>({ required: true })
 </script>
 
 <template>
   <label class="diamond-choice" :class="{ compact }">
-    <input :checked="selected" :type="type" :name="name" :value="value" :aria-label="label" @change="selected = ($event.target as HTMLInputElement).checked" />
+    <input
+      :checked="selected"
+      :type="type"
+      :name="name"
+      :value="value"
+      :aria-label="label"
+      @change="selected = ($event.target as HTMLInputElement).checked"
+    />
     <span class="diamonds" aria-hidden="true"><span v-for="mark in count" :key="mark" /></span>
     <span v-if="$slots.default" class="item-text"><slot /></span>
   </label>
@@ -67,7 +84,7 @@ input:checked + .diamonds > span {
   min-width: 0;
   font-family: var(--font-display);
   font-weight: var(--theme-name-weight);
-  font-size: 1.125rem;
+  font-size: var(--diamond-label-size, 1.125rem);
   text-transform: uppercase;
   overflow-wrap: anywhere;
 }
@@ -77,7 +94,7 @@ input:checked ~ .item-text {
   text-underline-offset: 0.2em;
 }
 input:focus-visible + .diamonds {
-  outline: 3px solid var(--color-focus);
+  outline: var(--control-focus-width) solid var(--control-focus-color, var(--color-focus));
   outline-offset: 4px;
 }
 @media screen {
@@ -91,6 +108,7 @@ input:focus-visible + .diamonds {
     place-items: center;
     width: 3mm;
     height: 3mm;
+    border-width: 0.3mm;
   }
   input:checked + .diamonds > span::after {
     content: '✓';

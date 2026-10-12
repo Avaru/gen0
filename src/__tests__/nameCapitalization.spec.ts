@@ -1,12 +1,12 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { GENUS } from '@/builders/types'
-import { load, RL } from '@/load'
+import { load, DATA } from '@/builders/load'
 import { nationalName } from '@/patterns/cyberpunk/nationality/nameParts'
 
 afterEach(() => vi.restoreAllMocks())
 
 it('stores given names with capitalized starts without changing their internal spelling', () => {
-  const names = load(RL.NAMES_MODERN)
+  const names = load(DATA.PERSONAL_NAMES)
   expect(names.filter((bit) => bit.type === 'given' && /^\p{Ll}/u.test(bit.value))).toEqual([])
   expect(names.some((bit) => bit.value === 'Milianí' && bit.type === 'given')).toBe(true)
   expect(names.some((bit) => bit.value === 'Lye' && bit.type === 'given')).toBe(true)
@@ -16,7 +16,7 @@ it('stores given names with capitalized starts without changing their internal s
 it('displays the corrected Greek given name through the full name builder', () => {
   const given = [
     ...new Set(
-      load(RL.NAMES_MODERN)
+      load(DATA.PERSONAL_NAMES)
         .filter(
           (bit) =>
             bit.tags.includes('greek') &&
@@ -37,7 +37,7 @@ it('displays the corrected Greek given name through the full name builder', () =
 it('preserves a lowercase Dutch surname particle after the given name', () => {
   const family = [
     ...new Set(
-      load(RL.NAMES_MODERN)
+      load(DATA.PERSONAL_NAMES)
         .filter(
           (bit) =>
             bit.tags.includes('dutch') &&

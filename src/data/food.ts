@@ -1,6 +1,6 @@
 import type { RawBit } from "@/builders/types"
 
-export const shadowrunFood: RawBit<never>[] = [
+export const foodData: RawBit<never>[] = [
   {"tags": ["description"], "value": "Authentic"},
   {"tags": ["description"], "value": "Greasy"},
   {"tags": ["description"], "value": "Dirty"},

@@ -22,7 +22,7 @@ import { hindiNames } from './names/hindi'
 import { tamilNames } from './names/tamil'
 
 // Keep the combined list for existing generators; edit each tradition in names/.
-export const rlNamesModern: NameEntry[] = [
+export const personalNames: NameEntry[] = [
   ...arabicNames,
   ...britishNames,
   ...greekNames,

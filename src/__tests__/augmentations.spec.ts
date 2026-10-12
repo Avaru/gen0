@@ -3,7 +3,7 @@ import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
 import { augmentationAttributes, augmentationData } from '@/data/augmentations'
 import { availableCategories, generateNames } from '@/generator/categories'
 import { flavors } from '@/generator/options'
-import { CONTENT, load, SHADOWRUN } from '@/load'
+import { DATA, load } from '@/builders/load'
 import { augmentations } from '@/patterns/cyberpunk/augmentations/augmentations'
 import { seedRandom } from './helpers/random'
 
@@ -19,9 +19,6 @@ describe('augmentations', () => {
 
   it.each(['mage', 'shaman', 'technomancer'])('keeps %s free of all augmentation links', (id) => {
     expect(augmentationData.filter((entry) => entry.archetypeIds.includes(id))).toEqual([])
-    expect(cbrPnkCatalogue.archetypeSystemProfiles
-      .filter((profile) => profile.archetypeId === id)
-      .flatMap((profile) => profile.suggestedAugmentationIds)).toEqual([])
   })
 
   it('links each augmentation only to existing archetypes, without duplicate links', () => {
@@ -34,7 +31,7 @@ describe('augmentations', () => {
   })
 
   it.each(flavors)('retains archetype links when loading $label flavor labels', ({ id: flavor }) => {
-    const entries = load(CONTENT.AUGMENTATIONS, { flavor })
+    const entries = load(DATA.AUGMENTATIONS, { flavor })
     expect(entries.map((entry) => entry.archetypeIds)).toEqual(
       augmentationData.map((entry) => entry.archetypeIds),
     )
@@ -46,7 +43,7 @@ describe('augmentations', () => {
       expect(
         availableCategories({ flavor }).find((category) => category.id === 'augmentations'),
       ).toMatchObject({ label: 'Augmentations', group: 'Equipment' })
-      const kinds = load(CONTENT.AUGMENTATIONS, { flavor })
+      const kinds = load(DATA.AUGMENTATIONS, { flavor })
       for (const result of generateNames('augmentations', 100, { flavor })) {
         const kind = kinds.find(
           (entry) =>
@@ -80,7 +77,7 @@ describe('augmentations', () => {
   it('sometimes omits the attribute and otherwise uses exactly one requested attribute', () => {
     seedRandom(102)
     const results = generateNames('augmentations', 100)
-    const kinds = load(CONTENT.AUGMENTATIONS).map((entry) => entry.value)
+    const kinds = load(DATA.AUGMENTATIONS).map((entry) => entry.value)
     expect(results.some((result) => kinds.includes(result.primary))).toBe(true)
     expect(
       results.some((result) =>
@@ -117,7 +114,7 @@ describe('augmentations', () => {
       augmentationAttributes.some((entry) => withAttribute.startsWith(`${entry.value} `)),
     ).toBe(true)
     random.mockReturnValue(0.25)
-    expect(load(CONTENT.AUGMENTATIONS).map((entry) => entry.value)).toContain(
+    expect(load(DATA.AUGMENTATIONS).map((entry) => entry.value)).toContain(
       augmentations().primary,
     )
   })
@@ -125,24 +122,24 @@ describe('augmentations', () => {
   it('offers the full augmentation pool in every flavor and keeps alternate names', () => {
     const values = augmentationData.map((entry) => entry.value)
     for (const { id: flavor } of flavors) {
-      const entries = load(CONTENT.AUGMENTATIONS, { flavor })
+      const entries = load(DATA.AUGMENTATIONS, { flavor })
       expect(entries.map((entry) => entry.value)).toEqual(
         augmentationData.map((entry) => entry.flavorNames?.[flavor] ?? entry.value),
       )
     }
     expect(
-      load(CONTENT.AUGMENTATIONS, {
+      load(DATA.AUGMENTATIONS, {
         flavor: 'shadowrun',
         includeTags: ['shadowrun', 'cyberpunk2020-2077'],
         excludeTags: ['shadowrun', 'cyberpunk2020-2077'],
       }).map((entry) => entry.value),
     ).toEqual(augmentationData.map((entry) => entry.flavorNames?.shadowrun ?? entry.value))
-    expect(load(CONTENT.AUGMENTATIONS).map((entry) => entry.value)).toEqual(values)
+    expect(load(DATA.AUGMENTATIONS).map((entry) => entry.value)).toEqual(values)
     expect(
-      load(CONTENT.AUGMENTATIONS, { flavor: 'shadowrun' }).find((entry) => entry.id === 'armor')
+      load(DATA.AUGMENTATIONS, { flavor: 'shadowrun' }).find((entry) => entry.id === 'armor')
         ?.value,
     ).toBe('Dermal plating')
-    expect(load(CONTENT.AUGMENTATIONS).find((entry) => entry.id === 'armor')?.value).toBe(
+    expect(load(DATA.AUGMENTATIONS).find((entry) => entry.id === 'armor')?.value).toBe(
       'Subdermal armor',
     )
   })
@@ -155,7 +152,7 @@ describe('augmentations', () => {
       includeTags: ['shadowrun', 'cyberpunk2020-2077'],
       excludeTags: ['shadowrun', 'cyberpunk2020-2077'],
     }
-    const banned = load(SHADOWRUN.NAMES, { includeTags: ['shadowrun', 'cyberpunk2020-2077'] })
+    const banned = load(DATA.NAME_FRAGMENTS, { includeTags: ['shadowrun', 'cyberpunk2020-2077'] })
       .filter((entry) => entry.tags.includes('known-corporation'))
       .map((entry) => entry.value)
     for (const result of generateNames('augmentations', 100, options)) {
@@ -171,7 +168,7 @@ describe('augmentations', () => {
   })
 
   it('keeps Kiroshi Optics paired with its named manufacturer', () => {
-    const kinds = load(CONTENT.AUGMENTATIONS, { flavor: 'cyberpunk2020-2077' })
+    const kinds = load(DATA.AUGMENTATIONS, { flavor: 'cyberpunk2020-2077' })
     const index = kinds.findIndex((entry) => entry.id === 'kiroshi-optics')
     vi.spyOn(Math, 'random').mockReturnValue((index + 0.5) / kinds.length)
     expect(augmentations({ flavor: 'cyberpunk2020-2077' }).details).toMatch(

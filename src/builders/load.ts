@@ -1,8 +1,8 @@
-import { rlNamesModern } from '@/data/rl-names-modern'
-import { shadowrunNames } from '@/data/shadowrun-names'
-import { shadowrunCharacters } from '@/data/shadowrun-characters'
-import { shadowrunFood } from '@/data/shadowrun-food'
-import { shadowrunMovie } from '@/data/shadowrun-movie'
+import { personalNames } from '@/data/personal-names'
+import { nameFragments } from '@/data/name-fragments/index'
+import { runnerTraits } from '@/data/runner-traits'
+import { foodData } from '@/data/food'
+import { movieData } from '@/data/movies'
 import type { GenerationOptions } from '@/generator/options'
 import { isEntryAvailable } from '@/builders/availability'
 import { cyberpunkCorporations } from '@/data/cyberpunk-corporations'
@@ -14,16 +14,13 @@ import { deviceData } from '@/data/device-data'
 import { augmentationData } from '@/data/augmentations'
 import { placeData } from '@/data/places'
 
-export enum RL {
-  NAMES_MODERN = 'rl-names-modern',
-}
-export enum SHADOWRUN {
-  CHARACTERS = 'shadowrun-characters',
-  NAMES = 'shadowrun-names',
-  FOOD = 'shadowrun-food',
-  MOVIE = 'shadowrun-movie',
-}
-export enum CONTENT {
+/** Shared pools; setting availability is carried by entry tags, not list names. */
+export enum DATA {
+  PERSONAL_NAMES = 'personal-names',
+  RUNNER_TRAITS = 'runner-traits',
+  NAME_FRAGMENTS = 'name-fragments',
+  FOOD = 'food',
+  MOVIES = 'movies',
   WEAPONS = 'weapons',
   AUGMENTATIONS = 'augmentations',
   FOOD_MENU = 'food-menu',
@@ -32,17 +29,17 @@ export enum CONTENT {
   PLACES = 'places',
 }
 const lists = {
-  [RL.NAMES_MODERN]: rlNamesModern,
-  [CONTENT.WEAPONS]: weaponData,
-  [CONTENT.AUGMENTATIONS]: augmentationData,
-  [CONTENT.FOOD_MENU]: foodMenuData,
-  [CONTENT.SHOPS]: shopData,
-  [CONTENT.DEVICE_DATA]: deviceData,
-  [CONTENT.PLACES]: placeData,
-  [SHADOWRUN.NAMES]: [...shadowrunNames, ...cyberpunkCorporations],
-  [SHADOWRUN.CHARACTERS]: shadowrunCharacters,
-  [SHADOWRUN.FOOD]: shadowrunFood,
-  [SHADOWRUN.MOVIE]: shadowrunMovie,
+  [DATA.PERSONAL_NAMES]: personalNames,
+  [DATA.WEAPONS]: weaponData,
+  [DATA.AUGMENTATIONS]: augmentationData,
+  [DATA.FOOD_MENU]: foodMenuData,
+  [DATA.SHOPS]: shopData,
+  [DATA.DEVICE_DATA]: deviceData,
+  [DATA.PLACES]: placeData,
+  [DATA.NAME_FRAGMENTS]: [...nameFragments, ...cyberpunkCorporations],
+  [DATA.RUNNER_TRAITS]: runnerTraits,
+  [DATA.FOOD]: foodData,
+  [DATA.MOVIES]: movieData,
 }
 
 export type DataList = keyof typeof lists

@@ -1,7 +1,7 @@
 import type { GenerationOptions } from '@/generator/options'
 import { randomGenus } from '@/helper/randomGenus'
 import { type Generated } from '@/patterns/types'
-import { characters } from '../_secondary/characters'
+import { characters } from '../people/jobs'
 import { nationalName } from './nameParts'
 import type { NameNationality } from './traditions'
 import type { NameGender } from '@/data/nameTypes'

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSheetCard from './UiSheetCard.vue'
 import UiDiamondChoice from './UiDiamondChoice.vue'
 import { cbrPnkStressComplications } from '@/data/characters/cbr-pnk-sheet'
 
@@ -9,11 +10,10 @@ function change(position: number, selected: boolean) {
 </script>
 
 <template>
-  <section class="stress-card" aria-labelledby="stress-heading">
-    <h2 id="stress-heading">Stress</h2>
+  <UiSheetCard class="stress-card" title="Stress" heading-id="stress-heading" edge="hot">
     <p class="costs">
-      <span>Push: ⚡⚡</span><span aria-hidden="true">/</span>
-      <span>Assist: ⚡</span><span aria-hidden="true">/</span>
+      <span>Push: ⚡⚡</span><span aria-hidden="true">/</span> <span>Assist: ⚡</span
+      ><span aria-hidden="true">/</span>
       <span>Flashback: ⚡ or ⚡⚡+</span>
     </p>
     <div class="track" role="group" aria-label="Stress slots">
@@ -42,42 +42,10 @@ function change(position: number, selected: boolean) {
         <strong>Take a breather</strong> to relieve ⚡ and clear this status.
       </p>
     </div>
-  </section>
+  </UiSheetCard>
 </template>
 
 <style scoped>
-.stress-card {
-  position: relative;
-  min-width: 0;
-  padding: var(--space-6);
-  border: var(--theme-panel-border-width) solid var(--color-border);
-  border-top: var(--theme-panel-rule-width) solid var(--color-hot);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--theme-panel-shadow);
-  background: var(--theme-panel-fill);
-  background-image: var(--theme-panel-texture);
-  color: var(--color-text);
-}
-.stress-card::after {
-  content: '';
-  position: absolute;
-  top: 7px;
-  right: var(--space-3);
-  width: 3rem;
-  height: 5px;
-  background: var(--theme-panel-edge);
-  pointer-events: none;
-}
-h2 {
-  margin-bottom: var(--space-4);
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  font-weight: var(--theme-heading-weight);
-  color: var(--theme-title-color);
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  text-shadow: var(--theme-heading-shadow);
-}
 .costs {
   display: flex;
   flex-wrap: wrap;
@@ -131,9 +99,6 @@ li + li {
   margin-top: var(--space-1);
 }
 @media (max-width: 24rem) {
-  .stress-card {
-    padding: var(--space-4);
-  }
   .track {
     grid-template-columns: repeat(7, var(--control-height));
     overflow-x: auto;

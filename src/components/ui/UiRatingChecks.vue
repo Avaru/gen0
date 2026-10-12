@@ -68,11 +68,14 @@ input:checked + span {
   color: var(--color-on-accent);
 }
 label:hover span {
-  outline: 1px solid currentColor;
-  outline-offset: 1px;
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, currentColor 10%, transparent) 0 8px,
+    transparent 8px 16px
+  );
 }
 input:focus-visible + span {
-  outline: 3px solid var(--color-focus);
+  outline: var(--control-focus-width) solid var(--control-focus-color, var(--color-focus));
   outline-offset: 3px;
 }
 @media screen {

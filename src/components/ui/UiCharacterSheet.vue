@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 import type { Attribute, CharacterSheet, Skill, System } from '@/data/characters/types'
-import { cbrPnkApproachLabels, cbrPnkExpertiseOptions } from '@/data/characters/cbr-pnk-sheet'
-import UiExpertiseChoices from './UiExpertiseChoices.vue'
-import UiRatingChecks from './UiRatingChecks.vue'
 import UiWorkspace from './UiWorkspace.vue'
-import UiToggle from './UiToggle.vue'
+import UiSheetCard from './UiSheetCard.vue'
+import UiApproachRow from './UiApproachRow.vue'
+import UiSkillRow from './UiSkillRow.vue'
+import UiExpertiseRule from './UiExpertiseRule.vue'
 import UiHarmCard from './UiHarmCard.vue'
 import UiStressCard from './UiStressCard.vue'
 import UiResistanceCard from './UiResistanceCard.vue'
@@ -15,520 +15,164 @@ import UiRunnerCard from './UiRunnerCard.vue'
 import UiRollReferenceCards from './UiRollReferenceCards.vue'
 import type { Flavor } from '@/generator/options'
 
-const props = withDefaults(defineProps<{ system: System; attributes: Attribute[]; skills: Skill[]; flavor?: Flavor; canReset: boolean }>(), {
-  flavor: 'cyberpunk',
+const props = withDefaults(
+  defineProps<{
+    system: System
+    attributes: Attribute[]
+    skills: Skill[]
+    flavor?: Flavor
+    canReset: boolean
+  }>(),
+  {
+    flavor: 'cyberpunk',
+  },
+)
+const sheet = defineModel<CharacterSheet>({ required: true })
+defineEmits<{ reset: []; applyArchetype: [] }>()
+
+// Keep row references stable while their fields change; only rebuild after replacing a collection.
+const approachRows = computed(() => {
+  const ratings = new Map(sheet.value.attributeRatings.map((row) => [row.definitionId, row]))
+  const glitches = new Map(sheet.value.glitches.map((row) => [row.attributeId, row]))
+  return props.attributes.flatMap((attribute) => {
+    const rating = ratings.get(attribute.id)
+    const glitch = glitches.get(attribute.id)
+    return rating && glitch ? [{ attribute, rating, glitch }] : []
+  })
 })
+const skillRows = computed(() => {
+  const ratings = new Map(sheet.value.skillRatings.map((row) => [row.definitionId, row]))
+  const expertises = new Map(sheet.value.expertises.map((row) => [row.skillId, row]))
+  return props.skills.flatMap((skill) => {
+    const rating = ratings.get(skill.id)
+    const expertise = expertises.get(skill.id)
+    return rating && expertise ? [{ skill, rating, expertise }] : []
+  })
+})
+
+const desktopMedia = window.matchMedia('(min-width: 56rem)')
 const printMedia = window.matchMedia('print')
+const desktop = ref(desktopMedia.matches)
+const printing = ref(printMedia.matches)
 const firstColumn = useTemplateRef('first-column')
 const secondColumn = useTemplateRef('second-column')
-function arrangePrintColumns(printing: boolean) {
-  const first = firstColumn.value
-  const second = secondColumn.value
-  if (!first || !second) return
-  const approaches = first.querySelector('.approaches') ?? second.querySelector('.approaches')
-  const augmentations = first.querySelector('.augmentations-card') ?? second.querySelector('.augmentations-card')
-  const workspace = first.parentElement
-  const references = workspace?.querySelector('.roll-reference-cards')
-  const skillHeading = second.querySelector('.skill-heading')
-  const expertiseRule = first.querySelector('.expertise-rule') ?? second.querySelector('.expertise-rule')
-  if (!approaches || !augmentations) return
-  // Move existing cards synchronously so the browser captures the new layout before printing.
-  if (printing && props.flavor !== 'cyberpunk2020-2077') {
-    first.append(augmentations)
-    second.append(approaches)
-    if (expertiseRule) approaches.append(expertiseRule)
-    if (references) second.append(references)
-  } else {
-    first.insertBefore(approaches, first.querySelector('.harm-card'))
-    second.append(augmentations)
-    if (expertiseRule && skillHeading) skillHeading.append(expertiseRule)
-    if (references) second.append(references)
-  }
+const columns = computed(() =>
+  Boolean(firstColumn.value && secondColumn.value && (desktop.value || printing.value)),
+)
+function updateMedia() {
+  desktop.value = desktopMedia.matches
+  printing.value = printMedia.matches
 }
-function beforePrint() { arrangePrintColumns(true) }
-function afterPrint() { arrangePrintColumns(false) }
-function updatePrinting() { arrangePrintColumns(printMedia.matches) }
+async function beforePrint() {
+  printing.value = true
+  // Vue owns both the cards and their Teleports, including print placement.
+  await nextTick()
+}
+function afterPrint() {
+  printing.value = false
+}
 onMounted(() => {
-  updatePrinting()
-  printMedia.addEventListener('change', updatePrinting)
+  desktopMedia.addEventListener('change', updateMedia)
+  printMedia.addEventListener('change', updateMedia)
   window.addEventListener('beforeprint', beforePrint)
   window.addEventListener('afterprint', afterPrint)
 })
 onBeforeUnmount(() => {
-  afterPrint()
-  printMedia.removeEventListener('change', updatePrinting)
+  desktopMedia.removeEventListener('change', updateMedia)
+  printMedia.removeEventListener('change', updateMedia)
   window.removeEventListener('beforeprint', beforePrint)
   window.removeEventListener('afterprint', afterPrint)
 })
-
-const sheet = defineModel<CharacterSheet>({ required: true })
-defineEmits<{ reset: []; applyArchetype: [] }>()
-function isGlitched(id: string) {
-  return sheet.value.glitches.find((item) => item.attributeId === id)?.marked ?? false
-}
-function approachState(id: string) {
-  return isGlitched(id)
-    ? 'glitched'
-    : String(sheet.value.attributeRatings.find((item) => item.definitionId === id)?.value ?? 0)
-}
 </script>
 
 <template>
   <form class="sheet" aria-label="CBR+PNK character sheet" @submit.prevent>
     <UiWorkspace>
-      <div ref="first-column" class="sheet-column">
-        <UiRunnerCard v-model="sheet.runner" :flavor="flavor" :can-reset="canReset" @reset="$emit('reset')" @apply-archetype="$emit('applyArchetype')" />
-        <section class="approaches" aria-labelledby="approaches-heading">
-          <h2 id="approaches-heading">{{ system.attributeLabel }}<span class="print-skills-label"> // {{ system.skillLabel }}</span></h2>
-          <div
-            v-for="attribute in attributes"
-            :key="attribute.id"
-            class="approach"
-            :data-state="approachState(attribute.id)"
+      <div ref="first-column" class="sheet-column" :class="{ active: columns }" />
+      <div ref="second-column" class="sheet-column" :class="{ active: columns }" />
+      <!-- Source order is the phone reading and keyboard order. Teleport preserves each card's state. -->
+      <Teleport :to="firstColumn ?? '#sheet-column-unmounted'" :disabled="!columns">
+        <UiRunnerCard
+          v-model="sheet.runner"
+          :flavor="flavor"
+          :can-reset="canReset"
+          @reset="$emit('reset')"
+          @apply-archetype="$emit('applyArchetype')"
+        />
+      </Teleport>
+      <Teleport
+        :to="(printing ? secondColumn : firstColumn) ?? '#sheet-column-unmounted'"
+        :disabled="!columns"
+      >
+        <UiSheetCard
+          class="approaches"
+          :title="system.attributeLabel"
+          heading-id="approaches-heading"
+          edge="hot"
+        >
+          <template #title-extra
+            ><span class="print-skills-label"> // {{ system.skillLabel }}</span></template
           >
-            <div class="approach-panel">
-              <div class="approach-title">
-                <label class="approach-name" :for="attribute.id">{{ attribute.name }}</label>
-                <span class="approach-negative" :class="{ visible: isGlitched(attribute.id) }">
-                  // {{ cbrPnkApproachLabels[attribute.key]?.glitch }}
-                </span>
-              </div>
-              <span class="description">{{
-                cbrPnkApproachLabels[attribute.key]?.description
-              }}</span>
-            </div>
-            <div
-              v-if="sheet.attributeRatings.find((item) => item.definitionId === attribute.id)"
-              class="approach-rating"
-            >
-              <UiRatingChecks
-                :id="attribute.id"
-                v-model="
-                  sheet.attributeRatings.find((item) => item.definitionId === attribute.id)!.value
-                "
-                :label="attribute.name"
-              />
-              <UiToggle
-                v-if="sheet.glitches.find((item) => item.attributeId === attribute.id)"
-                v-model="sheet.glitches.find((item) => item.attributeId === attribute.id)!.marked"
-                label="Glitched"
-                hazard
-                :input-label="`${attribute.name} glitched`"
-              />
-            </div>
-          </div>
-        </section>
+          <UiApproachRow
+            v-for="row in approachRows"
+            :key="row.attribute.id"
+            :attribute="row.attribute"
+            :rating="row.rating"
+            :glitch="row.glitch"
+          />
+          <UiExpertiseRule class="print-expertise-rule" />
+        </UiSheetCard>
+      </Teleport>
+      <Teleport :to="secondColumn ?? '#sheet-column-unmounted'" :disabled="!columns">
+        <UiSheetCard
+          class="skills"
+          :title="system.skillLabel"
+          heading-id="skills-heading"
+          heading-class="skill-heading"
+        >
+          <template #heading-extra><UiExpertiseRule /></template>
+          <UiSkillRow
+            v-for="row in skillRows"
+            :key="row.skill.id"
+            :skill="row.skill"
+            :core-module-id="system.coreModuleId"
+            :rating="row.rating"
+            :expertise="row.expertise"
+          />
+        </UiSheetCard>
+      </Teleport>
+      <Teleport :to="firstColumn ?? '#sheet-column-unmounted'" :disabled="!columns">
         <UiHarmCard v-model="sheet.harm" />
         <UiStressCard v-model="sheet.stress" />
         <UiResistanceCard v-model="sheet.specialArmor" />
-      </div>
-      <div ref="second-column" class="sheet-column">
-        <section class="skills" aria-labelledby="skills-heading">
-          <div class="skill-heading">
-            <h2 id="skills-heading">{{ system.skillLabel }}</h2>
-            <p class="expertise-rule">
-              Expertises don’t add + to a roll, but allow you to trade + for an EDGE—and vice
-              versa—when they are applicable.
-            </p>
-          </div>
-          <div
-            v-for="skill in skills"
-            :key="skill.id"
-            class="skill"
-            :data-state="
-              String(sheet.skillRatings.find((item) => item.definitionId === skill.id)?.value ?? 0)
-            "
-          >
-            <div class="skill-stat">
-              <label class="skill-name" :for="skill.id">
-                {{ skill.name }}
-                <small v-if="skill.requiredModuleIds.some((id) => id !== system.coreModuleId)"
-                  >// Weird</small
-                >
-              </label>
-              <UiRatingChecks
-                v-if="sheet.skillRatings.find((item) => item.definitionId === skill.id)"
-                :id="skill.id"
-                v-model="sheet.skillRatings.find((item) => item.definitionId === skill.id)!.value"
-                :label="skill.name"
-              />
-            </div>
-            <UiExpertiseChoices
-              v-if="sheet.expertises.find((item) => item.skillId === skill.id)"
-              v-model="sheet.expertises.find((item) => item.skillId === skill.id)!.values"
-              v-model:custom="sheet.expertises.find((item) => item.skillId === skill.id)!.custom"
-              class="expertises"
-              :label="skill.name"
-              :options="cbrPnkExpertiseOptions[skill.key] ?? []"
-            />
-          </div>
-        </section>
+      </Teleport>
+      <Teleport :to="secondColumn ?? '#sheet-column-unmounted'" :disabled="!columns">
         <UiGearCard v-model="sheet.gear" />
+      </Teleport>
+      <Teleport
+        :to="(printing ? firstColumn : secondColumn) ?? '#sheet-column-unmounted'"
+        :disabled="!columns"
+      >
         <UiAugmentationsCard v-model="sheet.augmentations" />
+      </Teleport>
+      <Teleport :to="secondColumn ?? '#sheet-column-unmounted'" :disabled="!columns">
         <UiRollReferenceCards />
-      </div>
+      </Teleport>
     </UiWorkspace>
   </form>
 </template>
 
-<style>
-@property --sheet-hover-opacity {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 0;
-}
-</style>
-
 <style scoped>
-@media screen {
-  .sheet {
-    --sheet-hover-transition: --sheet-hover-opacity 300ms ease-out;
-    --sheet-hover-animation-state: running;
-  }
-  .sheet :deep(:is(input[type='text'], textarea, label:not(.hazard):has(> input) > span:first-of-type:not(.diamonds), label.hazard)) {
-    background-image: repeating-linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--sheet-hover-ink, #fff) calc(var(--sheet-hover-opacity) * 100%), transparent) 0 8px,
-      transparent 8px 16px
-    );
-    transition: var(--control-color-transition), var(--sheet-hover-transition);
-  }
-  .sheet :deep(:is(label:not(.hazard):hover:has(> input) > span:first-of-type:not(.diamonds), label.hazard:hover)) {
-    --sheet-hover-opacity: 1;
-    animation: sheet-hazard-slide 12s linear infinite;
-    animation-play-state: var(--sheet-hover-animation-state);
-  }
-  .sheet :deep(:is(input[type='text'], textarea)) {
-    --sheet-hover-ink: currentColor;
-  }
-  .sheet :deep(:is(input[type='text']:hover, textarea:hover)) {
-    --sheet-hover-opacity: 0.16;
-    animation: sheet-hazard-slide 12s linear infinite;
-    animation-play-state: var(--sheet-hover-animation-state);
-  }
-  .sheet :deep(:is(label:not(.hazard):has(> input:focus) > span:first-of-type:not(.diamonds), label.hazard:has(> input:focus))) {
-    --sheet-hover-opacity: 0.25;
-  }
-  .sheet :deep(:is(input[type='text']:focus, textarea:focus)) {
-    --sheet-hover-opacity: 0.08;
-  }
-  @keyframes sheet-hazard-slide {
-    to {
-      background-position: 22.627px 0;
-    }
-  }
-  /* Hover decoration stays separate from keyboard focus. */
-  .sheet :deep(label:hover:has(> input:not(:focus-visible))) {
-    outline: none;
-  }
-  .sheet :deep(label:not(.last, .diamond-choice):hover > input:not(:focus-visible) + span) {
-    outline: none;
-    box-shadow: none;
-  }
-  .sheet :deep(.expertise-choice:hover span) {
-    border-bottom-style: dashed;
-    text-decoration: none;
-  }
-  .sheet :deep(.expertise-choice:nth-child(3n + 2):hover span) {
-    border-bottom-style: dotted;
-  }
-  .sheet :deep(label.hazard:hover .track) {
-    border-color: var(--color-control-border);
-  }
-  .sheet :deep(label.hazard:hover input:checked + .track) {
-    border-color: var(--color-on-accent);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .sheet {
-      --sheet-hover-transition: none;
-      --sheet-hover-animation-state: paused;
-    }
-  }
-}
-.description {
-  font-size: var(--font-small-control-size);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-section {
-  position: relative;
-  min-width: 0;
-  padding: var(--space-6);
-  color: var(--color-text);
-  background: var(--theme-panel-fill);
-  background-image: var(--theme-panel-texture);
-  border: var(--theme-panel-border-width) solid var(--color-border);
-  border-top: var(--theme-panel-rule-width) solid var(--color-signal);
-  box-shadow: var(--theme-panel-shadow);
-  border-radius: var(--radius-lg);
-}
-.approaches {
-  border-top-color: var(--color-hot);
-}
-section::after {
-  content: '';
-  position: absolute;
-  top: 7px;
-  right: var(--space-3);
-  width: 3rem;
-  height: 5px;
-  background: var(--theme-panel-edge);
-  pointer-events: none;
-}
-h2 {
-  min-width: 0;
-  margin-bottom: var(--space-4);
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  font-weight: var(--theme-heading-weight);
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  color: var(--theme-title-color);
-  text-shadow: var(--theme-heading-shadow);
-  overflow-wrap: anywhere;
-}
-.approach,
-.skill {
-  position: relative;
-  display: grid;
-  gap: var(--space-3);
-  padding-block: var(--space-4);
-  border-top: 1px solid var(--color-border);
-}
-.approach::after,
-.skill::after {
-  content: '';
-  position: absolute;
-  top: -1px;
-  right: 0;
-  width: 1.75rem;
-  height: 3px;
-  background: var(--theme-row-mark);
-  opacity: 0.55;
-  pointer-events: none;
-}
-.approach-panel {
-  display: grid;
-  gap: var(--space-2);
-}
-.approach-name,
-.skill-name {
-  font-family: var(--font-display);
-  font-weight: var(--theme-name-weight);
-  color: var(--theme-name-color);
-  font-size: 1.625rem;
-  line-height: 1.15;
-}
-.description {
-  color: var(--color-muted);
-}
-.approach-title {
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-start;
-  gap: var(--space-2);
-}
-.approach-title > * {
-  white-space: nowrap;
-}
-.approach-negative {
-  visibility: hidden;
-  font-family: var(--font-display);
-  font-size: clamp(0.75rem, 2.5vw, 1rem);
-  font-weight: var(--theme-name-weight);
-}
-.approach-negative.visible {
-  visibility: visible;
-}
-.approach,
-.skill {
-  --rating-fill: var(--color-surface);
-  padding: var(--space-4);
-  background: var(--rating-fill);
-  border: 1px solid var(--color-border);
-  margin-top: var(--space-3);
-  transition: var(--control-color-transition);
-}
-.approach[data-state='1'],
-.skill[data-state='1'] {
-  --rating-fill: var(--color-rating-one);
-}
-.approach[data-state='2'],
-.skill[data-state='2'] {
-  --rating-fill: var(--color-signal);
-}
-.approach[data-state='glitched'] {
-  --rating-fill: var(--color-hot);
-}
-.approach:not([data-state='0']),
-.approach:not([data-state='0']) .approach-name,
-.approach:not([data-state='0']) .description,
-.skill:not([data-state='0']),
-.skill:not([data-state='0']) .skill-name,
-.skill:not([data-state='0']) .skill-name small {
-  color: var(--color-on-accent);
-}
-.approach:not([data-state='0']),
-.skill:not([data-state='0']) {
-  border-color: var(--rating-fill);
-}
-.approach-rating {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-.skill-heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-@media screen {
-  .sheet :deep(:is(section > h2, .runner-header > h2, .skill-heading > h2)) {
-    line-height: 1;
-    text-box-trim: trim-start;
-    text-box-edge: cap alphabetic;
-  }
-  .expertise-rule {
-    text-box-trim: trim-start;
-    text-box-edge: cap alphabetic;
-  }
-}
-.expertise-rule {
-  flex: 1 1 10rem;
-  max-width: 19rem;
-  margin-left: auto;
-  text-align: right;
-  color: var(--color-muted);
-  font-size: var(--font-sheet-rule-size);
-  line-height: 1.35;
-}
-.skill {
-  grid-template-columns: minmax(6rem, max-content) minmax(0, 1fr);
-  align-items: end;
-  gap: var(--space-2);
-  padding: var(--space-2);
-  margin-top: var(--space-2);
-}
-.skill::before {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: -1px;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-left: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  opacity: 0.45;
-  pointer-events: none;
-}
-.skill::after {
-  width: 2.5rem;
-  height: 4px;
-  opacity: 0.8;
-}
-.skill:nth-of-type(3n)::after {
-  width: 1.5rem;
-}
-.skill:not([data-state='0'])::after {
-  background: repeating-linear-gradient(
-    90deg,
-    currentColor 0 1px,
-    transparent 1px 4px,
-    currentColor 4px 6px,
-    transparent 6px 9px
-  );
-}
-.skill-name {
-  max-width: 7rem;
-  font-size: 1.375rem;
-}
-.skill-name:has(small) {
-  max-width: none;
-  white-space: nowrap;
-}
-.skill-name small {
-  margin-left: var(--space-2);
-  font-size: clamp(0.75rem, 2.5vw, 1rem);
-}
-.skill-stat {
-  display: grid;
-  min-width: 0;
-  gap: var(--space-2);
-}
-.expertises {
-  min-width: 0;
-  grid-column: 2;
-  align-self: end;
-}
-@media screen and (min-width: 56rem) {
-  .skill-stat {
-    display: contents;
-  }
-  .skill-name {
-    grid-column: 1 / -1;
-    max-width: none;
-  }
-  .skill .rating {
-    grid-column: 1;
-    grid-row: 2;
-  }
-  .expertises {
-    grid-row: 2;
-  }
-}
-/* Contents keep the existing single-column order on phones. */
 .sheet-column {
-  display: contents;
+  display: none;
 }
-.runner-card {
-  order: 0;
+.sheet-column.active {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 0;
 }
-.approaches {
-  order: 1;
-}
-.skills {
-  order: 2;
-}
-.harm-card {
-  order: 3;
-}
-.stress-card {
-  order: 4;
-}
-.augmentations-card {
-  order: 7;
-}
-.gear-card {
-  order: 6;
-}
-.resistance-card {
-  order: 5;
-}
-@media (min-width: 56rem) {
-  .sheet-column {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-8);
-    min-width: 0;
-  }
-}
-@media (max-width: 24rem) {
-  section {
-    padding: var(--space-4);
-  }
-  .approach {
-    padding-inline: var(--space-2);
-  }
-  .approach-rating {
-    gap: var(--space-2);
-  }
-  .approach-rating :deep(label.hazard) {
-    padding-inline: var(--space-1);
-    white-space: nowrap;
-  }
-  .approach-rating :deep(label.hazard .track) {
-    width: 2rem;
-  }
+.print-expertise-rule {
+  display: none;
 }
 </style>

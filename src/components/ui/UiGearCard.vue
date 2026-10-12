@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiSheetCard from './UiSheetCard.vue'
 import { computed } from 'vue'
 import type { CharacterGear } from '@/data/characters/types'
 import { cbrPnkGearColumns, cbrPnkLoadLevels } from '@/data/characters/cbr-pnk-sheet'
@@ -7,14 +8,19 @@ import UiDiamondChoice from './UiDiamondChoice.vue'
 
 const gear = defineModel<CharacterGear>({ required: true })
 const level = computed(() => cbrPnkLoadLevels.find((item) => item.value === gear.value.level)!)
-const total = computed(() =>
-  cbrPnkGearColumns.flat().reduce((sum, item) =>
-    sum + (gear.value.selected.includes(item.name) ? item.load : 0), 0) +
-  gear.value.extra.filter(Boolean).length,
+const total = computed(
+  () =>
+    cbrPnkGearColumns
+      .flat()
+      .reduce((sum, item) => sum + (gear.value.selected.includes(item.name) ? item.load : 0), 0) +
+    gear.value.extra.filter(Boolean).length,
 )
 const state = computed(() =>
-  total.value > level.value.load ? 'red' : total.value === level.value.load ? 'yellow' : 'empty')
+  total.value > level.value.load ? 'red' : total.value === level.value.load ? 'yellow' : 'empty',
+)
 function selectGear(name: string, selected: boolean) {
+  if (name === '+Heavy' && selected) selectGear('Armor', true)
+  if (name === 'Armor' && !selected) selectGear('+Heavy', false)
   gear.value.selected = selected
     ? [...gear.value.selected.filter((item) => item !== name), name]
     : gear.value.selected.filter((item) => item !== name)
@@ -22,23 +28,38 @@ function selectGear(name: string, selected: boolean) {
 </script>
 
 <template>
-  <section class="gear-card" :data-state="state" aria-labelledby="gear-heading">
-    <h2 id="gear-heading">Load/Gear</h2>
+  <UiSheetCard
+    class="gear-card"
+    title="Load/Gear"
+    heading-id="gear-heading"
+    edge="hot"
+    :state="state"
+  >
     <p class="rule">
-      During the Run you may declare gear on-hand by marking it on your list—up to a number of
-      items equal to your LOAD level. If an item is depleted, destroyed, or lost, cross it off the list.
+      During the Run you may declare gear on-hand by marking it on your list—up to a number of items
+      equal to your LOAD level. If an item is depleted, destroyed, or lost, cross it off the list.
     </p>
-    <UiSegments v-model="gear.level" label="Load level" name="gear-load" :options="cbrPnkLoadLevels" />
+    <UiSegments
+      v-model="gear.level"
+      label="Load level"
+      name="gear-load"
+      :options="cbrPnkLoadLevels"
+    />
     <p class="load-description">
       {{ level.description }}
       <output aria-live="polite" aria-label="Total load">{{ total }} / {{ level.load }}</output>
     </p>
     <div class="gear-columns">
-      <div v-for="(column, columnIndex) in cbrPnkGearColumns" :key="columnIndex" class="gear-column">
+      <div
+        v-for="(column, columnIndex) in cbrPnkGearColumns"
+        :key="columnIndex"
+        class="gear-column"
+      >
         <UiDiamondChoice
           v-for="item in column"
           :key="item.name"
           class="gear-item"
+          :class="{ 'armor-option': item.name === 'Armor' || item.name === '+Heavy' }"
           :model-value="gear.selected.includes(item.name)"
           :label="item.name"
           :count="item.load"
@@ -61,96 +82,101 @@ function selectGear(name: string, selected: boolean) {
         </div>
       </div>
     </div>
-  </section>
+  </UiSheetCard>
 </template>
 
 <style scoped>
-.gear-card {
-  --gear-fill: var(--theme-panel-fill);
-  --gear-ink: var(--color-text);
-  position: relative;
-  min-width: 0;
-  padding: var(--space-6);
-  border: var(--theme-panel-border-width) solid var(--color-border);
-  border-top: var(--theme-panel-rule-width) solid var(--color-hot);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--theme-panel-shadow);
-  background: var(--gear-fill);
-  background-image: var(--theme-panel-texture);
-  color: var(--gear-ink);
-  transition: var(--control-color-transition);
+output {
+  margin-left: var(--space-2);
+  font-weight: 700;
+  white-space: nowrap;
 }
-.gear-card[data-state='yellow'] {
-  --gear-fill: var(--color-rating-one);
-  --gear-ink: var(--color-on-accent);
-}
-.gear-card[data-state='red'] {
-  --gear-fill: var(--color-hot);
-  --gear-ink: var(--color-on-accent);
-}
-.gear-card::after {
-  content: '';
-  position: absolute;
-  top: 7px;
-  right: var(--space-3);
-  width: 3rem;
-  height: 5px;
-  background: var(--theme-panel-edge);
-  pointer-events: none;
-}
-h2 {
-  margin-bottom: var(--space-4);
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  font-weight: var(--theme-heading-weight);
-  color: var(--theme-title-color);
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  text-shadow: var(--theme-heading-shadow);
-  overflow-wrap: anywhere;
-}
-.gear-card:not([data-state='empty']) h2 {
-  color: var(--gear-ink);
-  text-shadow: none;
-}
-output { margin-left: var(--space-2); font-weight: 700; white-space: nowrap; }
-.rule {
-  margin-bottom: var(--space-4);
+
+.load-description {
+  margin-block: var(--space-2);
   font-size: var(--font-sheet-rule-size);
-  line-height: 1.35;
 }
-.load-description { margin-block: var(--space-2); font-size: var(--font-sheet-rule-size); }
-.gear-columns { display: grid; gap: var(--space-3); }
-.gear-column { min-width: 0; }
+.gear-columns {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: var(--space-3);
+}
+.gear-column {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  grid-auto-rows: 1fr;
+  column-gap: var(--space-3);
+  min-width: 0;
+}
+.gear-item,
+.extra-load {
+  grid-column: 1 / -1;
+}
+.gear-item {
+  padding-block: var(--space-1);
+}
+.armor-option {
+  grid-column: auto;
+}
 .extra-load {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-3);
   min-height: var(--control-height);
-  padding-block: var(--space-2);
+  padding-block: 0;
 }
 .gear-card[data-state='yellow'] {
   --diamond-selected: var(--color-on-accent);
   --diamond-selected-decoration: underline;
 }
-.extra-load:has(input:checked) .item-text { color: var(--color-signal); }
+.extra-load:has(input:checked) .item-text {
+  color: var(--color-signal);
+}
 .gear-card[data-state='yellow'] .extra-load:has(input:checked) .item-text {
   color: var(--color-on-accent);
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
-.gear-card[data-state='yellow'] :deep(.segments input:checked + span) {
-  background: transparent;
-  color: var(--color-on-accent);
-  border-bottom-color: currentColor;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+.gear-card[data-state='yellow'] {
+  --segment-selected-fill: transparent;
+  --segment-selected-ink: var(--card-ink);
+  --segment-selected-decoration: underline;
+  --segment-selected-border: currentColor;
 }
-.item-text { min-width: 0; font-family: var(--font-display); font-weight: var(--theme-name-weight); font-size: 1.125rem; text-transform: uppercase; overflow-wrap: anywhere; }
-small { display: block; font-family: var(--font-body); font-weight: 400; font-size: 0.625rem; line-height: 1.35; margin-top: var(--space-1); }
-.extra-load { flex-wrap: wrap; gap: var(--space-2); }
-.extra-marks { display: flex; }
-.gear-card:not([data-state='empty']) :deep(legend) { color: var(--gear-ink); }
-@media (min-width: 40rem) { .gear-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 24rem) { .gear-card { padding: var(--space-4); } }
+.item-text {
+  min-width: 0;
+  font-family: var(--font-display);
+  font-weight: var(--theme-name-weight);
+  font-size: 1.125rem;
+  line-height: 1.15;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.gear-item :deep(.item-text) {
+  line-height: 1.15;
+}
+small {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.625rem;
+  line-height: 1.35;
+  margin-top: 0;
+}
+.extra-marks {
+  display: flex;
+  gap: var(--space-1);
+}
+.extra-mark {
+  width: calc(var(--diamond-size, 1rem) + 2 * var(--space-1));
+}
+.gear-card:not([data-state='empty']) {
+  --control-label-color: var(--card-ink);
+}
+@media (min-width: 40rem) {
+  .gear-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 </style>

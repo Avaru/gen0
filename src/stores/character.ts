@@ -1,10 +1,15 @@
 import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, onScopeDispose, ref, watch } from 'vue'
 import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
-import { cbrPnkAngles, cbrPnkExpertiseAliases, cbrPnkExpertiseOptions, cbrPnkGearColumns } from '@/data/characters/cbr-pnk-sheet'
+import {
+  cbrPnkAngles,
+  cbrPnkExpertiseAliases,
+  cbrPnkExpertiseOptions,
+  cbrPnkGearColumns,
+} from '@/data/characters/cbr-pnk-sheet'
 import { composeAugmentation } from '@/patterns/cyberpunk/augmentations/augmentations'
 import { varyRatings } from '@/patterns/cyberpunk/runners/ratings'
-import { CONTENT, load } from '@/load'
+import { DATA, load } from '@/builders/load'
 import type { GenerationOptions } from '@/generator/options'
 import { randomFrom } from '@/helper/randomFrom'
 import type { CharacterSheet, Rating, SheetRating } from '@/data/characters/types'
@@ -30,9 +35,12 @@ function isUsableSheet(value: unknown, blank: CharacterSheet): value is Characte
       (saved.gear !== null &&
         ['', 'light', 'medium', 'heavy'].includes(saved.gear.level) &&
         Array.isArray(saved.gear.selected) &&
-        saved.gear.selected.every((name) => cbrPnkGearColumns.flat().some((item) => item.name === name)) &&
+        saved.gear.selected.every((name) =>
+          cbrPnkGearColumns.flat().some((item) => item.name === name),
+        ) &&
         new Set(saved.gear.selected).size === saved.gear.selected.length &&
-        Array.isArray(saved.gear.extra) && saved.gear.extra.length === 4 &&
+        Array.isArray(saved.gear.extra) &&
+        saved.gear.extra.length === 4 &&
         saved.gear.extra.every((mark) => typeof mark === 'boolean'))) &&
     Number.isInteger(saved.stress) &&
     saved.stress >= 0 &&
@@ -111,8 +119,14 @@ export const useCharacterStore = defineStore('character', () => {
   const hasContent = computed(() => {
     const value = sheet.value
     return Boolean(
-      value.runner.alias || value.runner.description || value.runner.archetypeId || value.runner.angle ||
-      value.stress || value.specialArmor || value.gear.level !== 'medium' || value.gear.selected.length ||
+      value.runner.alias ||
+      value.runner.description ||
+      value.runner.archetypeId ||
+      value.runner.angle ||
+      value.stress ||
+      value.specialArmor ||
+      value.gear.level !== 'medium' ||
+      value.gear.selected.length ||
       value.gear.extra.some(Boolean) ||
       value.attributeRatings.some((row) => (row.value ?? 0) > 0) ||
       value.skillRatings.some((row) => (row.value ?? 0) > 0) ||
@@ -125,45 +139,112 @@ export const useCharacterStore = defineStore('character', () => {
   try {
     const saved: unknown = JSON.parse(localStorage.getItem(storageKey) ?? 'null')
     if (isUsableSheet(saved, blank))
-      sheet.value = { ...saved, specialArmor: saved.specialArmor ?? false, runner: saved.runner ?? blank.runner, gear: saved.gear ? { ...saved.gear, level: saved.gear.level || 'medium' } : blank.gear }
+      sheet.value = {
+        ...saved,
+        specialArmor: saved.specialArmor ?? false,
+        runner: saved.runner ?? blank.runner,
+        gear: saved.gear ? { ...saved.gear, level: saved.gear.level || 'medium' } : blank.gear,
+      }
   } catch {
     // Missing access or invalid JSON leaves the sheet blank.
   }
+  let saveTimer: ReturnType<typeof setTimeout> | undefined
+  let pendingSave = false
+  function save() {
+    clearTimeout(saveTimer)
+    saveTimer = undefined
+    pendingSave = false
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(sheet.value))
+    } catch {
+      // The sheet remains editable when storage is unavailable.
+    }
+  }
+  function flushSave() {
+    if (pendingSave) save()
+  }
+  // Typing only reads the editable strings; it does not traverse or serialize the whole sheet.
   watch(
-    sheet,
-    (value) => {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(value))
-      } catch {
-        // The sheet remains editable when storage is unavailable.
-      }
+    () => [
+      sheet.value.runner.alias,
+      sheet.value.runner.description,
+      ...sheet.value.harm.map((row) => row.description),
+      ...sheet.value.augmentations.map((row) => row.description),
+      ...sheet.value.expertises.map((row) => row.custom),
+    ],
+    () => {
+      pendingSave = true
+      clearTimeout(saveTimer)
+      saveTimer = setTimeout(save, 200)
     },
+  )
+  // Checkboxes, generation and reset still save at the end of the current Vue update.
+  watch(
+    () => [
+      sheet.value.runner.archetypeId,
+      sheet.value.runner.angle,
+      sheet.value.stress,
+      sheet.value.specialArmor,
+      sheet.value.gear.level,
+      [...sheet.value.gear.selected],
+      [...sheet.value.gear.extra],
+      sheet.value.attributeRatings.map((row) => row.value),
+      sheet.value.skillRatings.map((row) => row.value),
+      sheet.value.expertises.map((row) => [...row.values]),
+      sheet.value.glitches.map((row) => row.marked),
+      sheet.value.harm.map((row) => [...row.marks]),
+      sheet.value.augmentations.map((row) => row.glitched),
+    ],
+    save,
     { deep: true },
   )
+  function visibilityChanged() {
+    if (document.visibilityState === 'hidden') flushSave()
+  }
+  window.addEventListener('pagehide', flushSave)
+  document.addEventListener('visibilitychange', visibilityChanged)
+  onScopeDispose(() => {
+    flushSave()
+    window.removeEventListener('pagehide', flushSave)
+    document.removeEventListener('visibilitychange', visibilityChanged)
+  })
   function applyArchetype(options: GenerationOptions = {}) {
     const profile = cbrPnkCatalogue.archetypeSystemProfiles.find(
-      (item) => item.archetypeId === sheet.value.runner.archetypeId && item.systemId === sheet.value.systemId,
+      (item) =>
+        item.archetypeId === sheet.value.runner.archetypeId &&
+        item.systemId === sheet.value.systemId,
     )
     const ratingFor = (ratings: Rating[] | undefined, id: string): SheetRating => {
       const value = ratings?.find((row) => row.definitionId === id)?.value
       // A source 3 means two rating points plus one expertise, not a third box.
-      return value === undefined ? null : Math.min(value, 2) as SheetRating
+      return value === undefined ? null : (Math.min(value, 2) as SheetRating)
     }
     sheet.value = {
       ...sheet.value,
       attributeRatings: attributes.map((item) => ({
-        definitionId: item.id, value: ratingFor(profile?.attributeRatings, item.id),
+        definitionId: item.id,
+        value: ratingFor(profile?.attributeRatings, item.id),
       })),
       skillRatings: skills.map((item) => ({
-        definitionId: item.id, value: ratingFor(profile?.skillRatings, item.id),
+        definitionId: item.id,
+        value: ratingFor(profile?.skillRatings, item.id),
       })),
       expertises: skills.map((skill) => {
-        const sourceRating = profile?.skillRatings.find((row) => row.definitionId === skill.id)?.value
+        const sourceRating = profile?.skillRatings.find(
+          (row) => row.definitionId === skill.id,
+        )?.value
         const suggestions = profile?.expertiseSuggestions.find((row) => row.skillId === skill.id)
-        const choices = [...new Set((suggestions?.options ?? [])
-          .map((option) => cbrPnkExpertiseAliases[skill.key]?.[option] ?? option)
-          .filter((option) => cbrPnkExpertiseOptions[skill.key]?.includes(option)))]
-        return { skillId: skill.id, values: sourceRating === 3 && choices.length ? [randomFrom(choices)] : [] }
+        const choices = [
+          ...new Set(
+            (suggestions?.options ?? [])
+              .map((option) => cbrPnkExpertiseAliases[skill.key]?.[option] ?? option)
+              .filter((option) => cbrPnkExpertiseOptions[skill.key]?.includes(option)),
+          ),
+        ]
+        return {
+          skillId: skill.id,
+          values: sourceRating === 3 && choices.length ? [randomFrom(choices)] : [],
+        }
       }),
     }
     if (profile) {
@@ -171,21 +252,32 @@ export const useCharacterStore = defineStore('character', () => {
       varyRatings(sheet.value.skillRatings)
     }
     const archetypeId = sheet.value.runner.archetypeId
-    const eligibleAugmentations = load(CONTENT.AUGMENTATIONS, options).filter(
+    const eligibleAugmentations = load(DATA.AUGMENTATIONS, options).filter(
       (entry) => archetypeId !== undefined && entry.archetypeIds.includes(archetypeId),
     )
     const generatedAugmentation = eligibleAugmentations.length
       ? composeAugmentation(randomFrom(eligibleAugmentations), options)
       : undefined
     const augmentation = [generatedAugmentation?.primary, generatedAugmentation?.details]
-      .filter(Boolean).join(' · ').replace(/\n/g, ' · ')
+      .filter(Boolean)
+      .join(' · ')
+      .replace(/\n/g, ' · ')
     sheet.value.augmentations = sheet.value.augmentations.map((_, index) => ({
-      description: index === 0 ? augmentation : '', glitched: false,
+      description: index === 0 ? augmentation : '',
+      glitched: false,
     }))
   }
 
   function reset() {
     sheet.value = createBlankSheet()
   }
-  return { system: ref(system), attributes: ref(attributes), skills: ref(skills), sheet, hasContent, applyArchetype, reset }
+  return {
+    system: ref(system),
+    attributes: ref(attributes),
+    skills: ref(skills),
+    sheet,
+    hasContent,
+    applyArchetype,
+    reset,
+  }
 })

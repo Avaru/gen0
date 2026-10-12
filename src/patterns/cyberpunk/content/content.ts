@@ -1,7 +1,7 @@
 import { capitalize } from '@/helper/capitalize'
 import Bits from '@/builders/Bits'
 import { weaponManufacturers } from '@/data/weapons'
-import { load, CONTENT, SHADOWRUN } from '@/load'
+import { load, DATA } from '@/builders/load'
 import { getNamePools } from '@/builders/namePools'
 import type { GenerationOptions } from '@/generator/options'
 import type { Generated } from '@/patterns/types'
@@ -10,15 +10,15 @@ import { randomRounded } from '@/helper/randomRounded'
 import { p } from '@/helper/prob'
 import { rng } from '@/helper/rng'
 import { corporationName } from '../corporations/corporations'
-import { givenName } from '../_secondary/names'
+import { givenName } from '../people/names'
 import { weaponName } from './weaponName'
 
-function pool<List extends CONTENT>(list: List, options: GenerationOptions) {
+function pool<List extends DATA>(list: List, options: GenerationOptions) {
   return new Bits(load(list, options))
 }
 
 function company(options: GenerationOptions, manufacturersOnly = false) {
-  const known = new Bits(load(SHADOWRUN.NAMES, options), { tag: 'known-corporation' })
+  const known = new Bits(load(DATA.NAME_FRAGMENTS, options), { tag: 'known-corporation' })
   const manufacturers = known.values.filter((name) => weaponManufacturers.includes(name))
   const available = manufacturersOnly ? manufacturers : known.values
   if (available.length && p(0.5)) return randomFrom(available)
@@ -26,7 +26,7 @@ function company(options: GenerationOptions, manufacturersOnly = false) {
 }
 
 export function weapons(options: GenerationOptions = {}): Generated {
-  const data = pool(CONTENT.WEAPONS, options)
+  const data = pool(DATA.WEAPONS, options)
   const kind = data.type('kind').take()
   const name = [company(options, true), weaponName(options)]
   const modifications = data
@@ -39,7 +39,7 @@ export function weapons(options: GenerationOptions = {}): Generated {
 }
 
 export function foodMenu(options: GenerationOptions = {}): Generated {
-  const data = pool(CONTENT.FOOD_MENU, options)
+  const data = pool(DATA.FOOD_MENU, options)
   const name = [capitalize(data.type('preparation').take().value), data.type('dish').take().value]
   if (p(0.33)) name.push(data.type('extra').take().value)
   const details = [
@@ -50,7 +50,7 @@ export function foodMenu(options: GenerationOptions = {}): Generated {
 }
 
 export function shops(options: GenerationOptions = {}): Generated {
-  const data = pool(CONTENT.SHOPS, options)
+  const data = pool(DATA.SHOPS, options)
   const owner = p(0.5) ? company(options) : `${givenName(options)}’s`
   const name = [owner]
   if (p(0.33)) name.push(capitalize(data.type('description').take().value))
@@ -61,13 +61,13 @@ export function shops(options: GenerationOptions = {}): Generated {
 }
 
 function address(options: GenerationOptions) {
-  const data = pool(CONTENT.DEVICE_DATA, options)
+  const data = pool(DATA.DEVICE_DATA, options)
   const name = capitalize(new Bits(getNamePools(options).get(undefined, 'family')).take().value)
   return `${name} ${capitalize(data.type('street-kind').take().value)} ${randomRounded(1, 200)}`
 }
 
 export function deviceContents(options: GenerationOptions = {}): Generated {
-  const data = pool(CONTENT.DEVICE_DATA, options)
+  const data = pool(DATA.DEVICE_DATA, options)
   const storage = capitalize(data.type('storage').take().value)
   // Keep mixed recordings/access at 30%; move 5 points from files to people.
   const roll = rng()

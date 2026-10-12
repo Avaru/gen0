@@ -9,7 +9,7 @@ import type { GenerationOptions } from '@/generator/options'
 import { randomGenus } from '@/helper/randomGenus'
 import { rng } from '@/helper/rng'
 import { getNamePools, type NamePools } from '@/builders/namePools'
-import { characters } from '../_secondary/characters'
+import { characters } from '../people/jobs'
 import { nationalName } from './nameParts'
 import type { Generated } from '@/patterns/types'
 

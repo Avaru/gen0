@@ -1,10 +1,10 @@
 import { traditionIds } from '@/patterns/cyberpunk/nationality/traditions'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { GENUS } from '@/builders/types'
-import { rlNamesModern } from '@/data/rl-names-modern'
+import { personalNames } from '@/data/personal-names'
 import { categories, generateNames } from '@/generator/categories'
 import { flavors } from '@/generator/options'
-import { load, RL } from '@/load'
+import { load, DATA } from '@/builders/load'
 import { mixedName } from '@/patterns/cyberpunk/nationality/mixed'
 import { nationalName, nationalitySurname } from '@/patterns/cyberpunk/nationality/nameParts'
 
@@ -23,7 +23,7 @@ afterEach(() => vi.restoreAllMocks())
 
 describe('Sourced modern name additions', () => {
   it.each(additions)('ships at least 300 distinct source names for %s', (nation) => {
-    const rows = rlNamesModern.filter((bit) => bit.tags.includes(nation))
+    const rows = personalNames.filter((bit) => bit.tags.includes(nation))
     expect(new Set(rows.map((bit) => bit.value)).size).toBeGreaterThanOrEqual(300)
     expect(new Set(rows.map((bit) => `${bit.type}:${bit.genus ?? ''}:${bit.value}`)).size).toBe(
       rows.length,
@@ -51,7 +51,7 @@ describe('Sourced modern name additions', () => {
 
   it.each(additions)('uses complete matching parts, gender and order for %s', (nation) => {
     for (const genus of [GENUS.M, GENUS.F] as const) {
-      const rows = rlNamesModern.filter(
+      const rows = personalNames.filter(
         (bit) => bit.tags.includes(nation) && (!bit.genus || bit.genus === genus),
       )
       const givens = rows.filter((bit) => bit.type === 'given').map((bit) => bit.value)
@@ -60,7 +60,7 @@ describe('Sourced modern name additions', () => {
         const name = nationalName(nation, genus)
         let matches: boolean
         if (nation === 'tamil') {
-          const fathers = rlNamesModern
+          const fathers = personalNames
             .filter(
               (bit) => bit.tags.includes('tamil') && bit.type === 'given' && bit.genus === 'm',
             )
@@ -91,7 +91,7 @@ describe('Sourced modern name additions', () => {
   })
 
   it('omits reviewed abbreviations and corrupted source spellings while preserving valid short names', () => {
-    const newRows = rlNamesModern.filter((bit) =>
+    const newRows = personalNames.filter((bit) =>
       additions.some((nation) => bit.tags.includes(nation)),
     )
     const bad = new Set([
@@ -119,7 +119,7 @@ describe('Sourced modern name additions', () => {
   })
 
   it('keeps complete Hindi spellings after the Latin conversion review', () => {
-    const values = rlNamesModern.filter((bit) => bit.tags.includes('hindi')).map((bit) => bit.value)
+    const values = personalNames.filter((bit) => bit.tags.includes('hindi')).map((bit) => bit.value)
     expect(values).toEqual(
       expect.arrayContaining([
         'Dhananjay',
@@ -148,13 +148,13 @@ describe('Sourced modern name additions', () => {
 
   it('keeps the new pools shared by flavors and honors exclusions over inclusions', () => {
     for (const nation of additions) {
-      const rows = load(RL.NAMES_MODERN).filter((bit) => bit.tags.includes(nation))
+      const rows = load(DATA.PERSONAL_NAMES).filter((bit) => bit.tags.includes(nation))
       for (const flavor of flavors) {
         expect(
-          load(RL.NAMES_MODERN, { flavor: flavor.id }).filter((bit) => bit.tags.includes(nation)),
+          load(DATA.PERSONAL_NAMES, { flavor: flavor.id }).filter((bit) => bit.tags.includes(nation)),
         ).toEqual(rows)
         expect(
-          load(RL.NAMES_MODERN, {
+          load(DATA.PERSONAL_NAMES, {
             flavor: flavor.id,
             includeTags: [nation],
             excludeTags: [nation],
@@ -165,10 +165,10 @@ describe('Sourced modern name additions', () => {
   })
 
   it('shares related Ukrainian male and female surname identities', () => {
-    const male = rlNamesModern.find(
+    const male = personalNames.find(
       (bit) => bit.tags.includes('ukrainian') && bit.value === 'Abrahamovskyi',
     )
-    const female = rlNamesModern.find(
+    const female = personalNames.find(
       (bit) => bit.tags.includes('ukrainian') && bit.value === 'Abrahamovska',
     )
     expect(male?.genus).toBe('m')
@@ -187,10 +187,10 @@ describe('Sourced modern name additions', () => {
       (tag) => tag !== 'tamil' && tag !== 'dutch',
     )
     const name = mixedName(GENUS.F, { excludeTags })
-    const tamil = rlNamesModern.find(
+    const tamil = personalNames.find(
       (bit) => bit.tags.includes('tamil') && bit.type === 'given' && bit.genus === 'f',
     )!
-    const dutch = rlNamesModern.find((bit) => bit.tags.includes('dutch') && bit.type === 'family')!
+    const dutch = personalNames.find((bit) => bit.tags.includes('dutch') && bit.type === 'family')!
     expect(name).toBe(`${tamil.value} ${dutch.value}`)
     expect(() => nationalitySurname('tamil')).toThrow('No entries match')
     expect(() => mixedName(GENUS.F, { excludeTags: [...excludeTags, 'dutch'] })).toThrow(

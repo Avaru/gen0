@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createPinia } from 'pinia'
+import { createTestPinia as createPinia } from './helpers/pinia'
 import { mount, flushPromises } from '@vue/test-utils'
 import CharacterView from '@/views/CharacterView.vue'
 import { useCharacterStore } from '@/stores/character'
-import { CONTENT, load } from '@/load'
+import { DATA, load } from '@/builders/load'
 import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { flavors } from '@/generator/options'
@@ -24,8 +24,14 @@ async function chooseArchetype(wrapper: ReturnType<typeof mount>, id: string) {
   await flushPromises()
 }
 
-beforeEach(() => localStorage.clear())
-afterEach(() => vi.restoreAllMocks())
+beforeEach(() => {
+  localStorage.clear()
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+})
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.useRealTimers()
+})
 
 describe('editable CBR+PNK sheet', () => {
   it('keeps one angle selected, saves it, randomizes it on Generate, and clears it on Reset', async () => {
@@ -75,55 +81,113 @@ describe('editable CBR+PNK sheet', () => {
     wrapper.unmount()
   })
 
-  it('swaps Approaches and Augmentations only while printing the default scheme', async () => {
-    let change: (() => void) | undefined
-    const media = {
-      matches: false,
-      addEventListener: vi.fn<(event: string, listener: () => void) => void>((_event, listener) => {
-        change = listener
-      }),
+  it('lets Vue place existing cards in desktop and print columns without losing edits', async () => {
+    const listeners = new Map<string, () => void>()
+    const desktop = {
+      matches: true,
+      addEventListener: vi.fn<(event: string, listener: () => void) => void>(),
       removeEventListener: vi.fn<(event: string, listener: () => void) => void>(),
     }
-    vi.stubGlobal('matchMedia', () => media)
+    const print = {
+      matches: false,
+      addEventListener: vi.fn<(event: string, listener: () => void) => void>(),
+      removeEventListener: vi.fn<(event: string, listener: () => void) => void>(),
+    }
+    vi.stubGlobal('matchMedia', (query: string) => {
+      const media = query === 'print' ? print : desktop
+      media.addEventListener.mockImplementation((_event: string, listener: () => void) => {
+        listeners.set(query, listener)
+      })
+      return media
+    })
     const wrapper = mount(CharacterView, { global: { plugins: [createPinia()] } })
+    await flushPromises()
     const columns = wrapper.findAll('.sheet-column')
+    const rating = wrapper.get('[aria-label="Aggressive rating 2"]')
+    await rating.setValue(true)
+    const element = rating.element
     expect(columns[0]!.find('.approaches').exists()).toBe(true)
     expect(columns[1]!.find('.augmentations-card').exists()).toBe(true)
-    expect(wrapper.find('.skill-heading .expertise-rule').exists()).toBe(true)
-    media.matches = true
-    change!()
+    print.matches = true
+    listeners.get('print')!()
     await flushPromises()
     expect(columns[0]!.find('.augmentations-card').exists()).toBe(true)
     expect(columns[1]!.find('.approaches').exists()).toBe(true)
-    expect(wrapper.find('.approaches > .expertise-rule').exists()).toBe(true)
-    media.matches = false
-    change!()
+    expect(wrapper.get('[aria-label="Aggressive rating 2"]').element).toBe(element)
+    await wrapper.get('[aria-label="Smart rating 1"]').setValue(true)
+    print.matches = false
+    listeners.get('print')!()
     await flushPromises()
     expect(columns[0]!.find('.approaches').exists()).toBe(true)
     expect(columns[1]!.find('.augmentations-card').exists()).toBe(true)
-    expect(wrapper.find('.skill-heading .expertise-rule').exists()).toBe(true)
+    expect(wrapper.get('[aria-label="Aggressive rating 2"]').element).toBe(element)
+    expect(wrapper.get('[aria-label="Smart rating 1"]').element).toHaveProperty('checked', true)
+    desktop.matches = false
+    listeners.get('(min-width: 56rem)')!()
+    await flushPromises()
+    expect(
+      wrapper
+        .findAll('.workspace > section')
+        .map((card) => card.classes().find((name) => name !== 'sheet-card')),
+    ).toEqual([
+      'runner-card',
+      'approaches',
+      'skills',
+      'harm-card',
+      'stress-card',
+      'resistance-card',
+      'gear-card',
+      'augmentations-card',
+    ])
+    expect(wrapper.get('[aria-label="Aggressive rating 2"]').element).toBe(element)
     wrapper.unmount()
-    expect(media.removeEventListener).toHaveBeenCalledWith('change', change)
+    expect(print.removeEventListener).toHaveBeenCalledWith('change', listeners.get('print'))
+    expect(desktop.removeEventListener).toHaveBeenCalledWith(
+      'change',
+      listeners.get('(min-width: 56rem)'),
+    )
+  })
+
+  it('keeps expertise typing updates within its own skill row', async () => {
+    const updates: string[] = []
+    const wrapper = mount(CharacterView, {
+      global: {
+        plugins: [createPinia()],
+        mixins: [
+          {
+            updated() {
+              updates.push(this.$options.name ?? this.$options.__name ?? '')
+            },
+          },
+        ],
+      },
+    })
+    await flushPromises()
+    await wrapper.get('[aria-label="Analyze custom expertise"]').setValue('First')
+    updates.length = 0
+    await wrapper.get('[aria-label="Analyze custom expertise"]').setValue('Second')
+    expect(updates.filter((name) => name === 'UiSheetRatingRow')).toHaveLength(1)
+    expect(updates.filter((name) => name === 'UiExpertiseChoices')).toHaveLength(1)
+    expect(updates).not.toContain('UiCharacterSheet')
+    wrapper.unmount()
   })
 
   it.each(flavors)(
-    'regenerates each runner field independently using the $label flavor without changing stats',
+    'regenerates each runner field in Generic despite a $label query without changing stats',
     async ({ id }) => {
-      const generate = vi
-        .spyOn(generators, 'generateNames')
-        .mockReturnValue([
-          {
-            primary: 'New alias',
-            details: 'Real name: New name',
-            title: 'New role',
-            appearance: 'New appearance',
-            archetypeId: 'driver',
-          },
-        ])
+      const generate = vi.spyOn(generators, 'generateNames').mockReturnValue([
+        {
+          primary: 'New alias',
+          details: 'Real name: New name',
+          title: 'New role',
+          appearance: 'New appearance',
+          archetypeId: 'driver',
+        },
+      ])
       const pinia = createPinia()
       const router = createRouter({
         history: createMemoryHistory(),
-        routes: [{ path: '/chars/cbrpnk', component: CharacterView }],
+        routes: [{ path: '/chars/cbrpnk', meta: { flavor: 'cyberpunk' }, component: CharacterView }],
       })
       await router.push({ path: '/chars/cbrpnk', query: { flavor: id } })
       await router.isReady()
@@ -142,11 +206,11 @@ describe('editable CBR+PNK sheet', () => {
       await flushPromises()
       const before = JSON.parse(JSON.stringify(store.sheet))
       await wrapper.get('[aria-label="Regenerate handle"]').trigger('click')
-      expect(generate).toHaveBeenLastCalledWith('runners', 1, { flavor: id })
+      expect(generate).toHaveBeenLastCalledWith('runners', 1, { flavor: 'cyberpunk' })
       expect(store.sheet).toEqual({ ...before, runner: { ...before.runner, alias: 'New alias' } })
       expect(wrapper.get('#runner-alias').element).toHaveProperty('value', 'New alias')
       await wrapper.get('[aria-label="Regenerate details and looks"]').trigger('click')
-      expect(generate).toHaveBeenLastCalledWith('runners', 1, { flavor: id })
+      expect(generate).toHaveBeenLastCalledWith('runners', 1, { flavor: 'cyberpunk' })
       expect(store.sheet).toEqual({
         ...before,
         runner: {
@@ -159,6 +223,7 @@ describe('editable CBR+PNK sheet', () => {
         'value',
         store.sheet.runner.description,
       )
+      await vi.advanceTimersByTimeAsync(200)
       expect(useCharacterStore(createPinia()).sheet).toEqual(store.sheet)
       wrapper.unmount()
     },
@@ -344,12 +409,12 @@ describe('editable CBR+PNK sheet', () => {
   })
 
   it.each(flavors)(
-    'fills runner fields and profile ratings using the $label route flavor only on Generate',
+    'fills runner fields and profile ratings in Generic despite a $label query only on Generate',
     async ({ id }) => {
       const pinia = createPinia()
       const router = createRouter({
         history: createMemoryHistory(),
-        routes: [{ path: '/chars/cbrpnk', component: CharacterView }],
+        routes: [{ path: '/chars/cbrpnk', meta: { flavor: 'cyberpunk' }, component: CharacterView }],
       })
       await router.push({ path: '/chars/cbrpnk', query: { flavor: id, category: 'german' } })
       await router.isReady()
@@ -369,7 +434,7 @@ describe('editable CBR+PNK sheet', () => {
         augmentations: undefined,
       })
       seedRandom()
-      const result = generateNames('runners', 1, { flavor: id, runnerArchetypeId: 'hacker' })[0]!
+      const result = generateNames('runners', 1, { flavor: 'cyberpunk', runnerArchetypeId: 'hacker' })[0]!
       vi.restoreAllMocks()
       seedRandom()
       await chooseArchetype(wrapper, 'hacker')
@@ -397,6 +462,7 @@ describe('editable CBR+PNK sheet', () => {
         store.sheet.runner.description,
       )
       await card.get('#runner-alias').setValue('Edited alias')
+      await vi.advanceTimersByTimeAsync(200)
       expect(useCharacterStore(createPinia()).sheet.runner).toEqual(store.sheet.runner)
       wrapper.unmount()
     },
@@ -446,7 +512,7 @@ describe('editable CBR+PNK sheet', () => {
       expect(vi.mocked(probability.p).mock.calls.filter(([chance]) => chance === 0.2)).toHaveLength(
         profile ? 2 : 0,
       )
-      const eligibleAugmentations = load(CONTENT.AUGMENTATIONS).filter((entry) =>
+      const eligibleAugmentations = load(DATA.AUGMENTATIONS).filter((entry) =>
         entry.archetypeIds.includes(id),
       )
       const filledAugmentations = store.sheet.augmentations.filter((row) => row.description)
@@ -535,6 +601,7 @@ describe('editable CBR+PNK sheet', () => {
         .findAll('.expertises input')
         .filter((input) => (input.element as HTMLInputElement).checked)
       expect(selectedExpertise).toHaveLength(selections.length)
+      await vi.advanceTimersByTimeAsync(200)
       expect(useCharacterStore(createPinia()).sheet).toEqual(store.sheet)
       expect(JSON.stringify(cbrPnkCatalogue)).toBe(source)
       wrapper.unmount()
@@ -697,6 +764,7 @@ describe('editable CBR+PNK sheet', () => {
     expect(store.sheet.expertises[0]?.custom).toBe('User expertise')
     expect(field.element.parentElement?.classList.contains('filled')).toBe(true)
     expect(wrapper.get('.custom-print-value').text()).toBe('User expertise')
+    await vi.advanceTimersByTimeAsync(200)
     expect(useCharacterStore(createPinia()).sheet.expertises[0]?.custom).toBe('User expertise')
     store.reset()
     await flushPromises()
@@ -769,10 +837,10 @@ describe('editable CBR+PNK sheet', () => {
       'Runner',
       'Choose archetype',
       'Approaches // Skills',
+      'Skills',
       'Harm',
       'Stress',
       'Resist/Armor',
-      'Skills',
       'Load/Gear',
       'Augmentations',
       'Action roll',

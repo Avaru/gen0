@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createPinia } from 'pinia'
+import { createTestPinia as createPinia } from './helpers/pinia'
 import { mount } from '@vue/test-utils'
 import CharacterView from '@/views/CharacterView.vue'
 import { useCharacterStore } from '@/stores/character'
@@ -37,18 +37,18 @@ describe('gear load', () => {
     expect(card.get('output').text()).toBe('7 / 7')
     expect(card.attributes('data-state')).toBe('yellow')
     await card.get('[aria-label="Armor"]').setValue(false)
-    expect(store.sheet.gear.selected).toContain('+Heavy')
-    expect(card.get('output').text()).toBe('6 / 7')
+    expect(store.sheet.gear.selected).not.toContain('+Heavy')
+    expect(card.get('output').text()).toBe('4 / 7')
     expect(card.attributes('data-state')).toBe('empty')
     const saved = JSON.parse(JSON.stringify(store.sheet.gear))
     wrapper.unmount()
     const remounted = mount(CharacterView, { global: { plugins: [createPinia()] } })
     expect(useCharacterStore(createPinia()).sheet.gear).toEqual(saved)
-    expect(remounted.get('.gear-card output').text()).toBe('6 / 7')
+    expect(remounted.get('.gear-card output').text()).toBe('4 / 7')
     remounted.unmount()
   })
 
-  it.each(['Large/heavy weapon', 'Medium drone', 'Demolition tools', '+Heavy'])(
+  it.each(['Large/heavy weapon', 'Medium drone', 'Demolition tools'])(
     'toggles both load diamonds together for %s', async (name) => {
       const wrapper = mount(CharacterView, { global: { plugins: [createPinia()] } })
       const input = wrapper.get(`.gear-card [aria-label="${name}"]`)
@@ -62,4 +62,27 @@ describe('gear load', () => {
       wrapper.unmount()
     },
   )
+
+  it('requires Armor for +Heavy and keeps Armor when only +Heavy is cleared', async () => {
+    const wrapper = mount(CharacterView, { global: { plugins: [createPinia()] } })
+    const card = wrapper.get('.gear-card')
+    const armor = card.get('[aria-label="Armor"]')
+    const heavy = card.get('[aria-label="+Heavy"]')
+    expect(heavy.element.closest('label')!.querySelectorAll('.diamonds > span')).toHaveLength(2)
+    await heavy.setValue(true)
+    expect(armor.element).toHaveProperty('checked', true)
+    expect(card.get('output').text()).toBe('3 / 5')
+    await heavy.setValue(false)
+    expect(armor.element).toHaveProperty('checked', true)
+    expect(card.get('output').text()).toBe('1 / 5')
+    await heavy.setValue(true)
+    expect(card.get('output').text()).toBe('3 / 5')
+    await armor.setValue(false)
+    expect(heavy.element).toHaveProperty('checked', false)
+    expect(card.get('output').text()).toBe('0 / 5')
+    await armor.setValue(true)
+    expect(heavy.element).toHaveProperty('checked', false)
+    expect(card.get('output').text()).toBe('1 / 5')
+    wrapper.unmount()
+  })
 })

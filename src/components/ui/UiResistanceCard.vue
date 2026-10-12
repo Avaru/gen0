@@ -1,15 +1,17 @@
 <script setup lang="ts">
+import UiSheetCard from './UiSheetCard.vue'
 import UiDiamondChoice from './UiDiamondChoice.vue'
 const specialArmor = defineModel<boolean>({ required: true })
 </script>
 
 <template>
-  <section
+  <UiSheetCard
     class="resistance-card"
-    :data-state="specialArmor ? 'yellow' : 'empty'"
-    aria-labelledby="resistance-heading"
+    title="Resist/Armor"
+    heading-id="resistance-heading"
+    edge="signal"
+    :state="specialArmor ? 'yellow' : 'empty'"
   >
-    <h2 id="resistance-heading">Resist/Armor</h2>
     <p class="rule">
       Convey how you are RESISTING to reduce the severity of a Consequence or, at the GM’s
       discretion, avoid it entirely. Then choose a method:
@@ -37,62 +39,22 @@ const specialArmor = defineModel<boolean>({ required: true })
         </ul>
       </div>
     </div>
-  </section>
+  </UiSheetCard>
 </template>
 
 <style scoped>
 .resistance-card {
-  position: relative;
-  min-width: 0;
-  padding: var(--space-6);
-  color: var(--color-text);
-  background: var(--theme-panel-fill);
-  background-image: var(--theme-panel-texture);
-  border: var(--theme-panel-border-width) solid var(--color-border);
-  border-top: var(--theme-panel-rule-width) solid var(--color-signal);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--theme-panel-shadow);
-  transition: var(--control-color-transition);
   container-type: inline-size;
 }
+
 .resistance-card[data-state='yellow'] {
-  color: var(--color-on-accent);
-  background-color: var(--color-rating-one);
   --diamond-selected: var(--color-on-accent);
   --diamond-selected-decoration: underline;
 }
-.resistance-card::after {
-  content: '';
-  position: absolute;
-  top: 7px;
-  right: var(--space-3);
-  width: 3rem;
-  height: 5px;
-  background: var(--theme-panel-edge);
-  pointer-events: none;
-}
-h2 {
-  margin-bottom: var(--space-4);
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  font-weight: var(--theme-heading-weight);
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  color: var(--theme-title-color);
-  text-shadow: var(--theme-heading-shadow);
-  overflow-wrap: anywhere;
-}
-[data-state='yellow'] h2 {
-  color: inherit;
-  text-shadow: none;
-}
-.rule,
+
 .example {
   font-size: var(--font-sheet-rule-size);
   line-height: 1.35;
-}
-.rule {
-  margin-bottom: var(--space-4);
 }
 .methods {
   display: grid;
@@ -103,6 +65,7 @@ h2 {
 }
 .method-heading,
 .special-armor {
+  --diamond-label-size: var(--font-small-control-size);
   font-family: var(--font-display);
   font-size: var(--font-small-control-size);
   font-weight: 650;
@@ -116,9 +79,6 @@ h2 {
 .special-armor {
   padding-inline: var(--space-3);
   border: 1px solid currentColor;
-}
-.special-armor :deep(.item-text) {
-  font-size: var(--font-small-control-size);
 }
 .example {
   margin-top: var(--space-2);
@@ -138,11 +98,7 @@ h2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-@media (max-width: 24rem) {
-  .resistance-card {
-    padding: var(--space-4);
-  }
-}
+
 @media print {
   .methods {
     grid-template-columns: repeat(2, minmax(0, 1fr));

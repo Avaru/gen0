@@ -4,8 +4,8 @@ import { GENUS } from '@/builders/types'
 import type { NameEntry } from '@/data/nameTypes'
 import { generateNames } from '@/generator/categories'
 import { flavors } from '@/generator/options'
-import * as nameData from '@/load'
-import { RL } from '@/load'
+import * as nameData from '@/builders/load'
+import { DATA } from '@/builders/load'
 import { clearNamePools } from '@/builders/namePools'
 import { nationalName } from '@/patterns/cyberpunk/nationality/nameParts'
 import { mixedName } from '@/patterns/cyberpunk/nationality/mixed'
@@ -65,7 +65,7 @@ function useFixture() {
   clearNamePools()
   const original = nameData.load
   vi.spyOn(nameData, 'load').mockImplementation((list, options = {}) =>
-    list === RL.NAMES_MODERN
+    list === DATA.PERSONAL_NAMES
       ? fixture.filter((bit) => !options.excludeTags?.some((tag) => bit.tags.includes(tag)))
       : original(list, options),
   )

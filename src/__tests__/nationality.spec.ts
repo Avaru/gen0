@@ -2,8 +2,8 @@ import { seedRandom } from './helpers/random'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { GENUS } from '@/builders/types'
 import { generateNames } from '@/generator/categories'
-import { load, RL } from '@/load'
-import { rlNamesModern } from '@/data/rl-names-modern'
+import { load, DATA } from '@/builders/load'
+import { personalNames } from '@/data/personal-names'
 import {
   nationalName,
   nationalityGivenName,
@@ -19,7 +19,7 @@ describe('Modern national names in the app', () => {
     (nation) => {
       seedRandom()
       for (const genus of [GENUS.F, GENUS.M] as const) {
-        const data = load(RL.NAMES_MODERN).filter(
+        const data = load(DATA.PERSONAL_NAMES).filter(
           (bit) => bit.tags.includes(nation) && (!bit.genus || bit.genus === genus),
         )
         const names = generateNames(nation, 50, { genus })
@@ -47,7 +47,7 @@ describe('Modern national names in the app', () => {
     ['Volkov', 'Volkova'],
     ['Sorokin', 'Sorokina'],
   ])('stores %s / %s with distinct genders', (male, female) => {
-    const data = load(RL.NAMES_MODERN).filter(
+    const data = load(DATA.PERSONAL_NAMES).filter(
       (bit) => bit.tags.includes('russian') && bit.type === 'family',
     )
     expect(data.some((bit) => bit.value === male && bit.genus === GENUS.M)).toBe(true)
@@ -91,7 +91,7 @@ describe('Modern national names in the app', () => {
 describe('Linked name data', () => {
   it('keeps unique IDs only on entries referenced by another name', () => {
     const referenced = new Set(
-      rlNamesModern.flatMap((bit) =>
+      personalNames.flatMap((bit) =>
         bit.type === 'patronymic'
           ? [bit.fatherNameId]
           : bit.type === 'nickname'
@@ -99,15 +99,15 @@ describe('Linked name data', () => {
             : [],
       ),
     )
-    const identified = rlNamesModern.filter((bit) => bit.id !== undefined)
+    const identified = personalNames.filter((bit) => bit.id !== undefined)
     expect(new Set(identified.map((bit) => bit.id)).size).toBe(identified.length)
     expect(new Set(identified.map((bit) => bit.id))).toEqual(referenced)
     expect(identified.every((bit) => bit.type === 'given')).toBe(true)
-    expect(rlNamesModern.some((bit) => bit.id === undefined)).toBe(true)
+    expect(personalNames.some((bit) => bit.id === undefined)).toBe(true)
   })
 
   it('keeps surname groups only for related male and female forms', () => {
-    const surnames = rlNamesModern.filter((bit) => bit.type === 'family')
+    const surnames = personalNames.filter((bit) => bit.type === 'family')
     expect(surnames.some((bit) => bit.formGroupId === undefined)).toBe(true)
     for (const surname of surnames) {
       if (!surname.formGroupId) continue
@@ -118,7 +118,7 @@ describe('Linked name data', () => {
   })
 
   it('connects every gendered surname to both forms in the same tradition', () => {
-    const surnames = rlNamesModern.filter((bit) => bit.type === 'family')
+    const surnames = personalNames.filter((bit) => bit.type === 'family')
     for (const surname of surnames) {
       if (!surname.genus) continue
       expect(surname.formGroupId).toBeDefined()
@@ -135,9 +135,9 @@ describe('Linked name data', () => {
 
   it('resolves every stored father and spelling alias to both patronymic forms', () => {
     const byId = new Map(
-      rlNamesModern.filter((bit) => bit.id !== undefined).map((bit) => [bit.id, bit]),
+      personalNames.filter((bit) => bit.id !== undefined).map((bit) => [bit.id, bit]),
     )
-    for (const patronymic of rlNamesModern) {
+    for (const patronymic of personalNames) {
       if (patronymic.type !== 'patronymic') continue
       const father = byId.get(patronymic.fatherNameId)
       expect(father?.type).toBe('given')
@@ -158,15 +158,15 @@ describe('Linked name data', () => {
       ['Misha', 'Mikhail'],
       ['Vanya', 'Ivan'],
     ]) {
-      const entry = rlNamesModern.find((bit) => bit.type === 'nickname' && bit.value === nickname)
+      const entry = personalNames.find((bit) => bit.type === 'nickname' && bit.value === nickname)
       if (entry?.type !== 'nickname') throw new Error('Missing nickname')
       expect(
         entry.givenNameIds?.some((id) =>
-          rlNamesModern.some((bit) => bit.id === id && bit.type === 'given' && bit.value === given),
+          personalNames.some((bit) => bit.id === id && bit.type === 'given' && bit.value === given),
         ),
       ).toBe(true)
       expect(
-        rlNamesModern.some(
+        personalNames.some(
           (bit) => bit.tags.includes('russian') && bit.type === 'given' && bit.value === nickname,
         ),
       ).toBe(false)

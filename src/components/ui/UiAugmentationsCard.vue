@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiSheetField from './UiSheetField.vue'
+import UiSheetCard from './UiSheetCard.vue'
 import type { CharacterSheet } from '@/data/characters/types'
 import UiToggle from './UiToggle.vue'
 
@@ -6,8 +8,12 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
 </script>
 
 <template>
-  <section class="augmentations-card" aria-labelledby="augmentations-heading">
-    <h2 id="augmentations-heading">Augmentations</h2>
+  <UiSheetCard
+    class="augmentations-card"
+    title="Augmentations"
+    heading-id="augmentations-heading"
+    edge="hot"
+  >
     <div class="rules">
       <p>
         Mark ⚡ to activate an enhanced capability
@@ -29,11 +35,9 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
       class="augmentation-row"
       :class="{ glitched: augmentation.glitched }"
     >
-      <span class="print-value">{{ augmentation.description }}</span>
-      <input
+      <UiSheetField
         v-model="augmentation.description"
-        :class="{ filled: !!augmentation.description.trim() }"
-        type="text"
+        :filled="!!augmentation.description.trim()"
         :aria-label="`Augmentation ${index + 1}`"
       />
       <UiToggle
@@ -43,48 +47,10 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
         :input-label="`Augmentation ${index + 1} glitched`"
       />
     </div>
-  </section>
+  </UiSheetCard>
 </template>
 
 <style scoped>
-.augmentations-card {
-  position: relative;
-  min-width: 0;
-  padding: var(--space-6);
-  border: var(--theme-panel-border-width) solid var(--color-border);
-  border-top: var(--theme-panel-rule-width) solid var(--color-hot);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--theme-panel-shadow);
-  background: var(--theme-panel-fill);
-  background-image: var(--theme-panel-texture);
-  color: var(--color-text);
-}
-.augmentations-card::after {
-  content: '';
-  position: absolute;
-  top: 7px;
-  right: var(--space-3);
-  width: 3rem;
-  height: 5px;
-  background: var(--theme-panel-edge);
-  pointer-events: none;
-}
-h2 {
-  margin-bottom: var(--space-4);
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  font-weight: var(--theme-heading-weight);
-  color: var(--theme-title-color);
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  text-shadow: var(--theme-heading-shadow);
-  overflow-wrap: anywhere;
-}
-.rules {
-  margin-bottom: var(--space-4);
-  font-size: var(--font-sheet-rule-size);
-  line-height: 1.35;
-}
 .rules p + p {
   margin-top: var(--space-2);
 }
@@ -99,27 +65,11 @@ strong {
   padding-block: var(--space-4);
   transition: var(--control-color-transition);
 }
-input {
-  width: 100%;
-  min-width: 0;
-  padding: var(--space-2);
-  border: 0;
-  border-bottom: 2px solid currentColor;
-  border-radius: 0;
-  background: transparent;
-  color: inherit;
-  font-size: var(--font-control-size);
-  font-weight: 600;
-}
+
 .glitched {
   color: var(--color-hot);
 }
-input.filled {
-  background: var(--color-rating-one);
-  border-color: var(--color-rating-one);
-  color: var(--color-on-accent);
-  font-weight: 600;
-}
+
 @media (max-width: 40rem) {
   .augmentation-row {
     grid-template-columns: minmax(0, 1fr);
@@ -127,11 +77,6 @@ input.filled {
   .augmentation-row > :last-child {
     grid-column: 1;
     justify-self: end;
-  }
-}
-@media (max-width: 24rem) {
-  .augmentations-card {
-    padding: var(--space-4);
   }
 }
 </style>

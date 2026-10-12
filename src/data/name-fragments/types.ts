@@ -1,0 +1,4 @@
+import type { RawBit } from "@/builders/types"
+
+export type NameFragment = RawBit<'appearance' | 'attribute' | 'branch' | 'business' | 'main' | 'model' | 'name' | 'origin' | 'people' | 'prefix' | 'quality' | 'relation' | 'series' | 'suffix' | 'type' | 'wares'>
+

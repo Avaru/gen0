@@ -1,6 +1,6 @@
 # 0006: Personal names and regional mixes
 
-Keep typed personal-name lists by tradition under `src/data/names/`, combined by `rl-names-modern.ts`. Naming IDs, labels, order, and probabilities live together in `nationality/traditions.ts`, so categories and builders use the same rules.
+Keep typed personal-name lists by tradition under `src/data/names/`, combined by `personal-names.ts`. Naming IDs, labels, order, and probabilities live together in `nationality/traditions.ts`, so categories and builders use the same rules.
 
 - Preserve stored compound names and diacritics. Gender is masculine/feminine or omitted for invariant forms. Deduplicate spellings only in pools that require distinct parts, preserving the last stored entry.
 - Keep IDs on given names referenced by patronymics or reviewed nicknames. Russian `fatherNameId` links and spelling aliases support explicit father lookup; unsupported fathers raise errors. Keep `father:*` exclusion tags. Existing `formGroupId` surname pairs and `givenNameIds` nickname links describe reviewed relationships; they do not drive generation.

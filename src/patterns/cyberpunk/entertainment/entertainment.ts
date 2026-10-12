@@ -2,12 +2,12 @@ import { capitalize, lowercaseFirst } from '@/helper/capitalize'
 import type { GenerationOptions } from '@/generator/options'
 import Bits from '@/builders/Bits'
 import { p } from '@/helper/prob'
-import { load, SHADOWRUN } from '@/load'
+import { load, DATA } from '@/builders/load'
 import { type Generated } from '@/patterns/types'
-import { givenName } from '../_secondary/names'
+import { givenName } from '../people/names'
 
 export const movies = (options: GenerationOptions = {}): Generated => {
-  const movie = new Bits(load(SHADOWRUN.MOVIE, options))
+  const movie = new Bits(load(DATA.MOVIES, options))
 
   let primary = ''
 

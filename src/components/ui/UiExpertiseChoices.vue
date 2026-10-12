@@ -16,7 +16,12 @@ const custom = defineModel<string>('custom')
       <span>{{ option }}</span>
     </label>
     <label class="custom-expertise" :class="{ filled: custom?.trim() }">
-      <input v-model="custom" type="text" placeholder="Custom" :aria-label="`${label} custom expertise`" />
+      <input
+        v-model="custom"
+        type="text"
+        placeholder="Custom"
+        :aria-label="`${label} custom expertise`"
+      />
       <span v-if="custom?.trim()" class="custom-print-value">{{ custom }}</span>
     </label>
   </div>
@@ -100,15 +105,16 @@ input:checked + span::before {
   content: '✓';
 }
 .expertise-choice:hover span {
-  border-bottom-style: solid;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+  background-color: color-mix(in srgb, currentColor 10%, transparent);
+}
+input:checked + span:hover {
+  background-color: var(--color-rating-one);
 }
 input:checked + span::after {
   color: inherit;
 }
 input:focus-visible + span {
-  outline: 3px solid var(--color-focus);
+  outline: var(--control-focus-width) solid var(--control-focus-color, var(--color-focus));
   outline-offset: 3px;
 }
 .custom-expertise {
@@ -135,7 +141,7 @@ input:focus-visible + span {
   text-transform: uppercase;
 }
 .custom-expertise input::placeholder {
-  color: var(--color-muted);
+  color: var(--row-muted, var(--color-muted));
   opacity: 1;
 }
 .custom-expertise.filled::before {
@@ -148,7 +154,7 @@ input:focus-visible + span {
   pointer-events: none;
 }
 .custom-expertise input:focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: var(--control-focus-width) solid var(--control-focus-color, var(--color-focus));
   outline-offset: 3px;
 }
 .custom-print-value {

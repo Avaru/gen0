@@ -137,55 +137,12 @@ input:checked {
 input:checked::after {
   visibility: visible;
 }
-[data-theme='cyberpunk2077'] .choices {
-  gap: var(--space-4);
-}
-[data-theme='cyberpunk2077'] label,
-[data-theme='cyberpunk2077'] label:has(input:checked) {
-  border: 0;
-  background: transparent;
-  padding-inline: 0;
-  gap: var(--space-3);
-  text-transform: uppercase;
-  letter-spacing: 0.035em;
-}
-[data-theme='cyberpunk2077'] input {
-  width: 2rem;
-  background: var(--color-surface);
-}
-[data-theme='cyberpunk2077'] input::after {
-  width: 50%;
-  height: 100%;
-  margin: 0;
-  border: 0;
-  transform: none;
-  visibility: visible;
-  justify-self: start;
-  background: var(--color-hot);
-  clip-path: var(--theme-check-shape);
-}
-[data-theme='cyberpunk2077'] input:checked {
-  border-color: var(--color-control-border);
-}
-[data-theme='cyberpunk2077'] input:checked::after {
-  justify-self: end;
-  background: var(--color-signal);
-}
-[data-theme='cyberpunk2077'] label:hover {
-  background: transparent;
-}
-[data-theme='cyberpunk2077'] label:hover input {
-  border-color: var(--color-signal);
-  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
-}
 @media (forced-colors: active) {
-  input,
-  [data-theme='cyberpunk2077'] input {
+  input {
     appearance: auto;
     clip-path: none;
   }
-  input::after,
-  [data-theme='cyberpunk2077'] input::after {
+  input::after {
     display: none;
   }
 }

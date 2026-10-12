@@ -4,8 +4,8 @@ import { GENUS, type RawBit } from '@/builders/types'
 import { clearNamePools, getNamePools, NamePools } from '@/builders/namePools'
 import type { GivenNameEntry, NameEntry } from '@/data/nameTypes'
 import { generateNames } from '@/generator/categories'
-import { load, RL } from '@/load'
-import { genericName } from '@/patterns/cyberpunk/_secondary/names'
+import { load, DATA } from '@/builders/load'
+import { genericName } from '@/patterns/cyberpunk/people/names'
 import { corporationName } from '@/patterns/cyberpunk/corporations/corporations'
 import { runnerName } from '@/patterns/cyberpunk/runners/names'
 import { canComposeName } from '@/patterns/cyberpunk/nationality/availability'
@@ -67,7 +67,7 @@ describe('Complete naming traditions', () => {
     seedRandom()
     const fatherTags = [
       ...new Set(
-        load(RL.NAMES_MODERN)
+        load(DATA.PERSONAL_NAMES)
           .filter((entry) => entry.type === 'patronymic')
           .flatMap((entry) => entry.tags.filter((tag) => tag.startsWith('father:'))),
       ),

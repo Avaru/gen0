@@ -3,11 +3,11 @@ import { isFlavorEnabled, type GenerationOptions } from '@/generator/options'
 import Bits from '@/builders/Bits'
 import { p } from '@/helper/prob'
 import { randomAge } from '@/helper/randomAge'
-import { load, SHADOWRUN } from '@/load'
+import { load, DATA } from '@/builders/load'
 import type { GeneratedAttributes } from '@/patterns/types'
 import { corporationName } from '../corporations/corporations'
 import { runnerName } from '../runners/names'
-import { pickSpecies, SPECIES, SPECIES_AGE } from './helpers'
+import { pickSpecies, SPECIES, SPECIES_AGE } from './species'
 
 export const characters = (
   allowRunners = true,
@@ -16,7 +16,7 @@ export const characters = (
 ): GeneratedAttributes => {
   species ??= pickSpecies(options)
   const character: GeneratedAttributes = {}
-  const data = new Bits(load(SHADOWRUN.CHARACTERS, options))
+  const data = new Bits(load(DATA.RUNNER_TRAITS, options))
 
   const age = randomAge(SPECIES_AGE[species])
 
@@ -40,7 +40,7 @@ export const characters = (
 
 export const dayjob = (options: GenerationOptions = {}): string => {
   const title = []
-  const data = new Bits(load(SHADOWRUN.CHARACTERS, options))
+  const data = new Bits(load(DATA.RUNNER_TRAITS, options))
   const jobs = data.tag('job')
   if (p()) {
     if (p(0.1)) title.push(capitalize(jobs.type('level').take().value))

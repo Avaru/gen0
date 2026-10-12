@@ -36,13 +36,6 @@ const navigation = computed(() => {
     query: settingsQuery(settings),
   }
 })
-const characterNavigation = computed(() => {
-  const settings = settingsFromRoute(route)
-  return {
-    path: '/chars/cbrpnk',
-    query: settings.flavor === 'cyberpunk' ? {} : { flavor: settings.flavor },
-  }
-})
 const aboutNavigation = computed(() => ({
   path: `${settingsPath(settingsFromRoute(route))}/about`,
   query: settingsQuery(settingsFromRoute(route)),
@@ -59,11 +52,11 @@ const aboutNavigation = computed(() => ({
         <RouterLink v-if="isCharacter" v-slot="{ href, navigate }" :to="aboutNavigation" custom>
           <a :href="href" @click="navigateFromMenu($event, navigate)"><span class="link-label">About</span></a>
         </RouterLink>
-        <RouterLink v-slot="{ href, navigate }" :to="characterNavigation" custom>
+        <RouterLink v-slot="{ href, navigate }" to="/chars/cbrpnk" custom>
           <a :href="href" :aria-current="isCharacter ? 'page' : undefined" @click="navigateFromMenu($event, navigate)"><span class="link-label">CBR+PNK</span></a>
         </RouterLink>
       </nav>
-      <UiBrandTitle :theme="theme" />
+      <UiBrandTitle />
       <h1 v-if="isCharacter" class="caption">CBR+PNK <span class="caption-line">Runner sheet</span></h1>
       <span v-else class="caption">Cyberpunk name generator</span>
       <a

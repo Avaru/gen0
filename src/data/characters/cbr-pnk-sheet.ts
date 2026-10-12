@@ -62,11 +62,11 @@ export const cbrPnkGearColumns = [
     { name: 'Medium drone', load: 2, description: 'Tough or offensive' },
     { name: 'Spare battery', load: 1 },
     { name: 'Medkit', load: 1 },
-    { name: 'Disguise or camo', load: 1 },
   ],
   [
     { name: 'Armor', load: 1 },
     { name: '+Heavy', load: 2 },
+    { name: 'Disguise or camo', load: 1 },
     { name: 'Infiltration gear', load: 1 },
     { name: 'Extra ammo', load: 1, description: 'Standard / Piercing · Explosive / Incendiary' },
     { name: 'Survival kit', load: 1, description: 'Mask, ration, water/air purif.' },

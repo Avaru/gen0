@@ -1,5 +1,5 @@
 import { rng } from '@/helper/rng'
-import { SPECIES, SPECIES_AGE } from '../_secondary/helpers'
+import { SPECIES, SPECIES_AGE } from '../people/species'
 
 /** 70% in the two focus bands, 20% across young adults, 10% older runners. */
 export function runnerAge(species: SPECIES): number {

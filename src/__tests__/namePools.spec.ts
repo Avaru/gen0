@@ -4,8 +4,8 @@ import { clearNamePools, getNamePools, NamePools } from '@/builders/namePools'
 import { GENUS } from '@/builders/types'
 import type { NameEntry } from '@/data/nameTypes'
 import { flavors, type GenerationOptions } from '@/generator/options'
-import * as nameData from '@/load'
-import { RL } from '@/load'
+import * as nameData from '@/builders/load'
+import { DATA } from '@/builders/load'
 import { nationalName } from '@/patterns/cyberpunk/nationality/nameParts'
 import { mixedName } from '@/patterns/cyberpunk/nationality/mixed'
 
@@ -47,7 +47,7 @@ describe('Reusable name pools', () => {
 
   it('matches existing data order, weights, and gender filtering in every flavor', () => {
     for (const { id: flavor } of flavors) {
-      const data = nameData.load(RL.NAMES_MODERN, { flavor })
+      const data = nameData.load(DATA.PERSONAL_NAMES, { flavor })
       const pools = getNamePools({ flavor })
       expect(pools.get(undefined, 'family')).toEqual(data.filter((bit) => bit.type === 'family'))
       for (const genus of [GENUS.F, GENUS.M] as const) {
@@ -102,7 +102,7 @@ describe('Reusable name pools', () => {
 
   it('keeps mixed eligibility separate when settings or gender change', () => {
     const excludeTags = [
-      ...new Set(nameData.load(RL.NAMES_MODERN).flatMap((bit) => bit.tags)),
+      ...new Set(nameData.load(DATA.PERSONAL_NAMES).flatMap((bit) => bit.tags)),
     ].filter((tag) => tag !== 'dutch' && tag !== 'tamil')
     expect(mixedName(GENUS.F, { excludeTags })).toBeTruthy()
     expect(mixedName(GENUS.M, { excludeTags })).toBeTruthy()

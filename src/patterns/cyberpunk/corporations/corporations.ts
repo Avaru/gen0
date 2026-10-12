@@ -5,12 +5,12 @@ import { p } from '@/helper/prob'
 import { randomFrom } from '@/helper/randomFrom'
 import { randomFromEnum } from '@/helper/randomFromEnum'
 import { randomRounded } from '@/helper/randomRounded'
-import { load, SHADOWRUN } from '@/load'
+import { load, DATA } from '@/builders/load'
 import { getNamePools } from '@/builders/namePools'
 import { corporationEvents } from '@/data/corporation-events'
 import { isEntryAvailable } from '@/builders/availability'
 import { getName } from '@/generator/names'
-import { genericName } from '../_secondary/names'
+import { genericName } from '../people/names'
 import { rng } from '@/helper/rng'
 import type { Generated } from '@/patterns/types'
 import { CORPORATION_SIZE, CORPORATION_PARAMETERS } from './helpers'
@@ -22,7 +22,7 @@ interface CorporationNameOptions extends GenerationOptions {
 
 /** A company name without generating employees or company relationships. */
 export function corporationName(options: CorporationNameOptions = {}): string {
-  const names = new Bits(load(SHADOWRUN.NAMES, options))
+  const names = new Bits(load(DATA.NAME_FRAGMENTS, options))
   const corp = names.tag('corporation')
   const known = corp.tag('known-corporation')
   if (options.knownParent && p(0.6) && known.count > 0) return known.take().value
@@ -50,7 +50,7 @@ export function corporations(options: GenerationOptions = {}): Generated {
   const employees = randomRounded(parameters.EMPLOYEES_MIN, parameters.EMPLOYEES_MAX)
   let title: string | undefined
   if (p() && size !== CORPORATION_SIZE.AAA) {
-    const relation = new Bits(load(SHADOWRUN.NAMES, options), {
+    const relation = new Bits(load(DATA.NAME_FRAGMENTS, options), {
       tag: 'corporation',
       type: 'relation',
     })
@@ -76,7 +76,7 @@ export function corporations(options: GenerationOptions = {}): Generated {
 }
 
 export function knownCorporation(options: GenerationOptions = {}): Generated {
-  const known = new Bits(load(SHADOWRUN.NAMES, options), {
+  const known = new Bits(load(DATA.NAME_FRAGMENTS, options), {
     all: ['corporation', 'known-corporation'],
   })
   return { primary: known.take().value }
@@ -96,8 +96,8 @@ function subsidiaryNames(parent: string, options: GenerationOptions): string[] {
     if (name !== parent) names.add(name)
   }
   // Existing business/type fragments give distinct fallback names in small pools.
-  const businesses = new Bits(load(SHADOWRUN.NAMES, options), { tag: 'corporation', type: 'business' })
-  const types = new Bits(load(SHADOWRUN.NAMES, options), { tag: 'corporation', type: 'type' })
+  const businesses = new Bits(load(DATA.NAME_FRAGMENTS, options), { tag: 'corporation', type: 'business' })
+  const types = new Bits(load(DATA.NAME_FRAGMENTS, options), { tag: 'corporation', type: 'type' })
   while (names.size < count && businesses.count) {
     const name = `${parent} ${capitalize(businesses.take().value)} ${capitalize(types.filter({}).take().value)}`
     names.add(name)

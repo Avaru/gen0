@@ -1,7 +1,7 @@
 import type { GENUS } from './types'
 import type { NameEntry, NamePart } from '@/data/nameTypes'
 import type { GenerationOptions } from '@/generator/options'
-import { load, RL } from '@/load'
+import { load, DATA } from '@/builders/load'
 
 /** Shared name parts are read-only; Bits makes a separate list for each person's picks. */
 export class NamePools {
@@ -65,7 +65,7 @@ export function getNamePools(options: GenerationOptions = {}): NamePools {
   ])
   let pools = cache.get(key)
   if (pools) cache.delete(key)
-  else pools = new NamePools(load(RL.NAMES_MODERN, options))
+  else pools = new NamePools(load(DATA.PERSONAL_NAMES, options))
   cache.set(key, pools)
   if (cache.size > maxSettings) cache.delete(cache.keys().next().value!)
   return pools
