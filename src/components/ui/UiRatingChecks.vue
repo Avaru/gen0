@@ -82,6 +82,9 @@ input:focus-visible + span {
   outline-offset: 3px;
 }
 @media screen {
+  input:checked + span {
+    background: color-mix(in srgb, var(--color-signal) 75%, var(--color-on-accent));
+  }
   input:not(:checked) + span {
     opacity: 0.7;
   }

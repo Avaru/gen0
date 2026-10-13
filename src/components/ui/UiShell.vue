@@ -6,7 +6,6 @@ import { settingsFromRoute, settingsPath, settingsQuery } from '@/generator/sett
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
 import UiBrandTitle from '@/components/ui/UiBrandTitle.vue'
 import UiButton from './UiButton.vue'
-import UiCharacterTransfer from './UiCharacterTransfer.vue'
 defineProps<{ theme: Theme }>()
 const showCharacterGuide = ref(false)
 provide('showCharacterGuide', showCharacterGuide)
@@ -64,7 +63,6 @@ const aboutNavigation = computed(() => ({
       <h1 v-if="isCharacter" class="caption">CBR+PNK <span class="caption-line">Runner sheet</span></h1>
       <span v-else class="caption">Cyberpunk name generator</span>
       <div v-if="isCharacter" class="character-actions">
-        <UiCharacterTransfer />
         <UiButton
           :aria-expanded="showCharacterGuide"
           aria-controls="runner-guide"

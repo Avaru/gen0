@@ -12,6 +12,7 @@ import { varyRatings } from '@/patterns/cyberpunk/runners/ratings'
 import { DATA, load } from '@/builders/load'
 import type { GenerationOptions } from '@/generator/options'
 import { randomFrom } from '@/helper/randomFrom'
+import { decodeCharacter } from '@/helper/characterLink'
 import type { CharacterSheet, Rating, SheetRating } from '@/data/characters/types'
 
 const storageKey = 'gen0.character'
@@ -271,18 +272,11 @@ export const useCharacterStore = defineStore('character', () => {
   function reset() {
     sheet.value = createBlankSheet()
   }
-  function importCharacter(json: string) {
-    const imported: unknown = JSON.parse(json)
+  function loadCharacterToken(token: string) {
+    const imported = decodeCharacter(token)
     const defaults = createBlankSheet()
-    if (!isUsableSheet(imported, defaults)) throw new Error('Invalid character JSON')
-    sheet.value = {
-      ...imported,
-      specialArmor: imported.specialArmor ?? false,
-      runner: imported.runner ?? defaults.runner,
-      gear: imported.gear
-        ? { ...imported.gear, level: imported.gear.level || 'medium' }
-        : defaults.gear,
-    }
+    if (!isUsableSheet(imported, defaults)) throw new Error('Invalid character link')
+    sheet.value = imported
     save()
   }
   return {
@@ -293,6 +287,6 @@ export const useCharacterStore = defineStore('character', () => {
     hasContent,
     applyArchetype,
     reset,
-    importCharacter,
+    loadCharacterToken,
   }
 })
