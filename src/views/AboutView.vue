@@ -59,6 +59,11 @@ const paragraphs = [
   font-size: 0.625rem;
   font-weight: 400;
   color: var(--color-on-page);
+  opacity: 0.3;
+}
+.corp-mode:hover,
+.corp-mode:focus-within {
+  opacity: 1;
 }
 .corp-mode :deep(.track) {
   width: 1.625rem;
@@ -89,5 +94,15 @@ const paragraphs = [
 }
 .corp-mode:hover :deep(input:checked + .track) {
   background: var(--color-on-page);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .corp-mode {
+    transition: opacity 200ms ease;
+  }
+}
+@media (forced-colors: active) {
+  .corp-mode {
+    opacity: 1;
+  }
 }
 </style>
