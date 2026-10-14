@@ -866,11 +866,13 @@ describe('editable CBR+PNK sheet', () => {
     ).toEqual(cbrPnkCatalogue.archetypes.map((item) => item.id))
     expect(wrapper.findAll('input[type="number"]')).toHaveLength(0)
     expect(wrapper.findAll('input[type="checkbox"]')).toHaveLength(111)
-    expect(wrapper.findAll('input[type="text"]')).toHaveLength(18)
-    for (const input of wrapper.findAll('input')) {
+    expect(wrapper.findAll('input[type="text"]')).toHaveLength(15)
+    expect(wrapper.findAll('.augmentation-row textarea')).toHaveLength(3)
+    for (const input of wrapper.findAll('input, textarea')) {
+      const isTextField = input.attributes('type') === 'text' || input.element.tagName === 'TEXTAREA'
       expect(input.element).toHaveProperty(
-        input.attributes('type') === 'text' ? 'value' : 'checked',
-        input.attributes('type') === 'text'
+        isTextField ? 'value' : 'checked',
+        isTextField
           ? ''
           : input.attributes('type') === 'radio' && input.attributes('value') === 'medium',
       )
