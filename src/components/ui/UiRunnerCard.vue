@@ -159,10 +159,8 @@ function regenerate(field: 'alias' | 'description') {
           :options="archetypes"
           @update:model-value="generate"
         >
-          <template #before-choices>
-            <div class="archetype-options">
-              <UiToggle v-model="bitRandom" label="bit random" />
-            </div>
+          <template #actions>
+            <UiToggle v-model="bitRandom" label="bit random" />
           </template>
         </UiChoicePicker>
         <UiButton v-if="canReset && confirmingReset" variant="destructive" @click="reset"
@@ -341,12 +339,6 @@ function regenerate(field: 'alias' | 'description') {
   .regenerate {
     display: none !important;
   }
-}
-
-.archetype-options {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: var(--space-4);
 }
 
 .actions {

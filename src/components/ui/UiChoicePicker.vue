@@ -115,6 +115,7 @@ function enter() {
       :close-label="`Close ${label.toLowerCase()} picker`"
       @close="closed"
     >
+      <template #actions><slot name="actions" /></template>
       <div v-if="searchable" class="search">
         <label :for="`${id}-search`">Search {{ plural }}</label>
         <input
@@ -136,7 +137,6 @@ function enter() {
         </p>
       </div>
       <div :id="`${id}-choices`" class="groups">
-        <slot name="before-choices" />
         <p v-if="description" class="rule">{{ description }}</p>
         <section
           v-for="(group, index) in groups"
@@ -285,7 +285,6 @@ h3 {
 }
 .choice-rule {
   display: block;
-  margin-top: var(--space-1);
   font-size: var(--font-sheet-rule-size);
   font-weight: normal;
   line-height: 1.35;
@@ -293,7 +292,15 @@ h3 {
   letter-spacing: normal;
   text-transform: none;
 }
+.with-rule {
+  display: flow-root;
+}
+.choices button:has(.with-rule) {
+  align-items: flex-start;
+}
 .with-rule .choice-name {
+  float: left;
+  margin-inline-end: var(--space-2);
   font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 600;

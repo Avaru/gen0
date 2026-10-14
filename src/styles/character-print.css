@@ -15,7 +15,7 @@
 @media print {
   :root:has(.shell[data-theme='cyberpunk'] .sheet) {
     color-scheme: light;
-    background: white;
+    background: var(--color-accent);
     overflow: visible;
     --control-height: 4mm;
     --space-1: 0.6mm;
@@ -32,7 +32,7 @@
     page: character-sheet;
     min-width: 0;
     margin: 0;
-    background: white;
+    background: var(--color-accent);
 
     > :not(#app),
     .skip,
@@ -53,8 +53,8 @@
     .sheet {
       /* Four ink levels: writing guides, rules, structure, and character/selected data. */
       --print-ghost: #d6d6d6;
-      --print-rules: #aaa;
-      --print-structure: #666;
+      --print-rules: #555;
+      --print-structure: #11171b;
       --print-ink: #000;
       width: 194mm;
       font-size: 6.5pt;
@@ -577,6 +577,38 @@
 
     .sheet .runner-description {
       min-height: 10mm;
+    }
+
+    /* Static color fills; the print dialog still controls background printing. */
+    .sheet {
+      background: var(--color-accent) !important;
+    }
+
+    .sheet .sheet-card {
+      background: white !important;
+      box-shadow: 0.8mm 0.8mm 0 var(--print-ink) !important;
+    }
+
+    .sheet .card-heading {
+      background: var(--color-signal) !important;
+    }
+
+    .sheet .sheet-card[data-edge='hot'] > .card-heading {
+      background: var(--color-hot) !important;
+    }
+
+    .sheet .runner-header {
+      background: var(--color-accent) !important;
+    }
+
+    .sheet .approach,
+    .sheet .skill,
+    .sheet .print-value,
+    .sheet .rating span,
+    .sheet .diamonds > span,
+    .sheet label.hazard .track,
+    .sheet .segments span {
+      background: white !important;
     }
   }
 }

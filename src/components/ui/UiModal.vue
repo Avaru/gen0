@@ -42,15 +42,18 @@ defineExpose({ showModal, close })
     <div class="panel">
       <header>
         <h2 :id="`${props.id}-heading`">{{ title }}</h2>
-        <button
-          ref="closeButton"
-          class="close"
-          type="button"
-          :aria-label="closeLabel"
-          @click="close"
-        >
-          ✕
-        </button>
+        <div class="header-actions">
+          <slot name="actions" />
+          <button
+            ref="closeButton"
+            class="close"
+            type="button"
+            :aria-label="closeLabel"
+            @click="close"
+          >
+            ✕
+          </button>
+        </div>
       </header>
       <slot />
     </div>
@@ -91,11 +94,19 @@ header {
   padding: var(--space-4);
 }
 h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-family: var(--font-display);
   font-size: clamp(2rem, 6vw, 3rem);
   text-transform: uppercase;
   color: var(--color-signal);
   line-height: 1;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
 }
 .close {
   flex-shrink: 0;

@@ -247,6 +247,16 @@ button::after {
   }
 }
 @media screen and (prefers-reduced-motion: no-preference) {
+  .icon-feedback:active:enabled .button-text {
+    animation: icon-hover-glitch 240ms steps(1, end);
+  }
+  .primary:active:enabled .button-text {
+    transform: translateX(3px) scale(1.15, 0.9);
+    animation: hover-text-glitch 240ms steps(1, end);
+  }
+  .primary:active:enabled::before {
+    animation: hover-noise-glitch 240ms steps(1, end);
+  }
   .primary .button-text {
     position: relative;
     z-index: 1;
