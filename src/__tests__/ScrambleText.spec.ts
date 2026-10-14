@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
+import { createTestPinia } from './helpers/pinia'
 import GeneratorResults from '@/components/generator/GeneratorResults.vue'
 import GeneratorControls from '@/components/generator/GeneratorControls.vue'
 import { normalizeGeneratorSettings } from '@/generator/settings'
@@ -93,6 +94,7 @@ describe('scrambled name reveal', () => {
       appearance: 'Chrome eyes', details: 'Works alone', rating: 0,
     }
     const wrapper = mount(GeneratorResults, {
+      global: { plugins: [createTestPinia()] },
       props: { results: [result, { ...result }], busy: false, label: 'Names', error: '', showDetails: true },
     })
     await nextTick()
@@ -117,6 +119,7 @@ describe('scrambled name reveal', () => {
   it('keeps the runner archetype in the secondary row regardless of the details toggle', async () => {
     reduced = true
     const wrapper = mount(GeneratorResults, {
+      global: { plugins: [createTestPinia()] },
       props: {
         results: [{ primary: 'Neon Fox', secondary: 'Martial Artist', appearance: 'Chrome eyes', details: 'Works alone' }],
         category: 'runners', busy: false, label: 'Runners', error: '', showDetails: true,
@@ -135,6 +138,7 @@ describe('scrambled name reveal', () => {
   it('shows all detail fields immediately without animation under reduced motion', async () => {
     reduced = true
     const wrapper = mount(GeneratorResults, {
+      global: { plugins: [createTestPinia()] },
       props: {
         results: [{ primary: 'Neon Fox', secondary: 'Decker', age: 'Age: 28', appearance: 'Chrome eyes', details: 'Works alone', rating: 4 }],
         busy: false, label: 'Names', error: '', showDetails: true,
@@ -212,6 +216,7 @@ describe('scrambled name reveal', () => {
   it('animates appended names without replaying existing names, and replays rerolls even with the same spelling', async () => {
     const original = { primary: 'Neon Fox' }
     const wrapper = mount(GeneratorResults, {
+      global: { plugins: [createTestPinia()] },
       props: { results: [original], busy: false, label: 'Names', error: '', showDetails: false },
     })
     await advance(700)
@@ -225,6 +230,7 @@ describe('scrambled name reveal', () => {
 
   it('resolves the first name quickly, then later names in order, restarting the timing for each batch', async () => {
     const wrapper = mount(GeneratorResults, {
+      global: { plugins: [createTestPinia()] },
       props: {
         results: Array.from({ length: 12 }, () => ({ primary: 'Neon Fox' })),
         busy: false, label: 'Names', error: '', showDetails: false,

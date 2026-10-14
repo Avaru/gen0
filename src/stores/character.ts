@@ -209,7 +209,7 @@ export const useCharacterStore = defineStore('character', () => {
     window.removeEventListener('pagehide', flushSave)
     document.removeEventListener('visibilitychange', visibilityChanged)
   })
-  function applyArchetype(options: GenerationOptions = {}) {
+  function applyArchetype(options: GenerationOptions & { bitRandom?: boolean } = {}) {
     const profile = cbrPnkCatalogue.archetypeSystemProfiles.find(
       (item) =>
         item.archetypeId === sheet.value.runner.archetypeId &&
@@ -248,7 +248,7 @@ export const useCharacterStore = defineStore('character', () => {
         }
       }),
     }
-    if (profile) {
+    if (profile && options.bitRandom) {
       varyRatings(sheet.value.attributeRatings)
       varyRatings(sheet.value.skillRatings)
     }

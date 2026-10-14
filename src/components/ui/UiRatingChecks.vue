@@ -21,7 +21,7 @@ function change(position: 1 | 2, event: Event) {
         :aria-label="`${label} rating ${position}`"
         @change="change(position, $event)"
       />
-      <span aria-hidden="true"><UiSheetSymbol kind="dice" :framed="false" /></span>
+      <span aria-hidden="true"><UiSheetSymbol class="rating-symbol" kind="dice" :framed="false" /></span>
     </label>
   </div>
 </template>
@@ -82,6 +82,13 @@ input:focus-visible + span {
   outline-offset: 3px;
 }
 @media screen {
+  .rating-symbol {
+    transform: rotate(-45deg);
+    transition: transform 180ms ease-out;
+  }
+  input:checked + span .rating-symbol {
+    transform: rotate(0deg);
+  }
   input:checked + span {
     background: color-mix(in srgb, var(--color-signal) 75%, var(--color-on-accent));
   }
@@ -91,6 +98,11 @@ input:focus-visible + span {
   label:hover input:not(:checked) + span,
   input:not(:checked):focus-visible + span {
     opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rating-symbol {
+    transition: none;
   }
 }
 @media (forced-colors: active) {

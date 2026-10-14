@@ -16,5 +16,5 @@ const flavor = computed(() => route ? settingsFromRoute(route).flavor : 'cyberpu
 
 <template>
   <p v-if="linkError" role="alert">{{ linkError }}</p>
-  <UiCharacterSheet v-model="sheet" :system="system" :attributes="attributes" :skills="skills" :flavor="flavor" :can-reset="hasContent" @reset="character.reset" @apply-archetype="character.applyArchetype({ flavor })" />
+  <UiCharacterSheet v-model="sheet" :system="system" :attributes="attributes" :skills="skills" :flavor="flavor" :can-reset="hasContent" @reset="character.reset" @apply-archetype="character.applyArchetype({ flavor, bitRandom: $event })" />
 </template>

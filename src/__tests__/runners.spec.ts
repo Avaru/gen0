@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { runnerTraits } from '@/data/runner-traits'
 import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
+import { cbrPnkAngles } from '@/data/characters/cbr-pnk-sheet'
 import { load, DATA } from '@/builders/load'
 import { flavors } from '@/generator/options'
 import { getNamePools } from '@/builders/namePools'
@@ -33,6 +34,7 @@ describe('Runners', () => {
       const profession = [...professions].sort((a, b) => b.value.length - a.value.length).find((entry) => mainTitle.endsWith(entry.value))!
       expect(profession).toBeDefined()
       expect(runner.archetypeId).toBe(profession.archetypeId)
+      expect(cbrPnkAngles).toContain(runner.angle)
     }
   })
 

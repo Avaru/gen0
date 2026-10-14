@@ -255,10 +255,42 @@ describe('editable CBR+PNK sheet', () => {
     await wrapper.get('#runner-generate').trigger('click')
     expect(wrapper.get('dialog').element).toHaveProperty('open', true)
     expect(wrapper.find('input[type="search"]').exists()).toBe(false)
+    expect(wrapper.get('dialog input[aria-label="bit random"]').element).toHaveProperty('checked', false)
     expect(JSON.stringify(store.sheet)).toBe(before)
     await wrapper.get('[aria-label="Close archetype picker"]').trigger('click')
     expect(JSON.stringify(store.sheet)).toBe(before)
     expect(document.activeElement).toBe(wrapper.get('#runner-generate').element)
+    wrapper.unmount()
+  })
+
+  it('only varies archetype ratings when bit random is enabled', async () => {
+    vi.spyOn(generators, 'generateNames').mockReturnValue([{ primary: 'Handle' }])
+    const chance = vi.spyOn(probability, 'p').mockReturnValue(true)
+    vi.spyOn(Math, 'random').mockReturnValue(0)
+    const pinia = createPinia()
+    const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
+    const store = useCharacterStore(pinia)
+    await chooseArchetype(wrapper, 'hacker')
+    const baseline = structuredClone({
+      approaches: store.sheet.attributeRatings.map((row) => row.value),
+      skills: store.sheet.skillRatings.map((row) => row.value),
+    })
+    expect(chance.mock.calls.filter(([value]) => value === 0.2)).toHaveLength(0)
+    await wrapper.get('#runner-generate').trigger('click')
+    await wrapper.get('dialog input[aria-label="bit random"]').setValue(true)
+    await wrapper.get('[data-choice="hacker"]').trigger('click')
+    await flushPromises()
+    expect(chance.mock.calls.filter(([value]) => value === 0.2)).toEqual([[0.2], [0.2]])
+    expect(store.sheet.attributeRatings.map((row) => row.value)).not.toEqual(baseline.approaches)
+    expect(store.sheet.skillRatings.map((row) => row.value)).not.toEqual(baseline.skills)
+    await wrapper.get('#runner-generate').trigger('click')
+    await wrapper.get('dialog input[aria-label="bit random"]').setValue(false)
+    chance.mockClear()
+    await wrapper.get('[data-choice="hacker"]').trigger('click')
+    await flushPromises()
+    expect(store.sheet.attributeRatings.map((row) => row.value)).toEqual(baseline.approaches)
+    expect(store.sheet.skillRatings.map((row) => row.value)).toEqual(baseline.skills)
+    expect(chance.mock.calls.filter(([value]) => value === 0.2)).toHaveLength(0)
     wrapper.unmount()
   })
 
@@ -525,7 +557,7 @@ describe('editable CBR+PNK sheet', () => {
       })
       await chooseArchetype(wrapper, id)
       expect(vi.mocked(probability.p).mock.calls.filter(([chance]) => chance === 0.2)).toHaveLength(
-        profile ? 2 : 0,
+        0,
       )
       const eligibleAugmentations = load(DATA.AUGMENTATIONS).filter((entry) =>
         entry.archetypeIds.includes(id),
@@ -833,7 +865,7 @@ describe('editable CBR+PNK sheet', () => {
       wrapper.findAll('[data-choice]').map((option) => option.attributes('data-choice')),
     ).toEqual(cbrPnkCatalogue.archetypes.map((item) => item.id))
     expect(wrapper.findAll('input[type="number"]')).toHaveLength(0)
-    expect(wrapper.findAll('input[type="checkbox"]')).toHaveLength(110)
+    expect(wrapper.findAll('input[type="checkbox"]')).toHaveLength(111)
     expect(wrapper.findAll('input[type="text"]')).toHaveLength(18)
     for (const input of wrapper.findAll('input')) {
       expect(input.element).toHaveProperty(

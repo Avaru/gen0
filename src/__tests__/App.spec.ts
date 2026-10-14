@@ -158,7 +158,7 @@ describe('name generator interface', () => {
       ],
     })
     // Mount before the initial navigation finishes, as in main.ts.
-    const wrapper = mount(App, { attachTo: document.body, global: { plugins: [router] } })
+    const wrapper = mount(App, { attachTo: document.body, global: { plugins: [createPinia(), router] } })
     try {
       await router.isReady()
       await flushPromises()

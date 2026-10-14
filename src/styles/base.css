@@ -57,6 +57,12 @@ select {
 button {
   cursor: pointer;
 }
+button,
+input,
+label,
+a {
+  touch-action: manipulation;
+}
 button:disabled {
   cursor: wait;
   opacity: 0.65;

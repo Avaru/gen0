@@ -38,6 +38,8 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
     >
       <UiSheetField
         v-model="augmentation.description"
+        multiline
+        :rows="1"
         :filled="!!augmentation.description.trim()"
         :aria-label="`Augmentation ${index + 1}`"
       />
@@ -69,6 +71,12 @@ strong {
 
 .glitched {
   color: var(--color-hot);
+}
+
+.augmentation-row :deep(textarea.sheet-field) {
+  field-sizing: content;
+  line-height: 1.1;
+  padding-block: max(var(--space-2), calc((var(--control-height) - 1.1em - 2px) / 2));
 }
 
 @media (max-width: 40rem) {

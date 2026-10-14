@@ -166,7 +166,7 @@ describe('archetype rating variation', () => {
       const baseline = JSON.parse(JSON.stringify(store.sheet))
       chance.mockClear().mockReturnValueOnce(approaches).mockReturnValueOnce(skills)
       vi.spyOn(Math, 'random').mockReturnValue(0)
-      store.applyArchetype()
+      store.applyArchetype({ bitRandom: true })
       expect(chance.mock.calls.filter(([value]) => value === 0.2)).toEqual([[0.2], [0.2]])
       for (const [key, varied] of [
         ['attributeRatings', approaches],

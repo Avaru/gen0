@@ -1,4 +1,6 @@
 import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
+import { cbrPnkAngles } from '@/data/characters/cbr-pnk-sheet'
+import { randomFrom } from '@/helper/randomFrom'
 import { capitalize } from '@/helper/capitalize'
 import { isFlavorEnabled, type GenerationOptions } from '@/generator/options'
 import Bits from '@/builders/Bits'
@@ -51,5 +53,6 @@ export const runners = (options: GenerationOptions = {}): Generated => {
     secondary: secondary.join(' '),
     appearance: appearance.join(', '),
     details: `By day: ${genericName(options, false)}${job ? `, ${job}` : ''}`,
+    angle: randomFrom(cbrPnkAngles),
   }
 }

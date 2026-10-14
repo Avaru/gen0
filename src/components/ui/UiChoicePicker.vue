@@ -6,15 +6,16 @@ import UiModal from './UiModal.vue'
 const props = withDefaults(
   defineProps<{
     modelValue: string
-    options: readonly { id: string; label: string; group: string }[]
+    options: readonly { id: string; label: string; group: string; description?: string }[]
     label?: string
     description?: string
     plural?: string
     triggerLabel?: string
     searchable?: boolean
+    showSelection?: boolean
     triggerId?: string
   }>(),
-  { label: 'Category', plural: 'categories', triggerId: 'category', searchable: true },
+  { label: 'Category', plural: 'categories', triggerId: 'category', searchable: true, showSelection: true },
 )
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 const id = useId()
@@ -135,6 +136,7 @@ function enter() {
         </p>
       </div>
       <div :id="`${id}-choices`" class="groups">
+        <slot name="before-choices" />
         <p v-if="description" class="rule">{{ description }}</p>
         <section
           v-for="(group, index) in groups"
@@ -149,11 +151,19 @@ function enter() {
               type="button"
               :data-category="label === 'Category' ? option.id : undefined"
               :data-choice="option.id"
-              :aria-current="option.id === modelValue ? 'true' : undefined"
+              :aria-current="showSelection && option.id === modelValue ? 'true' : undefined"
               @click="choose(option.id)"
             >
-              <span>{{ option.label }}</span>
-              <span v-if="option.id === modelValue" class="current"
+              <span class="choice-text" :class="{ 'with-rule': option.description }">
+                <span class="choice-name">{{ option.label }}</span>
+                <span v-if="option.description" class="choice-rule">
+                  <span v-for="(line, index) in option.description.split('\n')" :key="index" class="rule-line">
+                    <span v-if="index" class="rule-separator" aria-hidden="true"> | </span>
+                    <template v-for="(part, partIndex) in line.split(/(\d+)/)" :key="partIndex"><span v-if="/^\d+$/.test(part)" class="rule-number">{{ part }}</span><template v-else>{{ part }}</template></template>
+                  </span>
+                </span>
+              </span>
+              <span v-if="showSelection && option.id === modelValue" class="current"
                 >Selected <span aria-hidden="true">✓</span></span
               >
             </button>
@@ -273,6 +283,41 @@ h3 {
   font-size: 0.75rem;
   flex-shrink: 0;
 }
+.choice-rule {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-sheet-rule-size);
+  font-weight: normal;
+  line-height: 1.35;
+  font-family: var(--font-body);
+  letter-spacing: normal;
+  text-transform: none;
+}
+.with-rule .choice-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rule-separator {
+  margin-inline: var(--space-1);
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.rule-number {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-signal);
+}
+.choices button:hover .rule-number {
+  color: inherit;
+}
 @media (min-width: 40rem) {
   .groups {
     padding: var(--space-6);
@@ -283,5 +328,59 @@ h3 {
   .choices {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+@media screen {
+  .choices button {
+    position: relative;
+    overflow: hidden;
+  }
+  .choice-text {
+    pointer-events: none;
+  }
+  .choices button:not(.primary):hover {
+    background: #fff;
+    color: var(--color-on-accent);
+  }
+  .choices button:hover .current {
+    color: inherit;
+  }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .choice-text {
+    position: relative;
+    z-index: 1;
+  }
+  .choices button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      repeating-linear-gradient(0deg, currentColor 0 1px, transparent 1px 4px),
+      repeating-linear-gradient(113deg, transparent 0 7px, currentColor 7px 8px, transparent 8px 13px);
+    background-size: 100% 9px, 19px 15px;
+  }
+  @media (hover: hover) {
+    .choices button:hover .choice-text {
+      animation: choice-text-glitch 200ms steps(1, end);
+    }
+    .choices button:hover::before {
+      animation: choice-noise-glitch 200ms steps(1, end);
+    }
+  }
+}
+@keyframes choice-text-glitch {
+  0% { transform: translateX(-3%) scale(1.12, 0.9) skewX(-6deg); }
+  25% { transform: translate(8%, -1px) scale(1.3, 1.05) skewX(8deg); }
+  50% { transform: translate(-6%, 1px) scale(0.95, 1.15); }
+  75% { transform: translateX(2%) scale(1.12, 0.95); }
+  100% { transform: none; }
+}
+@keyframes choice-noise-glitch {
+  0%, 50% { opacity: 0.18; background-position: 4px -2px, -7px 3px; }
+  25%, 75% { opacity: 0.04; background-position: -3px 2px, 5px -4px; }
+  100% { opacity: 0; }
 }
 </style>

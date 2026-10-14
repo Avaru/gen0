@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, useTemplateRef } from 'vue'
 import type { Generated } from '@/patterns/types'
 import UiToggle from '@/components/ui/UiToggle.vue'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
+import UiRunnerResultActions from '@/components/ui/UiRunnerResultActions.vue'
 import { scrollToContent } from '@/components/ui/scrollToContent'
 const props = defineProps<{
   results: Generated[]
@@ -60,7 +61,7 @@ defineExpose({
     <p v-if="error" class="error" role="alert">{{ error }}</p>
     <ol v-if="results.length" ref="list" role="list">
       <li v-for="(result, index) in results" :key="index">
-        <div class="name">
+        <div class="name" :class="{ 'runner-name': category === 'runners' && showDetails }">
           <strong><UiScrambleText :text="result.primary" :replay-key="result" v-bind="revealTiming(index)" /></strong>
           <div v-if="result.secondary && (category === 'runners' || showDetails)" class="secondary" :class="{ 'runner-secondary': category === 'runners' }"><UiScrambleText :text="result.secondary" :replay-key="result" v-bind="revealTiming(index)" /></div>
           <template v-if="showDetails">
@@ -70,6 +71,7 @@ defineExpose({
             <div v-if="result.rating !== undefined"><UiScrambleText :text="`Rating: ${result.rating.toFixed(1)} / 5`" :replay-key="result" v-bind="revealTiming(index)" /></div>
           </template>
         </div>
+        <UiRunnerResultActions v-if="category === 'runners' && showDetails" :result="result" />
       </li>
     </ol>
   </section>
@@ -158,6 +160,11 @@ li::after {
 .name {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+.runner-name > strong,
+.runner-name > .runner-secondary {
+  display: block;
+  padding-right: calc(var(--space-8) * 2 + var(--space-2));
 }
 strong {
   font-family: var(--font-display);

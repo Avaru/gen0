@@ -30,10 +30,10 @@ const props = withDefaults(
 )
 const showCharacterGuide = inject('showCharacterGuide', ref(false))
 const sheet = defineModel<CharacterSheet>({ required: true })
-const emit = defineEmits<{ reset: []; applyArchetype: [] }>()
+const emit = defineEmits<{ reset: []; applyArchetype: [bitRandom: boolean] }>()
 const generation = ref(0)
-function applyArchetype() {
-  emit('applyArchetype')
+function applyArchetype(bitRandom: boolean) {
+  emit('applyArchetype', bitRandom)
   generation.value += 1
 }
 

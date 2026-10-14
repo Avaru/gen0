@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { usePreferencesStore } from '@/stores/preferences'
+import UiToggle from '@/components/ui/UiToggle.vue'
 import UiArticle from '@/components/ui/UiArticle.vue'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
+
+const preferences = usePreferencesStore()
 
 const dataUseNotice = 'I do not allow any of the data in this project to be used for training '
   + 'or developing AI models without my explicit permission.'
@@ -17,20 +21,73 @@ const paragraphs = [
 ]
 </script>
 <template>
-  <UiArticle>
-    <h1><UiScrambleText text="About gen 0" /></h1>
-    <p v-for="paragraph in paragraphs" :key="paragraph">
-      <UiScrambleText :text="paragraph" />
-    </p>
-    <p>
-      <UiScrambleText text="Everything here is available on" />
-      {{ ' ' }}<a
-        href="https://github.com/Avaru/gen0"
-        target="_blank"
-        rel="noopener noreferrer"
-        title="View gen0 on GitHub (opens in a new tab)"
-      ><UiScrambleText class="link-label" text="GitHub" /></a>.
-    </p>
-    <p><UiScrambleText :text="dataUseNotice" /></p>
-  </UiArticle>
+  <div class="about-page">
+    <UiToggle
+      v-model="preferences.soullessCorpMode"
+      class="corp-mode"
+      label="soulless corp mode"
+    />
+    <UiArticle>
+      <h1><UiScrambleText text="About gen 0" /></h1>
+      <p v-for="paragraph in paragraphs" :key="paragraph">
+        <UiScrambleText :text="paragraph" />
+      </p>
+      <p>
+        <UiScrambleText text="Everything here is available on" />
+        {{ ' ' }}<a
+          href="https://github.com/Avaru/gen0"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="View gen0 on GitHub (opens in a new tab)"
+        ><UiScrambleText class="link-label" text="GitHub" /></a>.
+      </p>
+      <p><UiScrambleText :text="dataUseNotice" /></p>
+    </UiArticle>
+  </div>
 </template>
+<style scoped>
+.about-page {
+  position: relative;
+}
+.corp-mode {
+  position: absolute;
+  top: calc(var(--space-2) - var(--space-6));
+  right: 0;
+  min-height: 1rem;
+  flex-direction: row;
+  gap: var(--space-2);
+  font-size: 0.625rem;
+  font-weight: 400;
+  color: var(--color-on-page);
+}
+.corp-mode :deep(.track) {
+  width: 1.625rem;
+  height: 1rem;
+  border-color: currentColor;
+  background: var(--color-page);
+}
+.corp-mode :deep(.track::after) {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: currentColor;
+}
+.corp-mode :deep(input:checked + .track) {
+  background: var(--color-on-page);
+  border-color: var(--color-on-page);
+}
+.corp-mode :deep(input:checked + .track::after) {
+  background: var(--color-page);
+}
+.corp-mode:hover {
+  color: var(--color-on-page);
+}
+.corp-mode:hover :deep(input + .track) {
+  border-color: var(--color-on-page);
+}
+.corp-mode:hover :deep(input:not(:checked) + .track) {
+  background: var(--color-page);
+}
+.corp-mode:hover :deep(input:checked + .track) {
+  background: var(--color-on-page);
+}
+</style>
