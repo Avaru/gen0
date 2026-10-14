@@ -8,6 +8,9 @@ export default mergeConfig(
     test: {
       // Only UI tests opt into jsdom; generators and data need no browser setup.
       environment: 'node',
+      setupFiles: ['./src/__tests__/setup.ts'],
+      restoreMocks: true,
+      unstubGlobals: true,
       // Keep CI's large name-data imports from competing across too many workers.
       maxWorkers: process.env.CI || process.env.VERCEL ? 2 : undefined,
       exclude: [...configDefaults.exclude, 'e2e/**'],

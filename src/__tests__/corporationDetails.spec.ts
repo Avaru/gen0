@@ -52,54 +52,51 @@ describe('generated corporation details', () => {
     }
   })
 
-  it('keeps dates within the 2077 timeline and chooses one or two distinct subsidiaries', () => {
-    seedRandom()
-    const counts = new Set<number>()
-    const eventCounts = new Set<number>()
-    const eventYears = new Set<number>()
-    for (let i = 0; i < 50; i++) {
-      const result = corporations({ corporationSize: CORPORATION_SIZE.AAA })
-      const lines = result.details!.split('\n')
-      const founding = Number(lines[2]!.slice('Founded: '.length))
-      expect(founding).toBeGreaterThanOrEqual(2020)
-      expect(founding).toBeLessThanOrEqual(2077)
-      const subsidiaries = lines[3]!.slice('Subsidiaries: '.length).split('; ')
-      counts.add(subsidiaries.length)
-      expect([1, 2]).toContain(subsidiaries.length)
-      expect(new Set(subsidiaries).size).toBe(subsidiaries.length)
-      expect(subsidiaries).not.toContain(result.primary)
-      const years = lines.slice(5).map(line => Number(line.slice(0, 4)))
-      eventCounts.add(years.length)
-      years.forEach(year => eventYears.add(year))
-      expect([2, 3]).toContain(years.length)
-      expect(years.every(year => year >= founding && year <= 2077)).toBe(true)
-      expect(years).toEqual([...years].sort((a, b) => a - b))
-      // Rendering may add names, but each history uses different templates.
-      const templates = lines.slice(5).map(line => corporationEvents.findIndex(event => {
-        return eventPattern(event.value).test(line.slice(6))
-      }))
-      expect(templates.every(index => index >= 0)).toBe(true)
-      expect(new Set(templates).size).toBe(years.length)
-    }
-    expect([...counts].sort()).toEqual([1, 2])
-    expect([...eventCounts].sort()).toEqual([2, 3])
-    expect(eventYears.size).toBeGreaterThan(1)
-    expect([...eventYears].some(year => year < 2073)).toBe(true)
+  it.each([
+    [0, 1, 2],
+    [0.8, 2, 3],
+    [0.999999, 2, 3],
+  ])('keeps AAA dates and distinct subsidiaries valid at draw %s', (draw, subsidiaryCount, eventCount) => {
+    vi.spyOn(Math, 'random').mockReturnValue(draw)
+    const result = corporations({ corporationSize: CORPORATION_SIZE.AAA })
+    const lines = result.details!.split('\n')
+    const founding = Number(lines[2]!.slice('Founded: '.length))
+    expect(founding).toBeGreaterThanOrEqual(2020)
+    expect(founding).toBeLessThanOrEqual(2077)
+    const subsidiaries = lines[3]!.slice('Subsidiaries: '.length).split('; ')
+    expect(subsidiaries).toHaveLength(subsidiaryCount)
+    expect(new Set(subsidiaries).size).toBe(subsidiaryCount)
+    expect(subsidiaries).not.toContain(result.primary)
+    const years = lines.slice(5).map(line => Number(line.slice(0, 4)))
+    expect(years).toHaveLength(eventCount)
+    expect(years.every(year => year >= founding && year <= 2077)).toBe(true)
+    expect(years).toEqual([...years].sort((a, b) => a - b))
+    // Rendering may add names, but each history uses different templates.
+    const templates = lines.slice(5).map(line => corporationEvents.findIndex(event => {
+      return eventPattern(event.value).test(line.slice(6))
+    }))
+    expect(templates.every(index => index >= 0)).toBe(true)
+    expect(new Set(templates).size).toBe(eventCount)
   })
 
-  it('allows older AA events without predating the company', () => {
+  it('sorts a history with different years without predating the company', () => {
     seedRandom()
-    const years = new Set<number>()
-    for (let i = 0; i < 50; i++) {
-      const lines = rows(CORPORATION_SIZE.AA)
-      const founding = Number(lines[2]!.slice('Founded: '.length))
-      const eventYear = Number(lines[3]!.slice(0, 4))
-      years.add(eventYear)
-      expect(eventYear).toBeGreaterThanOrEqual(founding)
-      expect(eventYear).toBeLessThanOrEqual(2077)
-    }
-    expect(years.size).toBeGreaterThan(1)
-    expect([...years].some(year => year < 2073)).toBe(true)
+    const lines = rows(CORPORATION_SIZE.AAA)
+    const founding = Number(lines[2]!.slice('Founded: '.length))
+    const years = lines.slice(5).map(line => Number(line.slice(0, 4)))
+    expect(new Set(years).size).toBeGreaterThan(1)
+    expect(years.every(year => year >= founding && year <= 2077)).toBe(true)
+    expect(years).toEqual([...years].sort((a, b) => a - b))
+  })
+
+  it.each([
+    [0, 2020],
+    [0.999999, 2077],
+  ])('allows AA events at the timeline boundary for draw %s', (draw, year) => {
+    vi.spyOn(Math, 'random').mockReturnValue(draw)
+    const lines = rows(CORPORATION_SIZE.AA)
+    expect(Number(lines[2]!.slice('Founded: '.length))).toBe(year)
+    expect(Number(lines[3]!.slice(0, 4))).toBe(year)
   })
 
   it('can generate distinct subsidiaries even with fixed random draws', () => {

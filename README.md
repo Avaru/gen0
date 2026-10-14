@@ -14,7 +14,7 @@ On the default-scheme character sheet (Generic/Shadowrun), use the browser’s P
 
 ## Run
 
-Node 24 is the minimum; prefer a newer version.
+Use Node 24.x locally and on Vercel.
 
 ```sh
 npm ci
@@ -30,7 +30,9 @@ npm run preview
 
 `check` runs lint without edits, unit tests, TypeScript checks, and the production build. Output goes to `dist/`; `preview` serves that build locally.
 
-Unit tests run in Node by default; UI test files opt into jsdom with `@vitest-environment jsdom`. Test files remain isolated and use at most two workers when `CI` or `VERCEL` is set, limiting CPU and memory pressure during deployment checks.
+Unit tests run in Node by default; UI test files opt into jsdom with `@vitest-environment jsdom`. Unexpected console warnings and errors fail the responsible test; tests for intentional diagnostics must install a spy and assert its calls. Mocks and stubbed globals are restored before each test. Test files remain isolated and use at most two workers when `CI` or `VERCEL` is set, limiting CPU and memory pressure during deployment checks.
+
+Linting uses Oxlint with its built-in Vue and Vitest plugins; `vue-tsc` remains responsible for type checking. Oxlint checks Vue script sections, but does not replace all ESLint Vue template rules. The Oxc editor extension is recommended.
 
 Individual commands: `npm run build`, `npm run test:unit -- --run`, and `npm run lint` (applies fixes).
 
@@ -38,4 +40,4 @@ Individual commands: `npm run build`, `npm run test:unit -- --run`, and `npm run
 
 Serve `dist/` over HTTP. Configure `index.html` as the fallback for generator and About paths, including direct links and reloads. Opening files through `file://` is unsupported.
 
-For Vercel, import `main` with the Vite preset, repository root, `dist` output, and Node 24 or a newer supported version. No environment variables are required. `vercel.json` sets `npm run check` as the build command and supplies the route fallback; leave dashboard build overrides disabled. Verify direct generator and About links after deployment.
+For Vercel, import `main` with the Vite preset, repository root, `dist` output, and Node 24. No environment variables are required. `vercel.json` sets `npm run check` as the build command and supplies the route fallback; leave dashboard build overrides disabled. Verify direct generator and About links after deployment.

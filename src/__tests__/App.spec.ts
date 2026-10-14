@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
-import { afterAll, beforeAll, beforeEach, describe, it, expect, vi } from 'vitest'
+import { afterEach, afterAll, beforeAll, beforeEach, describe, it, expect, vi } from 'vitest'
 import { mockDialog } from './helpers/dialog'
 import { mockMedia } from './helpers/media'
-import { mount, flushPromises } from '@vue/test-utils'
+import { enableAutoUnmount, mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import App from '../App.vue'
 import GeneratorView from '../views/GeneratorView.vue'
@@ -11,6 +11,7 @@ import AboutView from '../views/AboutView.vue'
 import CharacterView from '../views/CharacterView.vue'
 import { createTestPinia as createPinia } from './helpers/pinia'
 
+enableAutoUnmount(afterEach)
 mockDialog()
 const media = mockMedia()
 const scroll = vi.fn<(options?: ScrollIntoViewOptions) => void>()
@@ -19,11 +20,11 @@ beforeAll(() => Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
   configurable: true,
   value: scroll,
 }))
-const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+let scrollTo: ReturnType<typeof vi.spyOn>
 beforeEach(() => {
   localStorage.clear()
   scroll.mockClear()
-  scrollTo.mockClear()
+  scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
 })
 afterAll(() => {
   scrollTo.mockRestore()
@@ -36,16 +37,18 @@ async function chooseCategory(wrapper: ReturnType<typeof mount>, value: string) 
   await wrapper.get(`[data-category="${value}"]`).trigger('click')
 }
 
+const routes = [
+  { path: '/', component: GeneratorView },
+  { path: '/about', component: AboutView },
+  { path: '/chars/cbrpnk', meta: { flavor: 'cyberpunk' }, component: CharacterView },
+  { path: '/:flavor/:category/about', component: AboutView },
+  { path: '/:flavor/:category?', component: GeneratorView },
+]
+
 async function setup(url = '/', attachTo?: HTMLElement) {
   const router = createRouter({
     history: createMemoryHistory(),
-    routes: [
-      { path: '/', component: GeneratorView },
-      { path: '/about', component: AboutView },
-      { path: '/chars/cbrpnk', meta: { flavor: 'cyberpunk' }, component: CharacterView },
-      { path: '/:flavor/:category/about', component: AboutView },
-      { path: '/:flavor/:category?', component: GeneratorView },
-    ],
+    routes,
   })
   await router.push(url)
   await router.isReady()
@@ -78,6 +81,8 @@ describe('name generator interface', () => {
       await flushPromises()
       expect(scrollTo).not.toHaveBeenCalled()
       expect(focus).toHaveBeenLastCalledWith({ preventScroll: true })
+      // Block jsdom's default document navigation after the app has handled the event.
+      wrapper.element.addEventListener('click', (event: Event) => event.preventDefault(), { once: true })
       await wrapper.get('nav a').trigger('click', { ctrlKey: true })
       await flushPromises()
       expect(scrollTo).not.toHaveBeenCalled()
@@ -152,10 +157,7 @@ describe('name generator interface', () => {
     history.push(url)
     const router = createRouter({
       history,
-      routes: [
-        { path: '/about', component: AboutView },
-        { path: '/:flavor/:category/about', component: AboutView },
-      ],
+      routes,
     })
     // Mount before the initial navigation finishes, as in main.ts.
     const wrapper = mount(App, { attachTo: document.body, global: { plugins: [createPinia(), router] } })

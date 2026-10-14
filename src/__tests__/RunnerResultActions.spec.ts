@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises, mount } from '@vue/test-utils'
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import GeneratorResults from '@/components/generator/GeneratorResults.vue'
 import AboutView from '@/views/AboutView.vue'
@@ -16,6 +16,7 @@ import { mockDialog } from './helpers/dialog'
 import * as probability from '@/helper/prob'
 
 mockMedia()
+enableAutoUnmount(afterEach)
 mockDialog()
 beforeEach(() => localStorage.clear())
 afterEach(() => vi.restoreAllMocks())

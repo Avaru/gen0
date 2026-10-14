@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
 import { createTestPinia } from './helpers/pinia'
 import GeneratorResults from '@/components/generator/GeneratorResults.vue'
@@ -118,8 +119,14 @@ describe('scrambled name reveal', () => {
 
   it('keeps the runner archetype in the secondary row regardless of the details toggle', async () => {
     reduced = true
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', component: { template: '<div />' } }],
+    })
+    await router.push('/')
+    await router.isReady()
     const wrapper = mount(GeneratorResults, {
-      global: { plugins: [createTestPinia()] },
+      global: { plugins: [createTestPinia(), router] },
       props: {
         results: [{ primary: 'Neon Fox', secondary: 'Martial Artist', appearance: 'Chrome eyes', details: 'Works alone' }],
         category: 'runners', busy: false, label: 'Runners', error: '', showDetails: true,

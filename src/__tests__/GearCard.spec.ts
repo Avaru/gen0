@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createTestPinia as createPinia } from './helpers/pinia'
-import { mount } from '@vue/test-utils'
+import { enableAutoUnmount, mount } from '@vue/test-utils'
 import CharacterView from '@/views/CharacterView.vue'
 import { useCharacterStore } from '@/stores/character'
 import { mockMedia } from './helpers/media'
 
+enableAutoUnmount(afterEach)
 mockMedia()
 
 beforeEach(() => localStorage.clear())
@@ -42,8 +43,9 @@ describe('gear load', () => {
     expect(card.attributes('data-state')).toBe('empty')
     const saved = JSON.parse(JSON.stringify(store.sheet.gear))
     wrapper.unmount()
-    const remounted = mount(CharacterView, { global: { plugins: [createPinia()] } })
-    expect(useCharacterStore(createPinia()).sheet.gear).toEqual(saved)
+    const restoredPinia = createPinia()
+    const remounted = mount(CharacterView, { global: { plugins: [restoredPinia] } })
+    expect(useCharacterStore(restoredPinia).sheet.gear).toEqual(saved)
     expect(remounted.get('.gear-card output').text()).toBe('4 / 7')
     remounted.unmount()
   })

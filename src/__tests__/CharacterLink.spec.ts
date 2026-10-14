@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { enableAutoUnmount, mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { defineComponent, nextTick } from 'vue'
 import { useCharacterUrl } from '@/composables/useCharacterUrl'
@@ -13,6 +13,7 @@ import { mockMedia } from './helpers/media'
 import { mockDialog } from './helpers/dialog'
 
 mockMedia()
+enableAutoUnmount(afterEach)
 mockDialog()
 beforeEach(() => {
   localStorage.clear()

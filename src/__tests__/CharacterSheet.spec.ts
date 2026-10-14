@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestPinia as createPinia } from './helpers/pinia'
-import { mount, flushPromises } from '@vue/test-utils'
+import { enableAutoUnmount, mount, flushPromises } from '@vue/test-utils'
 import CharacterView from '@/views/CharacterView.vue'
 import UiApproachRow from '@/components/ui/UiApproachRow.vue'
 import UiSkillRow from '@/components/ui/UiSkillRow.vue'
@@ -17,6 +17,7 @@ import { seedRandom } from './helpers/random'
 
 import { mockDialog } from './helpers/dialog'
 import { mockMedia } from './helpers/media'
+enableAutoUnmount(afterEach)
 mockDialog()
 mockMedia()
 

@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 
-import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { afterEach, describe, expect, it } from 'vitest'
+import { enableAutoUnmount, mount } from '@vue/test-utils'
 import UiCategoryPicker from '@/components/ui/UiCategoryPicker.vue'
 import { mockDialog } from './helpers/dialog'
 import { mockMedia } from './helpers/media'
 
+enableAutoUnmount(afterEach)
 mockDialog()
 const media = mockMedia()
 const options = [

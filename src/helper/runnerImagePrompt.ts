@@ -17,7 +17,7 @@ export function runnerImagePrompt(runner: CharacterSheet['runner']): string {
 
 Style: bold graphic-novel illustration with a punk screen-printed poster aesthetic. Use expressive ink lines, angular shapes, broad flat colors, deep black shadows and sharply cut highlights. Use a limited palette of acid yellow (#eeff00), bright cyan (#52f4ed) and near-black charcoal (#11171b), with off-white (#f4f5e9) highlights and small coral-red (#ff6761) accents. Make yellow and cyan the dominant color accents, with charcoal providing strong contrast. Keep the background simple, using charcoal or acid yellow, and carry the same palette into the name lettering. Add subtle grain, stippling, distressed print texture and a few rough brush marks. Keep the face and silhouette striking and readable, with dramatic lighting and a confident editorial composition. Illustrate rather than render photorealistically.
 
-Frame the character as a close-up or chest-up portrait within the square. Follow the character description for appearance, clothing, age and any cybernetics; use any background details to inform their attitude. Do not add cybernetic implants that contradict the description.
+Frame the character as a close-up or chest-up portrait within the square. Follow the character description for appearance, clothing, age and any cybernetics; use any background details to inform their attitude. Do not add cybernetic implants that contradict the description. Give any visible cyberware a slight modern touch, such as fine integrated seams, compact inset hardware or restrained illuminated details, reminiscent of Cyberpunk 2077. Keep this subtle and preserve the punk character of the illustration.
 
 Character name / handle: ${JSON.stringify(runner.alias)}
 Character description:

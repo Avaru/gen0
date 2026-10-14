@@ -104,6 +104,7 @@ describe('migrated generator', () => {
   })
 
   it('combines both Cyberpunk corporation lists and keeps settings separate', () => {
+    seedRandom()
     const known = load(DATA.NAME_FRAGMENTS, { flavor: 'cyberpunk2020-2077' }).filter((bit) =>
       bit.tags.includes('known-corporation'),
     )
@@ -162,20 +163,21 @@ describe('migrated generator', () => {
     }
   })
 
-  it('uses selected corporation sizes and preserves nested mega corporations', () => {
-    seedRandom()
-    const results = generateNames('corporations', 50, {
+  it.each([
+    [0, 100, 2500],
+    [0.999999, 50000, 1000000],
+  ])('selects the requested corporation size at draw %s', (draw, min, max) => {
+    seedRandom().mockReturnValueOnce(draw)
+    const [result] = generateNames('corporations', 1, {
       corporationSizes: [CORPORATION_SIZE.A, CORPORATION_SIZE.AAA],
     })
-    const employees = results.map((result) => Number(result.details!.split('\n')[0]!.replace(/[^0-9]/g, '')))
-    expect(
-      employees.every(
-        (count) => (count >= 100 && count <= 2500) || (count >= 50000 && count <= 1000000),
-      ),
-    ).toBe(true)
-    expect(employees.some((count) => count <= 2500)).toBe(true)
-    expect(employees.some((count) => count >= 50000)).toBe(true)
-    vi.mocked(Math.random).mockReturnValue(0.45)
+    const employees = Number(result!.details!.split('\n')[0]!.replace(/[^0-9]/g, ''))
+    expect(employees).toBeGreaterThanOrEqual(min)
+    expect(employees).toBeLessThanOrEqual(max)
+  })
+
+  it('preserves a nested mega corporation for a selected minor company', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.45)
     const [minor] = generateNames('corporations', 1, {
       flavor: 'shadowrun',
       corporationSizes: [CORPORATION_SIZE.A],
