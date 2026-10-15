@@ -1,10 +1,28 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { usePreferencesStore } from '@/stores/preferences'
 import UiToggle from '@/components/ui/UiToggle.vue'
 import UiArticle from '@/components/ui/UiArticle.vue'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
 
 const preferences = usePreferencesStore()
+const corpModeSwitch = ref(preferences.soullessCorpMode)
+let corpModeToggles: number[] = []
+
+function toggleCorpMode(enabled: boolean) {
+  corpModeSwitch.value = enabled
+  const now = performance.now()
+  corpModeToggles = corpModeToggles.filter((time) => now - time <= 5000)
+  corpModeToggles.push(now)
+
+  if (preferences.soullessCorpMode) {
+    preferences.soullessCorpMode = false
+    corpModeToggles = []
+  } else if (enabled && corpModeToggles.length >= 3) {
+    preferences.soullessCorpMode = true
+    corpModeToggles = []
+  }
+}
 
 const dataUseNotice = 'I do not allow any of the data in this project to be used for training '
   + 'or developing AI models without my explicit permission.'
@@ -23,7 +41,8 @@ const paragraphs = [
 <template>
   <div class="about-page">
     <UiToggle
-      v-model="preferences.soullessCorpMode"
+      :model-value="corpModeSwitch"
+      @update:model-value="toggleCorpMode"
       class="corp-mode"
       label="soulless corp mode"
     />

@@ -13,7 +13,7 @@ export function runnerLooks(options: GenerationOptions = {}): string[] {
   // Bald heads have no hair color; skinhead remains a separate migrated style.
   const hair = style === 'bald' ? style : `${pick('hair-color')} ${style}`
   const face: string[] = []
-  if (p(0.75)) face.push(`${pick('face-shape')} face`)
+  if (p(0.5)) face.push(`${pick('face-shape')} face`)
   if (p(0.33)) face.push(pick('face-structure'))
   if (p(0.5)) face.push(pick('face-detail'))
   if (p(0.5)) face.push(pick('eyes'))
