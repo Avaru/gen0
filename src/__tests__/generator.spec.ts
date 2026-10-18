@@ -35,7 +35,7 @@ describe('migrated generator', () => {
     ).toHaveLength(19478)
     expect(load(DATA.NAME_FRAGMENTS, options)).toHaveLength(2179)
     // Includes the user's hair, face, and clothing words, with outer entries removed.
-    expect(load(DATA.RUNNER_TRAITS, options)).toHaveLength(514)
+    expect(load(DATA.RUNNER_TRAITS, options)).toHaveLength(540)
     expect(load(DATA.FOOD, options)).toHaveLength(611)
     expect(load(DATA.MOVIES, options)).toHaveLength(517)
   })
