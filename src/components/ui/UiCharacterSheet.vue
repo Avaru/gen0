@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import type { Attribute, CharacterSheet, Skill, System } from '@/data/characters/types'
 import UiWorkspace from './UiWorkspace.vue'
 import UiSheetCard from './UiSheetCard.vue'
@@ -14,6 +23,7 @@ import UiGearCard from './UiGearCard.vue'
 import UiRunnerCard from './UiRunnerCard.vue'
 import UiRunnerGuide from './UiRunnerGuide.vue'
 import UiRollReferenceCards from './UiRollReferenceCards.vue'
+import UiDiceGuide from './UiDiceGuide.vue'
 import type { Flavor } from '@/generator/options'
 
 const props = withDefaults(
@@ -61,7 +71,12 @@ const desktopMedia = window.matchMedia('(min-width: 56rem)')
 const printMedia = window.matchMedia('print')
 const desktop = ref(desktopMedia.matches)
 const printing = ref(printMedia.matches)
+const showRollGuide = ref(false)
+watch([showCharacterGuide, desktop], () => {
+  showRollGuide.value = false
+})
 const firstColumn = useTemplateRef('first-column')
+const sheetElement = useTemplateRef('sheet-element')
 const secondColumn = useTemplateRef('second-column')
 const columns = computed(() =>
   Boolean(firstColumn.value && secondColumn.value && (desktop.value || printing.value)),
@@ -93,7 +108,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <form class="sheet" aria-label="CBR+PNK character sheet" @submit.prevent>
+  <form ref="sheet-element" class="sheet" aria-label="CBR+PNK character sheet" @submit.prevent>
     <UiWorkspace>
       <div ref="first-column" class="sheet-column" :class="{ active: columns }" />
       <div ref="second-column" class="sheet-column" :class="{ active: columns }" />
@@ -101,7 +116,11 @@ onBeforeUnmount(() => {
         <Transition name="guide">
           <div v-if="showCharacterGuide" class="guide-reveal">
             <div class="guide-clip">
-              <UiRunnerGuide id="runner-guide" />
+              <UiRunnerGuide
+                id="runner-guide"
+                v-model:show-roll-guide="showRollGuide"
+                :show-dice-guide="!printing"
+              />
             </div>
           </div>
         </Transition>
@@ -177,10 +196,17 @@ onBeforeUnmount(() => {
         <UiRollReferenceCards />
       </Teleport>
     </UiWorkspace>
+    <UiDiceGuide
+      v-if="showCharacterGuide && showRollGuide && columns && !printing && sheetElement"
+      :sheet-element="sheetElement"
+    />
   </form>
 </template>
 
 <style scoped>
+.sheet {
+  position: relative;
+}
 .guide-reveal {
   display: grid;
   grid-template-rows: 1fr;

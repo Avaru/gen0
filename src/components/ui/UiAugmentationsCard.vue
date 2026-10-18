@@ -114,24 +114,24 @@ strong {
 .augmentation-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-3);
+  align-items: start;
+  gap: var(--space-2);
   padding-block: var(--space-4);
   transition: var(--control-color-transition);
 }
 
 .augmentation-field {
-  position: relative;
+  --regenerate-width: 1.75rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--regenerate-width);
+  align-items: start;
+  gap: var(--space-1);
   min-width: 0;
-  --field-end-padding: calc(var(--control-height) + var(--space-2));
 }
 .regenerate {
-  position: absolute;
-  top: 0;
-  right: 0;
   display: grid;
   place-items: center;
-  width: var(--control-height);
+  width: var(--regenerate-width);
   height: var(--control-height);
   padding: 0;
   border: 0;
@@ -141,12 +141,14 @@ strong {
 .regenerate::after {
   display: none;
 }
-.regenerate:hover:enabled,
-.regenerate:active:enabled {
-  background: transparent;
-  color: var(--color-accent);
+.regenerate :deep(.button-text) {
+  display: grid;
+  place-items: center;
 }
 @media print {
+  .augmentation-field {
+    display: block;
+  }
   .regenerate {
     display: none !important;
   }
@@ -156,6 +158,7 @@ strong {
 }
 
 .augmentation-row :deep(textarea.sheet-field) {
+  display: block;
   field-sizing: content;
   line-height: 1.1;
   padding-block: max(var(--space-2), calc((var(--control-height) - 1.1em - 2px) / 2));
