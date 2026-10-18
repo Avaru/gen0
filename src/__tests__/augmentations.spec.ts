@@ -11,10 +11,14 @@ afterEach(() => vi.restoreAllMocks())
 
 describe('augmentations', () => {
   it('uses the agreed Sandevistan and Fingertip compartment links', () => {
-    expect(augmentationData.find((entry) => entry.value === 'Sandevistan')?.archetypeIds)
-      .toEqual(['brawler', 'marksman', 'street-samurai'])
-    expect(augmentationData.find((entry) => entry.value === 'Fingertip compartment')?.archetypeIds)
-      .toEqual(['infiltrator', 'face'])
+    expect(augmentationData.find((entry) => entry.value === 'Sandevistan')?.archetypeIds).toEqual([
+      'brawler',
+      'marksman',
+      'street-samurai',
+    ])
+    expect(
+      augmentationData.find((entry) => entry.value === 'Fingertip compartment')?.archetypeIds,
+    ).toEqual(['infiltrator', 'face'])
   })
 
   it.each(['shaman', 'technomancer'])('keeps %s free of all augmentation links', (id) => {
@@ -30,12 +34,15 @@ describe('augmentations', () => {
     }
   })
 
-  it.each(flavors)('retains archetype links when loading $label flavor labels', ({ id: flavor }) => {
-    const entries = load(DATA.AUGMENTATIONS, { flavor })
-    expect(entries.map((entry) => entry.archetypeIds)).toEqual(
-      augmentationData.map((entry) => entry.archetypeIds),
-    )
-  })
+  it.each(flavors)(
+    'retains archetype links when loading $label flavor labels',
+    ({ id: flavor }) => {
+      const entries = load(DATA.AUGMENTATIONS, { flavor })
+      expect(entries.map((entry) => entry.archetypeIds)).toEqual(
+        augmentationData.map((entry) => entry.archetypeIds),
+      )
+    },
+  )
 
   it('appears under Equipment in every flavor and generates coherent details', () => {
     seedRandom(971)
@@ -64,7 +71,13 @@ describe('augmentations', () => {
   })
 
   it('describes obscure terms but leaves self-explanatory types without descriptions', () => {
-    for (const value of ['Cyberarm', 'Thermal vision', 'Subdermal armor', 'Augmented strength', 'Internal air tank']) {
+    for (const value of [
+      'Cyberarm',
+      'Thermal vision',
+      'Subdermal armor',
+      'Augmented strength',
+      'Internal air tank',
+    ]) {
       const entry = augmentationData.find((entry) => entry.value === value)
       expect(entry).toBeDefined()
       expect(entry?.details).toBeUndefined()
@@ -114,9 +127,7 @@ describe('augmentations', () => {
       augmentationAttributes.some((entry) => withAttribute.startsWith(`${entry.value} `)),
     ).toBe(true)
     random.mockReturnValue(0.25)
-    expect(load(DATA.AUGMENTATIONS).map((entry) => entry.value)).toContain(
-      augmentations().primary,
-    )
+    expect(load(DATA.AUGMENTATIONS).map((entry) => entry.value)).toContain(augmentations().primary)
   })
 
   it('offers the full augmentation pool in every flavor and keeps alternate names', () => {

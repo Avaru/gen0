@@ -151,7 +151,9 @@ describe('Sourced modern name additions', () => {
       const rows = load(DATA.PERSONAL_NAMES).filter((bit) => bit.tags.includes(nation))
       for (const flavor of flavors) {
         expect(
-          load(DATA.PERSONAL_NAMES, { flavor: flavor.id }).filter((bit) => bit.tags.includes(nation)),
+          load(DATA.PERSONAL_NAMES, { flavor: flavor.id }).filter((bit) =>
+            bit.tags.includes(nation),
+          ),
         ).toEqual(rows)
         expect(
           load(DATA.PERSONAL_NAMES, {

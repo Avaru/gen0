@@ -9,7 +9,10 @@ import UiScrambleText from './UiScrambleText.vue'
       <dl class="outcomes">
         <div>
           <dt>6,6</dt>
-          <dd><strong>Critical.</strong> They succeed and gain an extra benefit (▲E, uncover a secret, improved position, pinpoint a bounty).</dd>
+          <dd>
+            <strong>Critical.</strong> They succeed and gain an extra benefit (▲E, uncover a secret,
+            improved position, pinpoint a bounty).
+          </dd>
         </div>
         <div>
           <dt>6</dt>
@@ -21,7 +24,9 @@ import UiScrambleText from './UiScrambleText.vue'
         </div>
         <div>
           <dt>1–3</dt>
-          <dd><strong>Failure.</strong> Things go bad as they fail and also suffer a Consequence.</dd>
+          <dd>
+            <strong>Failure.</strong> Things go bad as they fail and also suffer a Consequence.
+          </dd>
         </div>
       </dl>
     </section>
@@ -32,9 +37,9 @@ import UiScrambleText from './UiScrambleText.vue'
         GLITCH die—use a die that’s easily discernible from the rest.
       </p>
       <p>
-        After judging the outcome as usual, read the lowest GLITCH separately. On a 1–3, it
-        triggers a further Level 2 Consequence that can’t be Resisted; on a 4/5, the additional
-        Consequence can be Resisted normally.
+        After judging the outcome as usual, read the lowest GLITCH separately. On a 1–3, it triggers
+        a further Level 2 Consequence that can’t be Resisted; on a 4/5, the additional Consequence
+        can be Resisted normally.
       </p>
     </section>
   </div>

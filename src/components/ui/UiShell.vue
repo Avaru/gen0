@@ -14,20 +14,35 @@ const route = useRoute()
 const main = useTemplateRef<HTMLElement>('main')
 const isAbout = computed(() => route.matched.some((record) => record.path.endsWith('/about')))
 const isCharacter = computed(() => route.matched.some((record) => record.path === '/chars/cbrpnk'))
-const page = computed(() => isAbout.value ? 'about' : isCharacter.value ? 'char' : 'generator')
+const page = computed(() => (isAbout.value ? 'about' : isCharacter.value ? 'char' : 'generator'))
 // Announce the new page without taking focus from controls on settings changes.
-watch(() => route.matched, async (matched, previous) => {
-  const pageKind = (records: typeof matched) => records.some(record => record.path.endsWith('/about'))
-    ? 'about' : records.some(record => record.path === '/chars/cbrpnk') ? 'char' : 'generator'
-  if (!previous.length || pageKind(matched) === pageKind(previous)) return
-  await nextTick()
-  main.value?.focus({ preventScroll: true })
-})
+watch(
+  () => route.matched,
+  async (matched, previous) => {
+    const pageKind = (records: typeof matched) =>
+      records.some((record) => record.path.endsWith('/about'))
+        ? 'about'
+        : records.some((record) => record.path === '/chars/cbrpnk')
+          ? 'char'
+          : 'generator'
+    if (!previous.length || pageKind(matched) === pageKind(previous)) return
+    await nextTick()
+    main.value?.focus({ preventScroll: true })
+  },
+)
 async function navigateFromMenu(
   event: MouseEvent,
   navigate: (event?: MouseEvent) => Promise<void | NavigationFailure>,
 ) {
-  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+  if (
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  )
+    return
   await navigate(event)
   await nextTick()
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
@@ -45,29 +60,45 @@ const aboutNavigation = computed(() => ({
 }))
 </script>
 <template>
-  <a class="skip" href="#main">{{ page === 'generator' ? 'Skip to generator' : 'Skip to content' }}</a>
+  <a class="skip" href="#main">{{
+    page === 'generator' ? 'Skip to generator' : 'Skip to content'
+  }}</a>
   <div class="shell" :data-theme="theme">
     <header>
       <nav aria-label="Main navigation">
         <RouterLink v-slot="{ href, navigate }" :to="navigation" custom>
-          <a :href="href" @click="navigateFromMenu($event, navigate)"><span class="link-label">{{ page === 'generator' ? 'About' : 'Name generator' }}</span></a>
+          <a :href="href" @click="navigateFromMenu($event, navigate)"
+            ><span class="link-label">{{
+              page === 'generator' ? 'About' : 'Name generator'
+            }}</span></a
+          >
         </RouterLink>
         <RouterLink v-if="isCharacter" v-slot="{ href, navigate }" :to="aboutNavigation" custom>
-          <a :href="href" @click="navigateFromMenu($event, navigate)"><span class="link-label">About</span></a>
+          <a :href="href" @click="navigateFromMenu($event, navigate)"
+            ><span class="link-label">About</span></a
+          >
         </RouterLink>
         <RouterLink v-slot="{ href, navigate }" to="/chars/cbrpnk" custom>
-          <a :href="href" :aria-current="isCharacter ? 'page' : undefined" @click="navigateFromMenu($event, navigate)"><span class="link-label">CBR+PNK</span></a>
+          <a
+            :href="href"
+            :aria-current="isCharacter ? 'page' : undefined"
+            @click="navigateFromMenu($event, navigate)"
+            ><span class="link-label">CBR+PNK</span></a
+          >
         </RouterLink>
       </nav>
       <UiBrandTitle />
-      <h1 v-if="isCharacter" class="caption">CBR+PNK <span class="caption-line">Runner sheet</span></h1>
+      <h1 v-if="isCharacter" class="caption">
+        CBR+PNK <span class="caption-line">Runner sheet</span>
+      </h1>
       <span v-else class="caption">Cyberpunk name generator</span>
       <div v-if="isCharacter" class="character-actions">
         <UiButton
           :aria-expanded="showCharacterGuide"
           aria-controls="runner-guide"
           @click="showCharacterGuide = !showCharacterGuide"
-        >guide</UiButton>
+          >guide</UiButton
+        >
       </div>
       <a
         class="version"
@@ -75,7 +106,8 @@ const aboutNavigation = computed(() => ({
         target="_blank"
         rel="noopener noreferrer"
         title="View gen0 on GitHub (opens in a new tab)"
-      ><UiScrambleText class="link-label" :text="`#${version}`" /></a>
+        ><UiScrambleText class="link-label" :text="`#${version}`"
+      /></a>
     </header>
     <main id="main" ref="main" tabindex="-1"><slot /></main>
   </div>
@@ -195,7 +227,9 @@ header::before {
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-.caption-line { display: block; }
+.caption-line {
+  display: block;
+}
 .skip {
   position: fixed;
   top: var(--space-2);

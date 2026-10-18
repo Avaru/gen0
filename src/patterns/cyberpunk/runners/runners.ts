@@ -24,11 +24,18 @@ export const runners = (options: GenerationOptions = {}): Generated => {
   const secondary: string[] = []
   if (p(0.5)) secondary.push(capitalize(jobs.type('level').take().value))
   const matching = options.runnerArchetypeId
-    ? load(DATA.RUNNER_TRAITS, options).filter(entry => entry.tags.includes('runner') && entry.type === 'profession' && entry.archetypeId === options.runnerArchetypeId)
+    ? load(DATA.RUNNER_TRAITS, options).filter(
+        (entry) =>
+          entry.tags.includes('runner') &&
+          entry.type === 'profession' &&
+          entry.archetypeId === options.runnerArchetypeId,
+      )
     : undefined
-  const archetype = cbrPnkCatalogue.archetypes.find(item => item.id === options.runnerArchetypeId)
+  const archetype = cbrPnkCatalogue.archetypes.find((item) => item.id === options.runnerArchetypeId)
   const profession = matching
-    ? matching.length ? new Bits(matching).take() : { value: archetype?.name ?? '', archetypeId: archetype?.id }
+    ? matching.length
+      ? new Bits(matching).take()
+      : { value: archetype?.name ?? '', archetypeId: archetype?.id }
     : jobs.type('profession').take()
   secondary.push(capitalize(profession.value))
   if (p(0.1))

@@ -71,12 +71,18 @@ export function deviceContents(options: GenerationOptions = {}): Generated {
   const storage = capitalize(data.type('storage').take().value)
   // Keep mixed recordings/access at 30%; move 5 points from files to people.
   const roll = rng()
-  const kind = roll < 0.3 ? 'picture'
-    : roll < 0.6 ? 'access'
-    : roll < 0.85 ? 'file'
-    : roll < 0.9 ? 'people'
-    : roll < 0.95 ? 'journey'
-    : 'map'
+  const kind =
+    roll < 0.3
+      ? 'picture'
+      : roll < 0.6
+        ? 'access'
+        : roll < 0.85
+          ? 'file'
+          : roll < 0.9
+            ? 'people'
+            : roll < 0.95
+              ? 'journey'
+              : 'map'
   switch (kind) {
     case 'picture':
     case 'people': {
@@ -85,12 +91,13 @@ export function deviceContents(options: GenerationOptions = {}): Generated {
       const description = subject.tags.includes('people')
         ? `${data.type('person-description').take().value} `
         : ''
-      const name = subject.tags.includes('people') && p(0.5)
-        ? givenName({
-            ...options,
-            genus: subject.genus === 'm' || subject.genus === 'f' ? subject.genus : undefined,
-          })
-        : undefined
+      const name =
+        subject.tags.includes('people') && p(0.5)
+          ? givenName({
+              ...options,
+              genus: subject.genus === 'm' || subject.genus === 'f' ? subject.genus : undefined,
+            })
+          : undefined
       return {
         primary: `${capitalize(data.type('quality').take().value)} ${data.type('recording').take().value} of ${description}${subject.value}`,
         details: name ? `${storage}, labeled ${name}` : storage,

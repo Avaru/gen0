@@ -51,8 +51,9 @@ describe('movie title phrases', () => {
       .mockReturnValueOnce(true)
       .mockReturnValue(false)
     expect(movies().primary).toBe(title)
-    expect(movieData.find((entry) => entry.value === 'with chainsaws')?.tags)
-      .not.toContain('title-object-start')
+    expect(movieData.find((entry) => entry.value === 'with chainsaws')?.tags).not.toContain(
+      'title-object-start',
+    )
   })
 
   it.each([

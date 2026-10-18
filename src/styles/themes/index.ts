@@ -6,4 +6,4 @@ export const flavorThemes = {
   'cyberpunk2020-2077': 'cyberpunk',
 } as const satisfies Record<Flavor, string>
 
-export type Theme = typeof flavorThemes[Flavor]
+export type Theme = (typeof flavorThemes)[Flavor]

@@ -13,7 +13,12 @@ const glitch = defineModel<CharacterSheet['glitches'][number]>('glitch', { requi
   <UiSheetRatingRow kind="approach" :state="glitch.marked ? 'glitched' : String(rating.value ?? 0)">
     <div class="approach-panel">
       <div class="approach-title">
-        <label class="approach-name" :for="attribute.id"><UiScrambleText :text="attribute.name" :replay-key="generation" :duration="generation ? 550 : 0" /></label>
+        <label class="approach-name" :for="attribute.id"
+          ><UiScrambleText
+            :text="attribute.name"
+            :replay-key="generation"
+            :duration="generation ? 550 : 0"
+        /></label>
         <span class="approach-negative" :class="{ visible: glitch.marked }"
           >// {{ cbrPnkApproachLabels[attribute.key]?.glitch }}</span
         >

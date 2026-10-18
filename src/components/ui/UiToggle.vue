@@ -147,8 +147,15 @@ label.hazard:hover {
     opacity: 0;
     background:
       repeating-linear-gradient(0deg, currentColor 0 1px, transparent 1px 3px),
-      repeating-linear-gradient(113deg, transparent 0 5px, currentColor 5px 7px, transparent 7px 11px);
-    background-size: 100% 7px, 17px 13px;
+      repeating-linear-gradient(
+        113deg,
+        transparent 0 5px,
+        currentColor 5px 7px,
+        transparent 7px 11px
+      );
+    background-size:
+      100% 7px,
+      17px 13px;
   }
   @media (hover: hover) {
     label.hazard:hover .toggle-text {
@@ -161,17 +168,44 @@ label.hazard:hover {
   }
 }
 @keyframes hover-text-glitch {
-  0% { transform: translate(-12%, 2px) scale(1.6, 0.6) skewX(-18deg); }
-  18% { transform: translate(65%, -4px) scale(2.2, 1.25) skewX(24deg); }
-  36% { transform: translate(-80%, 3px) scale(0.8, 1.6) skewX(-30deg); }
-  54% { transform: translate(20%, -2px) scale(1.9, 0.5); }
-  72% { transform: translate(-8%, 1px) scale(1.35, 1.3) skewX(12deg); }
-  100% { transform: translateX(3px) scale(1.15, 0.9); }
+  0% {
+    transform: translate(-12%, 2px) scale(1.6, 0.6) skewX(-18deg);
+  }
+  18% {
+    transform: translate(65%, -4px) scale(2.2, 1.25) skewX(24deg);
+  }
+  36% {
+    transform: translate(-80%, 3px) scale(0.8, 1.6) skewX(-30deg);
+  }
+  54% {
+    transform: translate(20%, -2px) scale(1.9, 0.5);
+  }
+  72% {
+    transform: translate(-8%, 1px) scale(1.35, 1.3) skewX(12deg);
+  }
+  100% {
+    transform: translateX(3px) scale(1.15, 0.9);
+  }
 }
 @keyframes hover-noise-glitch {
-  0%, 36%, 72% { opacity: 0.38; background-position: 7px -3px, -11px 5px; }
-  18%, 54% { opacity: 0.08; background-position: -5px 4px, 8px -7px; }
-  100% { opacity: 0; }
+  0%,
+  36%,
+  72% {
+    opacity: 0.38;
+    background-position:
+      7px -3px,
+      -11px 5px;
+  }
+  18%,
+  54% {
+    opacity: 0.08;
+    background-position:
+      -5px 4px,
+      8px -7px;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 @media screen and (max-width: 24rem) {
   label.hazard {

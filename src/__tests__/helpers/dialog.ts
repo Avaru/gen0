@@ -8,7 +8,9 @@ export function mockDialog() {
   beforeAll(() => {
     Object.defineProperty(prototype, 'showModal', {
       configurable: true,
-      value(this: HTMLDialogElement) { this.open = true },
+      value(this: HTMLDialogElement) {
+        this.open = true
+      },
     })
     Object.defineProperty(prototype, 'close', {
       configurable: true,

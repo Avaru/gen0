@@ -36,22 +36,26 @@ export function useCharacterUrl() {
   }
   watch(() => character.sheet, updateUrl, { deep: true, flush: 'post' })
 
-  watch(() => [route.path, route.query.character], () => {
-    if (route.path !== '/chars/cbrpnk') return
-    const token = route.query.character
-    if (typeof token === 'string' && writtenTokens.has(token)) return
-    error.value = ''
-    if (token === undefined) {
-      void nextTick(updateUrl)
-      return
-    }
-    try {
-      if (typeof token !== 'string') throw new Error('Invalid character link')
-      character.loadCharacterToken(token)
-    } catch {
-      error.value = 'Could not load this character URL. Your current character has been kept.'
-    }
-  }, { immediate: true, flush: 'sync' })
+  watch(
+    () => [route.path, route.query.character],
+    () => {
+      if (route.path !== '/chars/cbrpnk') return
+      const token = route.query.character
+      if (typeof token === 'string' && writtenTokens.has(token)) return
+      error.value = ''
+      if (token === undefined) {
+        void nextTick(updateUrl)
+        return
+      }
+      try {
+        if (typeof token !== 'string') throw new Error('Invalid character link')
+        character.loadCharacterToken(token)
+      } catch {
+        error.value = 'Could not load this character URL. Your current character has been kept.'
+      }
+    },
+    { immediate: true, flush: 'sync' },
+  )
 
   onScopeDispose(() => {
     disposed = true

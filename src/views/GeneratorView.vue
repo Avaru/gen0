@@ -69,7 +69,12 @@ async function generate(append = false, revealFirstName = false) {
 </script>
 <template>
   <UiWorkspace>
-    <GeneratorControls :settings="settings" :busy="busy" @update="update" @generate="generate(false, true)" />
+    <GeneratorControls
+      :settings="settings"
+      :busy="busy"
+      @update="update"
+      @generate="generate(false, true)"
+    />
     <GeneratorResults
       ref="resultList"
       :results="results"

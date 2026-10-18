@@ -43,9 +43,8 @@ describe('adapted content generators', () => {
       'Netrunner',
     )
     expect(
-      load(DATA.SHOPS, { flavor: 'shadowrun' }).find(
-        (bit) => bit.id === 'shop-network-specialist',
-      )?.value,
+      load(DATA.SHOPS, { flavor: 'shadowrun' }).find((bit) => bit.id === 'shop-network-specialist')
+        ?.value,
     ).toBe('Decker')
     expect(
       load(DATA.DEVICE_DATA, { flavor: 'cyberpunk2020-2077' }).find(
@@ -57,9 +56,7 @@ describe('adapted content generators', () => {
     ).toBe(false)
     expect(load(DATA.FOOD_MENU).some((bit) => bit.value === 'Kibble')).toBe(false)
     expect(
-      load(DATA.FOOD_MENU, { flavor: 'cyberpunk2020-2077' }).some(
-        (bit) => bit.value === 'Kibble',
-      ),
+      load(DATA.FOOD_MENU, { flavor: 'cyberpunk2020-2077' }).some((bit) => bit.value === 'Kibble'),
     ).toBe(true)
   })
 
@@ -92,7 +89,8 @@ describe('adapted content generators', () => {
       const subject = subjects[index]!
       for (const chance of [0.499, 0.5]) {
         nameSpy.mockClear()
-        vi.spyOn(Math, 'random').mockReturnValue(0.2)
+        vi.spyOn(Math, 'random')
+          .mockReturnValue(0.2)
           .mockReturnValueOnce(0.2) // storage
           .mockReturnValueOnce(0.2) // mixed recording
           .mockReturnValueOnce((index + 0.1) / subjects.length)
@@ -110,19 +108,23 @@ describe('adapted content generators', () => {
 
   it('uses the five-point bonus for people and reduces technical files to 25%', () => {
     for (const [roll, pattern] of [
-      [0.6, / of /], [0.849, / of /],
-      [0.85, / of .*girlfriend$/], [0.899, / of .*girlfriend$/],
-      [0.9, / from .* to /], [0.95, /^Map of /],
+      [0.6, / of /],
+      [0.849, / of /],
+      [0.85, / of .*girlfriend$/],
+      [0.899, / of .*girlfriend$/],
+      [0.9, / from .* to /],
+      [0.95, /^Map of /],
     ] as const) {
-      vi.spyOn(Math, 'random').mockReturnValue(0)
-        .mockReturnValueOnce(0).mockReturnValueOnce(roll)
+      vi.spyOn(Math, 'random').mockReturnValue(0).mockReturnValueOnce(0).mockReturnValueOnce(roll)
       expect(deviceContents().primary).toMatch(pattern)
     }
     const subjects = load(DATA.DEVICE_DATA).filter((bit) => bit.type === 'subject')
     const index = subjects.findIndex((bit) => bit.value === 'car')
     const nameSpy = vi.spyOn(personalNames, 'givenName')
-    vi.spyOn(Math, 'random').mockReturnValue(0)
-      .mockReturnValueOnce(0).mockReturnValueOnce(0.2)
+    vi.spyOn(Math, 'random')
+      .mockReturnValue(0)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.2)
       .mockReturnValueOnce((index + 0.1) / subjects.length)
     expect(deviceContents().primary).toMatch(/ of car$/)
     expect(nameSpy).not.toHaveBeenCalled()

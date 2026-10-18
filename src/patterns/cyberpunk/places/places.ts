@@ -14,14 +14,22 @@ function placeName(options: GenerationOptions): string {
 export function cities(options: GenerationOptions = {}): Generated {
   const name = [placeName(options)]
   if (p(0.9)) {
-    name.push(new Bits(load(DATA.NAME_FRAGMENTS, options), { tag: 'city', type: 'suffix' }).take().value)
+    name.push(
+      new Bits(load(DATA.NAME_FRAGMENTS, options), { tag: 'city', type: 'suffix' }).take().value,
+    )
   }
   // Preserve the old 1–99 × 100 / 1,000 / 10,000 population pattern.
   const population = (1 + Math.floor(rng() * 99)) * randomFrom([100, 1000, 10000])
   const details = [`${Intl.NumberFormat().format(population)} inhabitants`]
-  if (p(0.8)) details.push(capitalize(new Bits(load(DATA.PLACES, options), { type: 'attribute' }).take().value))
+  if (p(0.8))
+    details.push(
+      capitalize(new Bits(load(DATA.PLACES, options), { type: 'attribute' }).take().value),
+    )
   if (p(2 / 3)) {
-    const industry = new Bits(load(DATA.NAME_FRAGMENTS, options), { tag: 'corporation', type: 'business' }).take().value
+    const industry = new Bits(load(DATA.NAME_FRAGMENTS, options), {
+      tag: 'corporation',
+      type: 'business',
+    }).take().value
     details.push(p() ? `${industry}-focused economy` : `Specialized in ${industry} industries`)
   }
   return { primary: name.join(' '), details: details.join(', ') }

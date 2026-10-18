@@ -6,8 +6,17 @@ const attributeIds = ['aggressive', 'smart', 'empathic', 'stealthy'].map(
   (key) => `cbr-pnk.attribute.${key}`,
 )
 const skillIds = [
-  'analyze', 'athletics', 'close-combat', 'coding', 'influence', 'piloting',
-  'ranged-combat', 'rigging', 'sciences', 'streetwise', 'attune',
+  'analyze',
+  'athletics',
+  'close-combat',
+  'coding',
+  'influence',
+  'piloting',
+  'ranged-combat',
+  'rigging',
+  'sciences',
+  'streetwise',
+  'attune',
 ].map((key) => `cbr-pnk.skill.${key}`)
 const maxBytes = 262144
 
@@ -19,7 +28,12 @@ function array(value: unknown, length: number): unknown[] {
 export function encodeCharacter(sheet: CharacterSheet): string {
   const compact = [
     1,
-    [sheet.runner.alias, sheet.runner.description, sheet.runner.archetypeId ?? null, sheet.runner.angle ?? null],
+    [
+      sheet.runner.alias,
+      sheet.runner.description,
+      sheet.runner.archetypeId ?? null,
+      sheet.runner.angle ?? null,
+    ],
     attributeIds.map((id) => sheet.attributeRatings.find((row) => row.definitionId === id)!.value),
     skillIds.map((id) => sheet.skillRatings.find((row) => row.definitionId === id)!.value),
     skillIds.map((id) => {
@@ -63,11 +77,15 @@ export function decodeCharacter(token: string): unknown {
   return {
     systemId: 'cbr-pnk',
     runner: {
-      alias: runner[0], description: runner[1],
+      alias: runner[0],
+      description: runner[1],
       ...(runner[2] !== null ? { archetypeId: runner[2] } : {}),
       ...(runner[3] !== null ? { angle: runner[3] } : {}),
     },
-    attributeRatings: attributeIds.map((definitionId, i) => ({ definitionId, value: attributes[i] })),
+    attributeRatings: attributeIds.map((definitionId, i) => ({
+      definitionId,
+      value: attributes[i],
+    })),
     skillRatings: skillIds.map((definitionId, i) => ({ definitionId, value: skills[i] })),
     expertises: skillIds.map((skillId, i) => {
       const row = array(expertises[i], 2)
@@ -79,7 +97,8 @@ export function decodeCharacter(token: string): unknown {
       return { level: i + 1, description: row[0], marks: row[1] }
     }),
     gear: { level: gear[0], selected: gear[1], extra: gear[2] },
-    stress: data[8], specialArmor: data[9],
+    stress: data[8],
+    specialArmor: data[9],
     augmentations: augmentations.map((value) => {
       const row = array(value, 2)
       return { description: row[0], glitched: row[1] }

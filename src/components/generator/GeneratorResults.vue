@@ -21,8 +21,7 @@ function loadMoreOnScroll() {
   const scrollingDown = window.scrollY > previousScrollY
   previousScrollY = window.scrollY
   if (!scrollingDown || props.busy || props.error || !props.results.length) return
-  if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1)
-    emit('more')
+  if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1) emit('more')
 }
 onMounted(() => {
   previousScrollY = window.scrollY
@@ -62,13 +61,52 @@ defineExpose({
     <ol v-if="results.length" ref="list" role="list">
       <li v-for="(result, index) in results" :key="index">
         <div class="name" :class="{ 'runner-name': category === 'runners' && showDetails }">
-          <strong><UiScrambleText :text="result.primary" :replay-key="result" v-bind="revealTiming(index)" /></strong>
-          <div v-if="result.secondary && (category === 'runners' || showDetails)" class="secondary" :class="{ 'runner-secondary': category === 'runners' }"><UiScrambleText :text="result.secondary" :replay-key="result" v-bind="revealTiming(index)" /></div>
+          <strong
+            ><UiScrambleText
+              :text="result.primary"
+              :replay-key="result"
+              v-bind="revealTiming(index)"
+          /></strong>
+          <div
+            v-if="result.secondary && (category === 'runners' || showDetails)"
+            class="secondary"
+            :class="{ 'runner-secondary': category === 'runners' }"
+          >
+            <UiScrambleText
+              :text="result.secondary"
+              :replay-key="result"
+              v-bind="revealTiming(index)"
+            />
+          </div>
           <template v-if="showDetails">
-            <div v-if="result.age"><UiScrambleText :text="result.age" :replay-key="result" v-bind="revealTiming(index)" /></div>
-            <div v-if="result.appearance"><UiScrambleText :text="result.appearance" :replay-key="result" v-bind="revealTiming(index)" /></div>
-            <div v-if="result.details" class="details"><UiScrambleText :text="result.details" :replay-key="result" v-bind="revealTiming(index)" /></div>
-            <div v-if="result.rating !== undefined"><UiScrambleText :text="`Rating: ${result.rating.toFixed(1)} / 5`" :replay-key="result" v-bind="revealTiming(index)" /></div>
+            <div v-if="result.age">
+              <UiScrambleText
+                :text="result.age"
+                :replay-key="result"
+                v-bind="revealTiming(index)"
+              />
+            </div>
+            <div v-if="result.appearance">
+              <UiScrambleText
+                :text="result.appearance"
+                :replay-key="result"
+                v-bind="revealTiming(index)"
+              />
+            </div>
+            <div v-if="result.details" class="details">
+              <UiScrambleText
+                :text="result.details"
+                :replay-key="result"
+                v-bind="revealTiming(index)"
+              />
+            </div>
+            <div v-if="result.rating !== undefined">
+              <UiScrambleText
+                :text="`Rating: ${result.rating.toFixed(1)} / 5`"
+                :replay-key="result"
+                v-bind="revealTiming(index)"
+              />
+            </div>
           </template>
         </div>
         <UiRunnerResultActions v-if="category === 'runners' && showDetails" :result="result" />

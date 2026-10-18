@@ -15,7 +15,13 @@ const props = withDefaults(
     showSelection?: boolean
     triggerId?: string
   }>(),
-  { label: 'Category', plural: 'categories', triggerId: 'category', searchable: true, showSelection: true },
+  {
+    label: 'Category',
+    plural: 'categories',
+    triggerId: 'category',
+    searchable: true,
+    showSelection: true,
+  },
 )
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 const id = useId()
@@ -157,9 +163,16 @@ function enter() {
               <span class="choice-text" :class="{ 'with-rule': option.description }">
                 <span class="choice-name">{{ option.label }}</span>
                 <span v-if="option.description" class="choice-rule">
-                  <span v-for="(line, index) in option.description.split('\n')" :key="index" class="rule-line">
+                  <span
+                    v-for="(line, index) in option.description.split('\n')"
+                    :key="index"
+                    class="rule-line"
+                  >
                     <span v-if="index" class="rule-separator" aria-hidden="true"> | </span>
-                    <template v-for="(part, partIndex) in line.split(/(\d+)/)" :key="partIndex"><span v-if="/^\d+$/.test(part)" class="rule-number">{{ part }}</span><template v-else>{{ part }}</template></template>
+                    <template v-for="(part, partIndex) in line.split(/(\d+)/)" :key="partIndex"
+                      ><span v-if="/^\d+$/.test(part)" class="rule-number">{{ part }}</span
+                      ><template v-else>{{ part }}</template></template
+                    >
                   </span>
                 </span>
               </span>
@@ -366,8 +379,15 @@ h3 {
     opacity: 0;
     background:
       repeating-linear-gradient(0deg, currentColor 0 1px, transparent 1px 4px),
-      repeating-linear-gradient(113deg, transparent 0 7px, currentColor 7px 8px, transparent 8px 13px);
-    background-size: 100% 9px, 19px 15px;
+      repeating-linear-gradient(
+        113deg,
+        transparent 0 7px,
+        currentColor 7px 8px,
+        transparent 8px 13px
+      );
+    background-size:
+      100% 9px,
+      19px 15px;
   }
   @media (hover: hover) {
     .choices button:hover .choice-text {
@@ -379,15 +399,39 @@ h3 {
   }
 }
 @keyframes choice-text-glitch {
-  0% { transform: translateX(-3%) scale(1.12, 0.9) skewX(-6deg); }
-  25% { transform: translate(8%, -1px) scale(1.3, 1.05) skewX(8deg); }
-  50% { transform: translate(-6%, 1px) scale(0.95, 1.15); }
-  75% { transform: translateX(2%) scale(1.12, 0.95); }
-  100% { transform: none; }
+  0% {
+    transform: translateX(-3%) scale(1.12, 0.9) skewX(-6deg);
+  }
+  25% {
+    transform: translate(8%, -1px) scale(1.3, 1.05) skewX(8deg);
+  }
+  50% {
+    transform: translate(-6%, 1px) scale(0.95, 1.15);
+  }
+  75% {
+    transform: translateX(2%) scale(1.12, 0.95);
+  }
+  100% {
+    transform: none;
+  }
 }
 @keyframes choice-noise-glitch {
-  0%, 50% { opacity: 0.18; background-position: 4px -2px, -7px 3px; }
-  25%, 75% { opacity: 0.04; background-position: -3px 2px, 5px -4px; }
-  100% { opacity: 0; }
+  0%,
+  50% {
+    opacity: 0.18;
+    background-position:
+      4px -2px,
+      -7px 3px;
+  }
+  25%,
+  75% {
+    opacity: 0.04;
+    background-position:
+      -3px 2px,
+      5px -4px;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 </style>

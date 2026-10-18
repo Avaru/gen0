@@ -9,12 +9,16 @@ export const usePreferencesStore = defineStore('preferences', () => {
   } catch {
     // Storage may be unavailable; the mode stays off by default.
   }
-  watch(soullessCorpMode, (enabled) => {
-    try {
-      localStorage.setItem(storageKey, String(enabled))
-    } catch {
-      // The toggle still works for this visit when storage is unavailable.
-    }
-  }, { flush: 'sync' })
+  watch(
+    soullessCorpMode,
+    (enabled) => {
+      try {
+        localStorage.setItem(storageKey, String(enabled))
+      } catch {
+        // The toggle still works for this visit when storage is unavailable.
+      }
+    },
+    { flush: 'sync' },
+  )
   return { soullessCorpMode }
 })

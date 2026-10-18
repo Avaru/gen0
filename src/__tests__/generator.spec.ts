@@ -33,7 +33,7 @@ describe('migrated generator', () => {
         (bit) => !bit.tags.some((tag) => additions.includes(tag)),
       ),
     ).toHaveLength(19478)
-    expect(load(DATA.NAME_FRAGMENTS, options)).toHaveLength(2179)
+    expect(load(DATA.NAME_FRAGMENTS, options)).toHaveLength(2186)
     // Includes the user's hair, face, and clothing words, with outer entries removed.
     expect(load(DATA.RUNNER_TRAITS, options)).toHaveLength(540)
     expect(load(DATA.FOOD, options)).toHaveLength(611)
@@ -92,14 +92,12 @@ describe('migrated generator', () => {
     expect(role('shadowrun', 'street-samurai').shortValue).toBe('Sam')
     expect(role('cyberpunk2020-2077', 'job-contact').value).toBe('Fixer')
     expect(role('shadowrun', 'job-contact').value).toBe('Johnson')
-    expect(runnerTraits.find((bit) => bit.id === 'network-specialist')?.value).toBe(
-      'Netrunner',
-    )
+    expect(runnerTraits.find((bit) => bit.id === 'network-specialist')?.value).toBe('Netrunner')
     expect(getName({ value: 'Shared', tags: [] }, 'shadowrun', 'short')).toBe('Shared')
     for (const { id: flavor } of flavors) {
-      expect(
-        load(DATA.RUNNER_TRAITS, { flavor }).some((bit) => bit.value === 'Technomancer'),
-      ).toBe(flavor === 'shadowrun')
+      expect(load(DATA.RUNNER_TRAITS, { flavor }).some((bit) => bit.value === 'Technomancer')).toBe(
+        flavor === 'shadowrun',
+      )
     }
   })
 

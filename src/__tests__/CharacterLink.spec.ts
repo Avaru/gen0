@@ -21,23 +21,49 @@ beforeEach(() => {
 
 function packed(value: unknown) {
   return btoa(String.fromCharCode(...deflateSync(strToU8(JSON.stringify(value)))))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
 }
 
 describe('compressed character links', () => {
   it('round-trips every field, Unicode and null/zero ratings through a URL query', () => {
     const store = useCharacterStore(createTestPinia())
     const sheet = store.sheet
-    sheet.runner = { alias: 'Ä / 東京 🦾', description: 'First line\nSecond line', archetypeId: 'hacker', angle: 'Take a stand' }
-    sheet.attributeRatings.forEach((row, i) => { row.value = ([null, 0, 1, 2] as const)[i]! })
-    sheet.skillRatings.forEach((row, i) => { row.value = ([null, 0, 1, 2] as const)[i % 4]! })
-    sheet.expertises.forEach((row, i) => { row.values = ['Selected']; row.custom = `Custom ${i}` })
-    sheet.glitches.forEach((row, i) => { row.marked = i % 2 === 0 })
-    sheet.harm.forEach((row) => { row.description = `Harm ${row.level}`; row.marks[0] = true })
-    sheet.gear = { level: 'heavy', selected: ['Armor', '+Heavy'], extra: [true, false, true, false] }
+    sheet.runner = {
+      alias: 'Ä / 東京 🦾',
+      description: 'First line\nSecond line',
+      archetypeId: 'hacker',
+      angle: 'Take a stand',
+    }
+    sheet.attributeRatings.forEach((row, i) => {
+      row.value = ([null, 0, 1, 2] as const)[i]!
+    })
+    sheet.skillRatings.forEach((row, i) => {
+      row.value = ([null, 0, 1, 2] as const)[i % 4]!
+    })
+    sheet.expertises.forEach((row, i) => {
+      row.values = ['Selected']
+      row.custom = `Custom ${i}`
+    })
+    sheet.glitches.forEach((row, i) => {
+      row.marked = i % 2 === 0
+    })
+    sheet.harm.forEach((row) => {
+      row.description = `Harm ${row.level}`
+      row.marks[0] = true
+    })
+    sheet.gear = {
+      level: 'heavy',
+      selected: ['Armor', '+Heavy'],
+      extra: [true, false, true, false],
+    }
     sheet.stress = 7
     sheet.specialArmor = true
-    sheet.augmentations.forEach((row, i) => { row.description = `Augmentation ${i}`; row.glitched = true })
+    sheet.augmentations.forEach((row, i) => {
+      row.description = `Augmentation ${i}`
+      row.glitched = true
+    })
     const url = new URL('https://example.com/gen0/chars/cbrpnk')
     url.searchParams.set('character', encodeCharacter(sheet))
     const token = url.searchParams.get('character')!
@@ -47,7 +73,13 @@ describe('compressed character links', () => {
     store.loadCharacterToken(token)
     expect(store.sheet.runner.alias).toBe('Ä / 東京 🦾')
     expect(url.href.length).toBeLessThan(JSON.stringify(sheet).length)
-    const reversed = { ...sheet, attributeRatings: [...sheet.attributeRatings].reverse(), skillRatings: [...sheet.skillRatings].reverse(), expertises: [...sheet.expertises].reverse(), glitches: [...sheet.glitches].reverse() }
+    const reversed = {
+      ...sheet,
+      attributeRatings: [...sheet.attributeRatings].reverse(),
+      skillRatings: [...sheet.skillRatings].reverse(),
+      expertises: [...sheet.expertises].reverse(),
+      glitches: [...sheet.glitches].reverse(),
+    }
     expect(encodeCharacter(reversed)).toBe(encodeCharacter(sheet))
   })
 
@@ -56,7 +88,15 @@ describe('compressed character links', () => {
     const original = JSON.stringify(store.sheet)
     const invalid = { ...store.sheet, stress: 8 }
     const unknownVersion = [2, [], [], [], [], [], [], [], 0, false, []]
-    for (const token of ['', 'broken', '$', encodeCharacter(invalid), packed(unknownVersion), packed([1]), packed('x'.repeat(262144))]) {
+    for (const token of [
+      '',
+      'broken',
+      '$',
+      encodeCharacter(invalid),
+      packed(unknownVersion),
+      packed([1]),
+      packed('x'.repeat(262144)),
+    ]) {
       expect(() => store.loadCharacterToken(token)).toThrow(Error)
       expect(JSON.stringify(store.sheet)).toBe(original)
       expect(localStorage.getItem('gen0.character')).toBeNull()
@@ -71,7 +111,10 @@ describe('compressed character links', () => {
     store.sheet.runner.alias = 'Second'
     const second = encodeCharacter(store.sheet)
     store.sheet.runner.alias = 'Local'
-    const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/chars/cbrpnk', component: CharacterView }] })
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/chars/cbrpnk', component: CharacterView }],
+    })
     await router.push(`/chars/cbrpnk?character=${first}`)
     const wrapper = mount(CharacterView, { global: { plugins: [pinia, router] } })
     expect(store.sheet.runner.alias).toBe('First')
@@ -79,7 +122,9 @@ describe('compressed character links', () => {
     store.sheet.runner.alias = 'Edited'
     await flushPromises()
     expect(store.sheet.runner.alias).toBe('Edited')
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(store.sheet)
+    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
+      store.sheet,
+    )
     await router.push(`/chars/cbrpnk?character=${second}`)
     expect(store.sheet.runner.alias).toBe('Second')
     router.back()
@@ -103,14 +148,27 @@ describe('compressed character links', () => {
     localStorage.setItem('gen0.character', JSON.stringify(saved))
     const pinia = createTestPinia()
     const store = useCharacterStore(pinia)
-    const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/chars/cbrpnk', component: CharacterView }] })
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/chars/cbrpnk', component: CharacterView }],
+    })
     await router.push('/chars/cbrpnk?flavor=shadowrun#sheet')
     const load = vi.spyOn(store, 'loadCharacterToken')
     const replace = vi.spyOn(router, 'replace')
-    const wrapper = mount(defineComponent({ setup() { useCharacterUrl(); return () => null } }), { global: { plugins: [pinia, router] } })
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          useCharacterUrl()
+          return () => null
+        },
+      }),
+      { global: { plugins: [pinia, router] } },
+    )
     await flushPromises()
     expect(store.sheet.runner.alias).toBe('Locally saved')
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(store.sheet)
+    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
+      store.sheet,
+    )
     replace.mockClear()
     store.sheet.runner.alias = 'Newest edit'
     store.sheet.stress = 3
@@ -118,24 +176,41 @@ describe('compressed character links', () => {
     await nextTick()
     expect(replace).toHaveBeenCalledTimes(1)
     await flushPromises()
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(store.sheet)
+    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
+      store.sheet,
+    )
     expect(router.currentRoute.value.query.flavor).toBe('shadowrun')
     expect(router.currentRoute.value.hash).toBe('#sheet')
     expect(load).not.toHaveBeenCalled()
     store.reset()
     await flushPromises()
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(store.sheet)
+    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
+      store.sheet,
+    )
     wrapper.unmount()
   })
 
   it('keeps newer edits while earlier router replacements are waiting', async () => {
     const pinia = createTestPinia()
     const store = useCharacterStore(pinia)
-    const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/chars/cbrpnk', component: CharacterView }] })
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/chars/cbrpnk', component: CharacterView }],
+    })
     await router.push(`/chars/cbrpnk?character=${encodeCharacter(store.sheet)}`)
-    const wrapper = mount(defineComponent({ setup() { useCharacterUrl(); return () => null } }), { global: { plugins: [pinia, router] } })
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          useCharacterUrl()
+          return () => null
+        },
+      }),
+      { global: { plugins: [pinia, router] } },
+    )
     const releases: (() => void)[] = []
-    const removeGuard = router.beforeEach(() => new Promise<void>((resolve) => releases.push(resolve)))
+    const removeGuard = router.beforeEach(
+      () => new Promise<void>((resolve) => releases.push(resolve)),
+    )
     store.sheet.runner.alias = 'Earlier'
     await flushPromises()
     store.sheet.runner.alias = 'Latest'
@@ -147,7 +222,9 @@ describe('compressed character links', () => {
     releases[1]!()
     await flushPromises()
     expect(store.sheet.runner.alias).toBe('Latest')
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(store.sheet)
+    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
+      store.sheet,
+    )
     removeGuard()
     wrapper.unmount()
   })

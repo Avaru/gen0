@@ -37,9 +37,7 @@ describe('Generator settings normalization', () => {
 
   it('compares URL contents without depending on property order', () => {
     const query = settingsQuery(normalizeGeneratorSettings({ category: 'german', gender: 'f' }))
-    expect(
-      matchesSettingsQuery({ gender: 'f' }, query),
-    ).toBe(true)
+    expect(matchesSettingsQuery({ gender: 'f' }, query)).toBe(true)
     expect(matchesSettingsQuery({ ...query, count: '10' }, query)).toBe(false)
     expect(matchesSettingsQuery({ ...query, gender: ['f'] }, query)).toBe(false)
   })

@@ -1,8 +1,11 @@
 // Display text transcribed from the supplied runner-sheet image, not new mechanics.
 export const cbrPnkAngles = [
-  'Get out', 'Upgrade life',
-  'Make them pay', 'Learn the truth',
-  'Look after them', 'Take a stand',
+  'Get out',
+  'Upgrade life',
+  'Make them pay',
+  'Learn the truth',
+  'Look after them',
+  'Take a stand',
 ]
 
 export const cbrPnkApproachLabels: Record<string, { description: string; glitch: string }> = {

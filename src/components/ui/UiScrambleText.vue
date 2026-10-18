@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-const props = withDefaults(defineProps<{
-  text: string
-  replayKey?: unknown
-  duration?: number
-  delay?: number
-}>(), { duration: 550, delay: 0 })
+const props = withDefaults(
+  defineProps<{
+    text: string
+    replayKey?: unknown
+    duration?: number
+    delay?: number
+  }>(),
+  { duration: 550, delay: 0 },
+)
 
 const resolvedText = ref('')
 const garbledText = ref('')
@@ -46,11 +49,12 @@ function reveal() {
     if (lastUpdate === -Infinity || (now >= start && now - lastUpdate >= 45)) {
       const resolved = Math.floor(progress * letters.length)
       resolvedText.value = letters.slice(0, resolved).join('')
-      garbledText.value = letters.slice(resolved).map((letter) =>
-        /\s/u.test(letter)
-          ? letter
-          : symbols[Math.floor(Math.random() * symbols.length)],
-      ).join('')
+      garbledText.value = letters
+        .slice(resolved)
+        .map((letter) =>
+          /\s/u.test(letter) ? letter : symbols[Math.floor(Math.random() * symbols.length)],
+        )
+        .join('')
       lastUpdate = now
     }
     frame = requestAnimationFrame(tick)
@@ -78,7 +82,13 @@ onBeforeUnmount(() => {
 <template>
   <span class="scramble" :class="{ animating }">
     <span class="source">{{ text }}</span>
-    <span v-if="animating" class="overlay" aria-hidden="true" :data-resolved="resolvedText" :data-garbled="garbledText" />
+    <span
+      v-if="animating"
+      class="overlay"
+      aria-hidden="true"
+      :data-resolved="resolvedText"
+      :data-garbled="garbledText"
+    />
   </span>
 </template>
 

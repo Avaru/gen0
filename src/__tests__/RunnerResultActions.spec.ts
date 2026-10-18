@@ -43,7 +43,14 @@ async function setup(category = 'runners', showDetails = true, flavor: Flavor = 
       {
         path: '/:flavor/:category',
         component: GeneratorResults,
-        props: { results: [result], category, showDetails, busy: false, label: 'Results', error: '' },
+        props: {
+          results: [result],
+          category,
+          showDetails,
+          busy: false,
+          label: 'Results',
+          error: '',
+        },
       },
       { path: '/chars/cbrpnk', meta: { flavor: 'cyberpunk' }, component: CharacterView },
     ],
@@ -144,30 +151,43 @@ describe('runner result actions', () => {
     wrapper.unmount()
   })
 
-  it.each(flavors)('opens the $label runner with its identity, angle and matching profile in a fresh Generic sheet', async ({ id }) => {
-    vi.spyOn(probability, 'p').mockReturnValue(false)
-    const { wrapper, router, pinia } = await setup('runners', true, id)
-    const character = useCharacterStore(pinia)
-    character.sheet.runner.alias = 'Previous runner'
-    character.sheet.stress = 5
-    character.sheet.gear.selected = ['Sidearm']
-    await wrapper.get('[aria-label="Open Echo in character sheet"]').trigger('click')
-    await flushPromises()
-    expect(router.currentRoute.value.path).toBe('/chars/cbrpnk')
-    expect(Object.keys(router.currentRoute.value.query)).toEqual(['character'])
-    expect(character.sheet.runner).toEqual(runner)
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(character.sheet)
-    expect(character.sheet.stress).toBe(0)
-    expect(character.sheet.gear.selected).toEqual([])
-    expect(character.sheet.attributeRatings.some((row) => (row.value ?? 0) > 0)).toBe(true)
-    expect(character.sheet.skillRatings.find((row) => row.definitionId === 'cbr-pnk.skill.coding')?.value).toBe(2)
-    expect(character.sheet.augmentations[0]!.description).not.toBe('')
-    expect(wrapper.get('#runner-alias').element).toHaveProperty('value', 'Echo')
-    expect(wrapper.get('input[name="runner-angle"]:checked').attributes('value')).toBe(result.angle)
-    wrapper.unmount()
-  })
+  it.each(flavors)(
+    'opens the $label runner with its identity, angle and matching profile in a fresh Generic sheet',
+    async ({ id }) => {
+      vi.spyOn(probability, 'p').mockReturnValue(false)
+      const { wrapper, router, pinia } = await setup('runners', true, id)
+      const character = useCharacterStore(pinia)
+      character.sheet.runner.alias = 'Previous runner'
+      character.sheet.stress = 5
+      character.sheet.gear.selected = ['Sidearm']
+      await wrapper.get('[aria-label="Open Echo in character sheet"]').trigger('click')
+      await flushPromises()
+      expect(router.currentRoute.value.path).toBe('/chars/cbrpnk')
+      expect(Object.keys(router.currentRoute.value.query)).toEqual(['character'])
+      expect(character.sheet.runner).toEqual(runner)
+      expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
+        character.sheet,
+      )
+      expect(character.sheet.stress).toBe(0)
+      expect(character.sheet.gear.selected).toEqual([])
+      expect(character.sheet.attributeRatings.some((row) => (row.value ?? 0) > 0)).toBe(true)
+      expect(
+        character.sheet.skillRatings.find((row) => row.definitionId === 'cbr-pnk.skill.coding')
+          ?.value,
+      ).toBe(2)
+      expect(character.sheet.augmentations[0]!.description).not.toBe('')
+      expect(wrapper.get('#runner-alias').element).toHaveProperty('value', 'Echo')
+      expect(wrapper.get('input[name="runner-angle"]:checked').attributes('value')).toBe(
+        result.angle,
+      )
+      wrapper.unmount()
+    },
+  )
 
-  it.each([['runners', false], ['people', true]])('omits runner actions for category %s with details %s', async (category, showDetails) => {
+  it.each([
+    ['runners', false],
+    ['people', true],
+  ])('omits runner actions for category %s with details %s', async (category, showDetails) => {
     const { wrapper } = await setup(category, showDetails)
     expect(wrapper.find('.runner-actions').exists()).toBe(false)
     wrapper.unmount()

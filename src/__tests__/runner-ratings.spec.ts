@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { varyRatings } from '@/patterns/cyberpunk/runners/ratings'
 import type { SheetRating } from '@/data/characters/types'
 
-const rows = (values: SheetRating[]) => values.map((value, i) => ({ definitionId: String(i), value }))
+const rows = (values: SheetRating[]) =>
+  values.map((value, i) => ({ definitionId: String(i), value }))
 afterEach(() => vi.restoreAllMocks())
 
 describe('runner rating variation', () => {
@@ -21,7 +22,8 @@ describe('runner rating variation', () => {
   })
 
   it.each([[null, null], [0, 0], [2, 2], [1]] as SheetRating[][])(
-    'leaves ratings alone when no move is possible: %j', (...values) => {
+    'leaves ratings alone when no move is possible: %j',
+    (...values) => {
       vi.spyOn(Math, 'random').mockReturnValue(0)
       const ratings = rows(values)
       varyRatings(ratings)

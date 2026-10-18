@@ -51,7 +51,8 @@ describe('gear load', () => {
   })
 
   it.each(['Large/heavy weapon', 'Medium drone', 'Demolition tools'])(
-    'toggles both load diamonds together for %s', async (name) => {
+    'toggles both load diamonds together for %s',
+    async (name) => {
       const wrapper = mount(CharacterView, { global: { plugins: [createPinia()] } })
       const input = wrapper.get(`.gear-card [aria-label="${name}"]`)
       const label = input.element.closest('label')!

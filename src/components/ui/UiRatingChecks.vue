@@ -21,7 +21,9 @@ function change(position: 1 | 2, event: Event) {
         :aria-label="`${label} rating ${position}`"
         @change="change(position, $event)"
       />
-      <span aria-hidden="true"><UiSheetSymbol class="rating-symbol" kind="dice" :framed="false" /></span>
+      <span aria-hidden="true"
+        ><UiSheetSymbol class="rating-symbol" kind="dice" :framed="false"
+      /></span>
     </label>
   </div>
 </template>

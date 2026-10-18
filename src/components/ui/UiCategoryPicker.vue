@@ -7,5 +7,9 @@ defineProps<{
 defineEmits<{ 'update:modelValue': [value: string] }>()
 </script>
 <template>
-  <UiChoicePicker :model-value="modelValue" :options="options" @update:model-value="$emit('update:modelValue', $event)" />
+  <UiChoicePicker
+    :model-value="modelValue"
+    :options="options"
+    @update:model-value="$emit('update:modelValue', $event)"
+  />
 </template>

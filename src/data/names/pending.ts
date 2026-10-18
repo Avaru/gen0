@@ -18,4 +18,4 @@ export const pendingNationalities = [
   { id: 'aboriginal-australian', label: 'Aboriginal Australian' },
 ] as const
 
-export type PendingNationality = typeof pendingNationalities[number]['id']
+export type PendingNationality = (typeof pendingNationalities)[number]['id']

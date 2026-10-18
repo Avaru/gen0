@@ -19,9 +19,11 @@ export const movies = (options: GenerationOptions = {}): Generated => {
   } else if (p(0.33)) {
     let subjectTag = 'title-subject'
     if (p(0.33)) {
-      const opening = movie.filter({
-        one: ['title-prefix', 'title-object-start', 'title-prefix-action'],
-      }).take()
+      const opening = movie
+        .filter({
+          one: ['title-prefix', 'title-object-start', 'title-prefix-action'],
+        })
+        .take()
       primary += capitalize(opening.value.trim())
       primary += opening.tags.includes('title-object-start') ? ' of the ' : ' '
       if (opening.tags.includes('title-prefix-action')) subjectTag = 'title-action'

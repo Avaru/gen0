@@ -1,5 +1,9 @@
 import Bits from '@/builders/Bits'
-import { augmentationAttributes, augmentationManufacturers, type AugmentationBit } from '@/data/augmentations'
+import {
+  augmentationAttributes,
+  augmentationManufacturers,
+  type AugmentationBit,
+} from '@/data/augmentations'
 import { isEntryAvailable } from '@/builders/availability'
 import type { GenerationOptions } from '@/generator/options'
 import { p } from '@/helper/prob'
@@ -14,7 +18,10 @@ export function augmentations(options: GenerationOptions = {}): Generated {
 }
 
 /** Complete result for an already selected, flavor-resolved augmentation type. */
-export function composeAugmentation(kind: AugmentationBit, options: GenerationOptions = {}): Generated {
+export function composeAugmentation(
+  kind: AugmentationBit,
+  options: GenerationOptions = {},
+): Generated {
   const attributes = new Bits(
     augmentationAttributes.filter((entry) => isEntryAvailable(entry, options)),
   )

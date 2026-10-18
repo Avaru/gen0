@@ -5,9 +5,10 @@ import { randomFrom } from '@/helper/randomFrom'
 /** Move one point within a freshly copied profile, retaining its total and rating limit. */
 export function varyRatings(ratings: CharacterSheet['attributeRatings']): void {
   if (!p(0.2)) return
-  const donors = ratings.filter((row) =>
-    (row.value === 1 || row.value === 2) &&
-    ratings.some((other) => other !== row && other.value !== null && other.value < 2),
+  const donors = ratings.filter(
+    (row) =>
+      (row.value === 1 || row.value === 2) &&
+      ratings.some((other) => other !== row && other.value !== null && other.value < 2),
   )
   if (!donors.length) return
   const donor = randomFrom(donors)

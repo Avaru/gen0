@@ -23,8 +23,8 @@ function generate() {
 }
 const available = computed(() => availableCategories({ flavor: props.settings.flavor }))
 const category = computed(() => available.value.find((item) => item.id === props.settings.category))
-const hideChoiceLabel = computed(() =>
-  Number(!!category.value?.gender) + Number(!!category.value?.corporationSize) === 1,
+const hideChoiceLabel = computed(
+  () => Number(!!category.value?.gender) + Number(!!category.value?.corporationSize) === 1,
 )
 const flavorOptions = flavors.map((item) => ({ value: item.id, label: item.label }))
 const genderOptions = [

@@ -24,14 +24,16 @@ beforeEach(() => {
   frameId = 0
   vi.spyOn(performance, 'now').mockReturnValue(0)
   vi.spyOn(Math, 'random').mockReturnValue(0)
-  requestFrame.mockReset().mockImplementation(callback => {
+  requestFrame.mockReset().mockImplementation((callback) => {
     frames.set(++frameId, callback)
     return frameId
   })
   vi.stubGlobal('requestAnimationFrame', requestFrame)
   vi.stubGlobal('cancelAnimationFrame', (id: number) => frames.delete(id))
   vi.stubGlobal('matchMedia', () => ({
-    get matches() { return reduced },
+    get matches() {
+      return reduced
+    },
     addEventListener: (_event: string, listener: () => void) => listeners.add(listener),
     removeEventListener: (_event: string, listener: () => void) => listeners.delete(listener),
   }))
@@ -44,7 +46,7 @@ afterEach(() => {
 async function advance(time: number) {
   const pending = [...frames.values()]
   frames.clear()
-  pending.forEach(callback => callback(time))
+  pending.forEach((callback) => callback(time))
   await nextTick()
 }
 
@@ -91,18 +93,35 @@ describe('scrambled name reveal', () => {
 
   it('reveals every detail field with its name and keeps finished detail text available throughout', async () => {
     const result = {
-      primary: 'Neon Fox', secondary: 'Decker', age: 'Age: 28',
-      appearance: 'Chrome eyes', details: 'Works alone', rating: 0,
+      primary: 'Neon Fox',
+      secondary: 'Decker',
+      age: 'Age: 28',
+      appearance: 'Chrome eyes',
+      details: 'Works alone',
+      rating: 0,
     }
     const wrapper = mount(GeneratorResults, {
       global: { plugins: [createTestPinia()] },
-      props: { results: [result, { ...result }], busy: false, label: 'Names', error: '', showDetails: true },
+      props: {
+        results: [result, { ...result }],
+        busy: false,
+        label: 'Names',
+        error: '',
+        showDetails: true,
+      },
     })
     await nextTick()
     const rows = wrapper.findAll('li')
-    const expected = ['Neon Fox', 'Decker', 'Age: 28', 'Chrome eyes', 'Works alone', 'Rating: 0.0 / 5']
+    const expected = [
+      'Neon Fox',
+      'Decker',
+      'Age: 28',
+      'Chrome eyes',
+      'Works alone',
+      'Rating: 0.0 / 5',
+    ]
     for (const row of rows) {
-      expect(row.findAll('.source').map(source => source.text())).toEqual(expected)
+      expect(row.findAll('.source').map((source) => source.text())).toEqual(expected)
       expect(row.findAll('.overlay')).toHaveLength(6)
     }
     await advance(140)
@@ -128,16 +147,33 @@ describe('scrambled name reveal', () => {
     const wrapper = mount(GeneratorResults, {
       global: { plugins: [createTestPinia(), router] },
       props: {
-        results: [{ primary: 'Neon Fox', secondary: 'Martial Artist', appearance: 'Chrome eyes', details: 'Works alone' }],
-        category: 'runners', busy: false, label: 'Runners', error: '', showDetails: true,
+        results: [
+          {
+            primary: 'Neon Fox',
+            secondary: 'Martial Artist',
+            appearance: 'Chrome eyes',
+            details: 'Works alone',
+          },
+        ],
+        category: 'runners',
+        busy: false,
+        label: 'Runners',
+        error: '',
+        showDetails: true,
       },
     })
     await wrapper.setProps({ showDetails: false })
-    expect(wrapper.findAll('.source').map(source => source.text())).toEqual(['Neon Fox', 'Martial Artist'])
+    expect(wrapper.findAll('.source').map((source) => source.text())).toEqual([
+      'Neon Fox',
+      'Martial Artist',
+    ])
     expect(wrapper.get('.secondary').text()).toBe('Martial Artist')
     await wrapper.setProps({ showDetails: true })
-    expect(wrapper.findAll('.source').map(source => source.text())).toEqual([
-      'Neon Fox', 'Martial Artist', 'Chrome eyes', 'Works alone',
+    expect(wrapper.findAll('.source').map((source) => source.text())).toEqual([
+      'Neon Fox',
+      'Martial Artist',
+      'Chrome eyes',
+      'Works alone',
     ])
     expect(wrapper.get('.secondary').text()).toBe('Martial Artist')
   })
@@ -147,8 +183,20 @@ describe('scrambled name reveal', () => {
     const wrapper = mount(GeneratorResults, {
       global: { plugins: [createTestPinia()] },
       props: {
-        results: [{ primary: 'Neon Fox', secondary: 'Decker', age: 'Age: 28', appearance: 'Chrome eyes', details: 'Works alone', rating: 4 }],
-        busy: false, label: 'Names', error: '', showDetails: true,
+        results: [
+          {
+            primary: 'Neon Fox',
+            secondary: 'Decker',
+            age: 'Age: 28',
+            appearance: 'Chrome eyes',
+            details: 'Works alone',
+            rating: 4,
+          },
+        ],
+        busy: false,
+        label: 'Names',
+        error: '',
+        showDetails: true,
       },
     })
     await nextTick()
@@ -193,13 +241,13 @@ describe('scrambled name reveal', () => {
     await nextTick()
     expect(wrapper.find('.overlay').exists()).toBe(true)
     reduced = true
-    listeners.forEach(listener => listener())
+    listeners.forEach((listener) => listener())
     await nextTick()
     expect(wrapper.find('.overlay').exists()).toBe(false)
     expect(wrapper.text()).toBe('Neon Fox')
     expect(frames.size).toBe(0)
     reduced = false
-    listeners.forEach(listener => listener())
+    listeners.forEach((listener) => listener())
     await nextTick()
     expect(wrapper.find('.overlay').exists()).toBe(false)
   })
@@ -240,7 +288,10 @@ describe('scrambled name reveal', () => {
       global: { plugins: [createTestPinia()] },
       props: {
         results: Array.from({ length: 12 }, () => ({ primary: 'Neon Fox' })),
-        busy: false, label: 'Names', error: '', showDetails: false,
+        busy: false,
+        label: 'Names',
+        error: '',
+        showDetails: false,
       },
     })
     await nextTick()

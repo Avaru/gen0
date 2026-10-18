@@ -16,10 +16,12 @@ mockDialog()
 const media = mockMedia()
 const scroll = vi.fn<(options?: ScrollIntoViewOptions) => void>()
 const originalScroll = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView')
-beforeAll(() => Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-  configurable: true,
-  value: scroll,
-}))
+beforeAll(() =>
+  Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+    configurable: true,
+    value: scroll,
+  }),
+)
 let scrollTo: ReturnType<typeof vi.spyOn>
 beforeEach(() => {
   localStorage.clear()
@@ -67,7 +69,7 @@ describe('name generator interface', () => {
       await flushPromises()
       expect(scrollTo).not.toHaveBeenCalled()
       for (const label of ['About', 'CBR+PNK', 'CBR+PNK', 'About', 'Name generator']) {
-        const link = wrapper.findAll('nav a').find(link => link.text() === label)!
+        const link = wrapper.findAll('nav a').find((link) => link.text() === label)!
         await link.trigger('click')
         await flushPromises()
         expect(scrollTo).toHaveBeenLastCalledWith({ top: 0, left: 0, behavior: 'instant' })
@@ -82,7 +84,9 @@ describe('name generator interface', () => {
       expect(scrollTo).not.toHaveBeenCalled()
       expect(focus).toHaveBeenLastCalledWith({ preventScroll: true })
       // Block jsdom's default document navigation after the app has handled the event.
-      wrapper.element.addEventListener('click', (event: Event) => event.preventDefault(), { once: true })
+      wrapper.element.addEventListener('click', (event: Event) => event.preventDefault(), {
+        once: true,
+      })
       await wrapper.get('nav a').trigger('click', { ctrlKey: true })
       await flushPromises()
       expect(scrollTo).not.toHaveBeenCalled()
@@ -98,7 +102,7 @@ describe('name generator interface', () => {
     ['/cyberpunk2020-2077/german?gender=f', '/chars/cbrpnk'],
   ])('switches to Generic from %s when opening the sheet', async (url, expected) => {
     const { wrapper, router } = await setup(url)
-    const link = wrapper.findAll('nav a').find(item => item.text() === 'CBR+PNK')!
+    const link = wrapper.findAll('nav a').find((item) => item.text() === 'CBR+PNK')!
     expect(link.attributes('href')).toBe(expected)
     await link.trigger('click')
     await flushPromises()
@@ -125,14 +129,20 @@ describe('name generator interface', () => {
       await wrapper.get('nav a[href="/chars/cbrpnk"]').trigger('click')
       await flushPromises()
       expect(wrapper.get(rating).element).toHaveProperty('checked', true)
-      expect(wrapper.get('[aria-label="Aggressive rating 1"]').element).toHaveProperty('checked', true)
+      expect(wrapper.get('[aria-label="Aggressive rating 1"]').element).toHaveProperty(
+        'checked',
+        true,
+      )
       await wrapper.get('nav a').trigger('click')
       await flushPromises()
       expect(router.currentRoute.value.fullPath).toBe('/cyberpunk/runners')
-    } finally { wrapper.unmount() }
+    } finally {
+      wrapper.unmount()
+    }
   })
   it.each(['shadowrun', 'cyberpunk2020-2077'])(
-    'keeps the sheet Generic when a direct link or query update requests %s', async (flavor) => {
+    'keeps the sheet Generic when a direct link or query update requests %s',
+    async (flavor) => {
       const { wrapper, router } = await setup(`/chars/cbrpnk?flavor=${flavor}`)
       expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
       expect(wrapper.find('nav a[href="/cyberpunk/runners"]').exists()).toBe(true)
@@ -148,32 +158,45 @@ describe('name generator interface', () => {
     expect(wrapper.findAll('h1')).toHaveLength(1)
     expect(wrapper.get('header .caption').text()).toBe('CBR+PNK Runner sheet')
     expect(wrapper.find('form h1').exists()).toBe(false)
-    expect(wrapper.get('[aria-label="Aggressive rating 1"]').element).toHaveProperty('checked', false)
-    expect(wrapper.get('[aria-label="Aggressive rating 2"]').element).toHaveProperty('checked', false)
+    expect(wrapper.get('[aria-label="Aggressive rating 1"]').element).toHaveProperty(
+      'checked',
+      false,
+    )
+    expect(wrapper.get('[aria-label="Aggressive rating 2"]').element).toHaveProperty(
+      'checked',
+      false,
+    )
     wrapper.unmount()
   })
-  it.each(['/about', '/shadowrun/german/about'])('does not focus content when loading %s', async (url) => {
-    const history = createMemoryHistory()
-    history.push(url)
-    const router = createRouter({
-      history,
-      routes,
-    })
-    // Mount before the initial navigation finishes, as in main.ts.
-    const wrapper = mount(App, { attachTo: document.body, global: { plugins: [createPinia(), router] } })
-    try {
-      await router.isReady()
-      await flushPromises()
-      expect(wrapper.get('h1').text()).toBe('About gen 0')
-      expect(document.activeElement).toBe(document.body)
-    } finally {
-      wrapper.unmount()
-    }
-  })
+  it.each(['/about', '/shadowrun/german/about'])(
+    'does not focus content when loading %s',
+    async (url) => {
+      const history = createMemoryHistory()
+      history.push(url)
+      const router = createRouter({
+        history,
+        routes,
+      })
+      // Mount before the initial navigation finishes, as in main.ts.
+      const wrapper = mount(App, {
+        attachTo: document.body,
+        global: { plugins: [createPinia(), router] },
+      })
+      try {
+        await router.isReady()
+        await flushPromises()
+        expect(wrapper.get('h1').text()).toBe('About gen 0')
+        expect(document.activeElement).toBe(document.body)
+      } finally {
+        wrapper.unmount()
+      }
+    },
+  )
   it('focuses new page content while keeping focus on controls for setting changes', async () => {
     const { wrapper, router } = await setup('/cyberpunk/german', document.body)
     try {
-      const flavor = wrapper.get('input[name="flavor"][value="cyberpunk"]').element as HTMLInputElement
+      const flavor = wrapper.get('input[name="flavor"][value="cyberpunk"]')
+        .element as HTMLInputElement
       flavor.focus()
       await router.push('/cyberpunk/russian')
       await flushPromises()
@@ -197,13 +220,19 @@ describe('name generator interface', () => {
     const url = '/shadowrun/german?gender=f&flavor=cyberpunk&category=corporations'
     const { wrapper, router } = await setup(url)
     expect(router.currentRoute.value.fullPath).toBe('/shadowrun/german?gender=f')
-    expect(wrapper.get('input[name="flavor"][value="shadowrun"]').element).toHaveProperty('checked', true)
+    expect(wrapper.get('input[name="flavor"][value="shadowrun"]').element).toHaveProperty(
+      'checked',
+      true,
+    )
     expect(wrapper.findAll('li')).toHaveLength(10)
     const saved = router.currentRoute.value.fullPath
     wrapper.unmount()
     const reloaded = await setup(saved)
     expect(reloaded.router.currentRoute.value.fullPath).toBe(saved)
-    expect(reloaded.wrapper.get('input[name="gender"][value="f"]').element).toHaveProperty('checked', true)
+    expect(reloaded.wrapper.get('input[name="gender"][value="f"]').element).toHaveProperty(
+      'checked',
+      true,
+    )
     reloaded.wrapper.unmount()
   })
 
@@ -266,7 +295,7 @@ describe('name generator interface', () => {
     for (const category of ['corporations', 'corporations', 'german']) {
       await chooseCategory(wrapper, category)
       await flushPromises()
-      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
       expect(router.currentRoute.value.params.category).toBe(category)
       expect(wrapper.findAll('li')).toHaveLength(10)
       expect(scroll).not.toHaveBeenCalled()
@@ -282,7 +311,7 @@ describe('name generator interface', () => {
     for (const category of ['corporations', 'corporations', 'german']) {
       await chooseCategory(wrapper, category)
       await flushPromises()
-      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
       expect(router.currentRoute.value.params.category).toBe(category)
       expect(wrapper.findAll('li')).toHaveLength(10)
       expect(scroll).not.toHaveBeenCalled()
@@ -299,7 +328,7 @@ describe('name generator interface', () => {
     const { wrapper } = await setup('/cyberpunk/german')
     try {
       expect(wrapper.text()).not.toContain('Generate more')
-      const original = wrapper.findAll('li').map(item => item.text())
+      const original = wrapper.findAll('li').map((item) => item.text())
       position.mockReturnValue(100)
       window.dispatchEvent(new Event('scroll'))
       await flushPromises()
@@ -310,7 +339,12 @@ describe('name generator interface', () => {
       window.dispatchEvent(new Event('scroll'))
       await flushPromises()
       expect(wrapper.findAll('li')).toHaveLength(30)
-      expect(wrapper.findAll('li').slice(0, 10).map(item => item.text())).toEqual(original)
+      expect(
+        wrapper
+          .findAll('li')
+          .slice(0, 10)
+          .map((item) => item.text()),
+      ).toEqual(original)
       expect(scroll).not.toHaveBeenCalled()
 
       height.mockReturnValue(4000)
@@ -334,7 +368,9 @@ describe('name generator interface', () => {
   })
 
   it('opens About and returns with the selected settings and theme, including a direct link', async () => {
-    const { wrapper, router } = await setup('/?flavor=cyberpunk2020-2077&category=german&gender=f&details=false')
+    const { wrapper, router } = await setup(
+      '/?flavor=cyberpunk2020-2077&category=german&gender=f&details=false',
+    )
     const query = { ...router.currentRoute.value.query }
     await wrapper.get('nav a').trigger('click')
     await flushPromises()
@@ -385,13 +421,20 @@ describe('name generator interface', () => {
     expect(wrapper.findAll('li')).toHaveLength(10)
     expect(wrapper.text()).toContain('Some name pools are still TODO: Māori, Aboriginal Australian')
     await wrapper.get('#category').trigger('click')
-    const groups = wrapper.findAll('h3').map(item => item.text())
+    const groups = wrapper.findAll('h3').map((item) => item.text())
     expect(groups).toContain('Names by continent')
     expect(groups).not.toContain('Names by sovereignty')
     expect(groups[groups.length - 1]).toBe('Names by nationality')
-    expect(wrapper.findAll('[data-category]').filter(item =>
-      item.attributes('data-category') === 'mixed' || item.attributes('data-category') === 'us-american',
-    ).map(item => item.attributes('data-category'))).toEqual(['mixed', 'us-american'])
+    expect(
+      wrapper
+        .findAll('[data-category]')
+        .filter(
+          (item) =>
+            item.attributes('data-category') === 'mixed' ||
+            item.attributes('data-category') === 'us-american',
+        )
+        .map((item) => item.attributes('data-category')),
+    ).toEqual(['mixed', 'us-american'])
     await wrapper.get('[aria-label="Close category picker"]').trigger('click')
     await wrapper.get('input[name="flavor"][value="shadowrun"]').setValue(true)
     await flushPromises()
@@ -409,7 +452,9 @@ describe('name generator interface', () => {
   })
 
   it('changes the sovereignty list and selected labels with the flavor and restores history', async () => {
-    const { wrapper, router } = await setup('/?flavor=shadowrun&category=sovereignty-japan&gender=f')
+    const { wrapper, router } = await setup(
+      '/?flavor=shadowrun&category=sovereignty-japan&gender=f',
+    )
     expect(wrapper.get('#category').text()).toContain('Japanese Imperial State')
     expect(wrapper.findAll('li')).toHaveLength(10)
     await wrapper.get('#category').trigger('click')
@@ -439,7 +484,9 @@ describe('name generator interface', () => {
   })
 
   it('explains missing pools and restores TODO entries from links', async () => {
-    const { wrapper } = await setup('/?flavor=shadowrun&category=sovereignty-native-american-nations')
+    const { wrapper } = await setup(
+      '/?flavor=shadowrun&category=sovereignty-native-american-nations',
+    )
     expect(wrapper.text()).toContain('Some name pools are still TODO: Salish')
     expect(wrapper.findAll('li')).toHaveLength(10)
     await chooseCategory(wrapper, 'salish')
@@ -454,7 +501,9 @@ describe('name generator interface', () => {
     const { wrapper, router } = await setup('/?category=mixed&gender=f')
     expect(wrapper.get('#category').attributes('data-value')).toBe('mixed')
     expect(wrapper.get('button[data-category="mixed"] > span').text()).toBe('Mixed')
-    expect((wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked).toBe(true)
+    expect(
+      (wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked,
+    ).toBe(true)
     expect(wrapper.findAll('li')).toHaveLength(10)
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)
     await chooseCategory(wrapper, 'german')
@@ -501,46 +550,73 @@ describe('name generator interface', () => {
   it('checks every option by default and selects the other gender when clearing the last choice', async () => {
     const { wrapper, router } = await setup('/?category=german')
     expect(wrapper.findAll('input[name="gender"]')).toHaveLength(2)
-    expect(wrapper.findAll('input[name="gender"]').every(input =>
-      (input.element as HTMLInputElement).checked)).toBe(true)
+    expect(
+      wrapper
+        .findAll('input[name="gender"]')
+        .every((input) => (input.element as HTMLInputElement).checked),
+    ).toBe(true)
     expect(wrapper.text()).not.toContain('Any')
     await wrapper.get('input[name="gender"][value="m"]').setValue(false)
     await flushPromises()
     expect(router.currentRoute.value.query.gender).toBe('f')
-    expect(wrapper.findAll('input[name="gender"]').every(input =>
-      !(input.element as HTMLInputElement).disabled)).toBe(true)
+    expect(
+      wrapper
+        .findAll('input[name="gender"]')
+        .every((input) => !(input.element as HTMLInputElement).disabled),
+    ).toBe(true)
     await wrapper.get('input[name="gender"][value="f"]').setValue(false)
     await flushPromises()
     expect(router.currentRoute.value.query.gender).toBe('m')
-    expect((wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked).toBe(false)
-    expect((wrapper.get('input[name="gender"][value="m"]').element as HTMLInputElement).checked).toBe(true)
+    expect(
+      (wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked,
+    ).toBe(false)
+    expect(
+      (wrapper.get('input[name="gender"][value="m"]').element as HTMLInputElement).checked,
+    ).toBe(true)
     await wrapper.get('input[name="gender"][value="m"]').setValue(false)
     await flushPromises()
     expect(router.currentRoute.value.query.gender).toBe('f')
-    expect((wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked).toBe(true)
-    expect((wrapper.get('input[name="gender"][value="m"]').element as HTMLInputElement).checked).toBe(false)
+    expect(
+      (wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).checked,
+    ).toBe(true)
+    expect(
+      (wrapper.get('input[name="gender"][value="m"]').element as HTMLInputElement).checked,
+    ).toBe(false)
     await wrapper.get('input[name="gender"][value="m"]').setValue(true)
     await flushPromises()
     expect(router.currentRoute.value.query.gender).toBeUndefined()
-    expect((wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).disabled).toBe(false)
+    expect(
+      (wrapper.get('input[name="gender"][value="f"]').element as HTMLInputElement).disabled,
+    ).toBe(false)
     wrapper.unmount()
   })
 
   it('restores multiple sizes, normalizes duplicates and invalid values, and preserves history', async () => {
     const { wrapper, router } = await setup('/?category=corporations&size=aaa,a,a,invalid')
     expect(router.currentRoute.value.query.size).toBe('a,aaa')
-    expect((wrapper.get('input[name="size"][value="aa"]').element as HTMLInputElement).checked).toBe(false)
+    expect(
+      (wrapper.get('input[name="size"][value="aa"]').element as HTMLInputElement).checked,
+    ).toBe(false)
     await wrapper.get('input[name="size"][value="a"]').setValue(false)
     await flushPromises()
     expect(router.currentRoute.value.query.size).toBe('aaa')
-    expect(wrapper.findAll('input[name="size"]').every(input =>
-      !(input.element as HTMLInputElement).disabled)).toBe(true)
+    expect(
+      wrapper
+        .findAll('input[name="size"]')
+        .every((input) => !(input.element as HTMLInputElement).disabled),
+    ).toBe(true)
     await wrapper.get('input[name="size"][value="aaa"]').setValue(false)
     await flushPromises()
     expect(router.currentRoute.value.query.size).toBe('a,aa')
-    expect((wrapper.get('input[name="size"][value="aaa"]').element as HTMLInputElement).checked).toBe(false)
-    expect((wrapper.get('input[name="size"][value="a"]').element as HTMLInputElement).checked).toBe(true)
-    expect((wrapper.get('input[name="size"][value="aa"]').element as HTMLInputElement).checked).toBe(true)
+    expect(
+      (wrapper.get('input[name="size"][value="aaa"]').element as HTMLInputElement).checked,
+    ).toBe(false)
+    expect((wrapper.get('input[name="size"][value="a"]').element as HTMLInputElement).checked).toBe(
+      true,
+    )
+    expect(
+      (wrapper.get('input[name="size"][value="aa"]').element as HTMLInputElement).checked,
+    ).toBe(true)
     router.back()
     await flushPromises()
     expect(router.currentRoute.value.query.size).toBe('aaa')
@@ -555,9 +631,15 @@ describe('name generator interface', () => {
     expect(router.currentRoute.value.query.size).toBe('a,aa')
     wrapper.unmount()
     const restored = await setup('/?category=corporations&size=a,aa')
-    expect((restored.wrapper.get('input[name="size"][value="aaa"]').element as HTMLInputElement).checked).toBe(false)
-    expect((restored.wrapper.get('input[name="size"][value="a"]').element as HTMLInputElement).checked).toBe(true)
-    expect((restored.wrapper.get('input[name="size"][value="aa"]').element as HTMLInputElement).checked).toBe(true)
+    expect(
+      (restored.wrapper.get('input[name="size"][value="aaa"]').element as HTMLInputElement).checked,
+    ).toBe(false)
+    expect(
+      (restored.wrapper.get('input[name="size"][value="a"]').element as HTMLInputElement).checked,
+    ).toBe(true)
+    expect(
+      (restored.wrapper.get('input[name="size"][value="aa"]').element as HTMLInputElement).checked,
+    ).toBe(true)
     restored.wrapper.unmount()
   })
 
@@ -599,7 +681,9 @@ describe('name generator interface', () => {
     await chooseCategory(wrapper, 'corporations')
     await flushPromises()
     expect(wrapper.findAll('.name div')).toHaveLength(0)
-    expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(false)
+    expect(
+      (wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked,
+    ).toBe(false)
     const corporationNames = wrapper.findAll('strong').map((item) => item.text())
     await wrapper.get('input[type="checkbox"]:not([name])').setValue(true)
     await flushPromises()
@@ -609,13 +693,17 @@ describe('name generator interface', () => {
     await flushPromises()
     expect(router.currentRoute.value.params.category).toBe('german')
     expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
-    expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(true)
+    expect(
+      (wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked,
+    ).toBe(true)
     await wrapper.get('input[type="checkbox"]:not([name])').setValue(false)
     await wrapper.get('nav a').trigger('click')
     await flushPromises()
     await wrapper.get('nav a').trigger('click')
     await flushPromises()
-    expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(false)
+    expect(
+      (wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked,
+    ).toBe(false)
     wrapper.unmount()
   })
 
@@ -624,7 +712,9 @@ describe('name generator interface', () => {
     expect(wrapper.findAll('li')).toHaveLength(10)
     expect(router.currentRoute.value.query.details).toBeUndefined()
     expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
-    expect((wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked).toBe(true)
+    expect(
+      (wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked,
+    ).toBe(true)
     wrapper.unmount()
   })
 

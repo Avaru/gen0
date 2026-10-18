@@ -17,7 +17,10 @@ const options = [
 ]
 
 function setup() {
-  return mount(UiCategoryPicker, { props: { modelValue: 'runners', options }, attachTo: document.body })
+  return mount(UiCategoryPicker, {
+    props: { modelValue: 'runners', options },
+    attachTo: document.body,
+  })
 }
 
 describe('category picker', () => {
@@ -42,8 +45,10 @@ describe('category picker', () => {
     expect(document.activeElement).toBe(wrapper.get('input').element)
     expect(wrapper.get('[aria-current]').attributes('data-category')).toBe('runners')
     await wrapper.get('input').setValue('  NATIONALITY   jap  ')
-    expect(wrapper.findAll('[data-category]').map(button => button.attributes('data-category'))).toEqual(['japanese'])
-    expect(wrapper.findAll('h3').map(heading => heading.text())).toEqual(['Names by nationality'])
+    expect(
+      wrapper.findAll('[data-category]').map((button) => button.attributes('data-category')),
+    ).toEqual(['japanese'])
+    expect(wrapper.findAll('h3').map((heading) => heading.text())).toEqual(['Names by nationality'])
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
     await wrapper.get('input').trigger('keydown', { key: 'Enter' })
     expect(wrapper.emitted('update:modelValue')).toEqual([['japanese']])
@@ -95,7 +100,7 @@ describe('category picker', () => {
 
   it('searches only the options currently allowed by the flavor', async () => {
     const wrapper = setup()
-    await wrapper.setProps({ options: options.filter(option => option.id !== 'corporations') })
+    await wrapper.setProps({ options: options.filter((option) => option.id !== 'corporations') })
     await wrapper.get('#category').trigger('click')
     await wrapper.get('input').setValue('corporation')
     expect(wrapper.findAll('[data-category]')).toHaveLength(0)

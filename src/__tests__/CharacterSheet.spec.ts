@@ -64,7 +64,9 @@ describe('editable CBR+PNK sheet', () => {
     expect(store.sheet.runner.angle).toBe('Learn the truth')
     expect(store.hasContent).toBe(true)
     expect(useCharacterStore(createPinia()).sheet.runner.angle).toBe('Learn the truth')
-    vi.spyOn(generators, 'generateNames').mockReturnValue([{ primary: 'Handle', secondary: 'Role' }])
+    vi.spyOn(generators, 'generateNames').mockReturnValue([
+      { primary: 'Handle', secondary: 'Role' },
+    ])
     const random = vi.spyOn(Math, 'random').mockReturnValue(0)
     await chooseArchetype(wrapper, 'hacker')
     expect(wrapper.getComponent(UiApproachRow).props('generation')).toBe(1)
@@ -203,7 +205,9 @@ describe('editable CBR+PNK sheet', () => {
       const pinia = createPinia()
       const router = createRouter({
         history: createMemoryHistory(),
-        routes: [{ path: '/chars/cbrpnk', meta: { flavor: 'cyberpunk' }, component: CharacterView }],
+        routes: [
+          { path: '/chars/cbrpnk', meta: { flavor: 'cyberpunk' }, component: CharacterView },
+        ],
       })
       await router.push({ path: '/chars/cbrpnk', query: { flavor: id } })
       await router.isReady()
@@ -256,7 +260,10 @@ describe('editable CBR+PNK sheet', () => {
     await wrapper.get('#runner-generate').trigger('click')
     expect(wrapper.get('dialog').element).toHaveProperty('open', true)
     expect(wrapper.find('input[type="search"]').exists()).toBe(false)
-    expect(wrapper.get('dialog input[aria-label="bit random"]').element).toHaveProperty('checked', false)
+    expect(wrapper.get('dialog input[aria-label="bit random"]').element).toHaveProperty(
+      'checked',
+      false,
+    )
     expect(JSON.stringify(store.sheet)).toBe(before)
     await wrapper.get('[aria-label="Close archetype picker"]').trigger('click')
     expect(JSON.stringify(store.sheet)).toBe(before)
@@ -462,7 +469,9 @@ describe('editable CBR+PNK sheet', () => {
       const pinia = createPinia()
       const router = createRouter({
         history: createMemoryHistory(),
-        routes: [{ path: '/chars/cbrpnk', meta: { flavor: 'cyberpunk' }, component: CharacterView }],
+        routes: [
+          { path: '/chars/cbrpnk', meta: { flavor: 'cyberpunk' }, component: CharacterView },
+        ],
       })
       await router.push({ path: '/chars/cbrpnk', query: { flavor: id, category: 'german' } })
       await router.isReady()
@@ -482,7 +491,10 @@ describe('editable CBR+PNK sheet', () => {
         augmentations: undefined,
       })
       seedRandom()
-      const result = generateNames('runners', 1, { flavor: 'cyberpunk', runnerArchetypeId: 'hacker' })[0]!
+      const result = generateNames('runners', 1, {
+        flavor: 'cyberpunk',
+        runnerArchetypeId: 'hacker',
+      })[0]!
       vi.restoreAllMocks()
       seedRandom()
       await chooseArchetype(wrapper, 'hacker')
@@ -522,7 +534,13 @@ describe('editable CBR+PNK sheet', () => {
       const source = JSON.stringify(cbrPnkCatalogue)
       vi.spyOn(probability, 'p').mockReturnValue(false)
       vi.spyOn(generators, 'generateNames').mockReturnValue([
-        { primary: 'Handle', secondary: 'Role', details: 'By day: Real name', appearance: 'Chrome eyes', archetypeId: id },
+        {
+          primary: 'Handle',
+          secondary: 'Role',
+          details: 'By day: Real name',
+          appearance: 'Chrome eyes',
+          archetypeId: id,
+        },
       ])
       const pinia = createPinia()
       const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
@@ -870,7 +888,8 @@ describe('editable CBR+PNK sheet', () => {
     expect(wrapper.findAll('input[type="text"]')).toHaveLength(15)
     expect(wrapper.findAll('.augmentation-row textarea')).toHaveLength(3)
     for (const input of wrapper.findAll('input, textarea')) {
-      const isTextField = input.attributes('type') === 'text' || input.element.tagName === 'TEXTAREA'
+      const isTextField =
+        input.attributes('type') === 'text' || input.element.tagName === 'TEXTAREA'
       expect(input.element).toHaveProperty(
         isTextField ? 'value' : 'checked',
         isTextField
