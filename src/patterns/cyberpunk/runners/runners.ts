@@ -47,7 +47,7 @@ export const runners = (options: GenerationOptions = {}): Generated => {
   const species = pickSpecies(options)
   const appearance = [
     ...(isFlavorEnabled('shadowrun', options) ? [species] : []),
-    `${runnerAge(species)} Years`,
+    `${runnerAge()} Years`,
     ...runnerLooks(options),
   ]
   if (p(0.75)) appearance.push(details.type('inner').take().value)

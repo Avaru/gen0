@@ -5,7 +5,6 @@ import { cbrPnkAngles } from '@/data/characters/cbr-pnk-sheet'
 import { load, DATA } from '@/builders/load'
 import { flavors } from '@/generator/options'
 import { getNamePools } from '@/builders/namePools'
-import { SPECIES, SPECIES_AGE } from '@/patterns/cyberpunk/people/species'
 import { runnerAge } from '@/patterns/cyberpunk/runners/age'
 import { runners } from '@/patterns/cyberpunk/runners/runners'
 import * as peopleJobs from '@/patterns/cyberpunk/people/jobs'
@@ -71,16 +70,23 @@ describe('Runners', () => {
     },
   )
 
-  it('keeps ages as whole years within each species’ adult range', () => {
+  it.each([
+    { draws: [0, 0.8 - Number.EPSILON], ages: Array.from({ length: 25 }, (_, i) => 18 + i) },
+    { draws: [0.8, 0.98 - Number.EPSILON], ages: [16, 17, 43, 44, 45, 46, 47, 48, 49] },
+    {
+      draws: [0.98, 1 - Number.EPSILON],
+      ages: [14, 15, ...Array.from({ length: 31 }, (_, i) => 50 + i)],
+    },
+  ])('selects only the allowed ages at probability boundaries $draws', ({ draws, ages }) => {
     const random = vi.spyOn(Math, 'random')
-    for (const species of Object.values(SPECIES)) {
-      for (const draw of [0, 0.5, 0.8, 0.999]) {
-        for (const endpoint of [0, 0.999]) {
+    for (const draw of draws) {
+      for (const [index, age] of ages.entries()) {
+        for (const endpoint of [
+          index / ages.length,
+          (index + 1 - Number.EPSILON * ages.length) / ages.length,
+        ]) {
           random.mockReturnValueOnce(draw).mockReturnValueOnce(endpoint)
-          const age = runnerAge(species)
-          expect(Number.isInteger(age)).toBe(true)
-          expect(age).toBeGreaterThanOrEqual(Math.max(17, SPECIES_AGE[species].MATURITY))
-          expect(age).toBeLessThanOrEqual(SPECIES_AGE[species].MAX)
+          expect(runnerAge()).toBe(age)
         }
       }
     }

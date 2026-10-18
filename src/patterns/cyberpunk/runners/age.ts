@@ -1,13 +1,15 @@
 import { rng } from '@/helper/rng'
-import { SPECIES, SPECIES_AGE } from '../people/species'
 
-/** 70% in the two focus bands, 20% across young adults, 10% older runners. */
-export function runnerAge(species: SPECIES): number {
+/** 80% ages 18–42, 18% ages 16–17 or 43–49, 2% ages 14–15 or 50–80. */
+export function runnerAge(): number {
   const draw = rng()
-  const { MATURITY, MAX } = SPECIES_AGE[species]
-  const [min, max]: [number, number] =
-    draw < 0.35 ? [27, 29] : draw < 0.7 ? [33, 36] : draw < 0.9 ? [17, 40] : [41, MAX]
-  const lower = Math.max(min, MATURITY)
-  const upper = Math.min(max, MAX)
-  return lower + Math.floor(rng() * (upper - lower + 1))
+  if (draw < 0.8) return 18 + Math.floor(rng() * 25)
+
+  if (draw < 0.98) {
+    const offset = Math.floor(rng() * 9)
+    return offset < 2 ? 16 + offset : 41 + offset
+  }
+
+  const offset = Math.floor(rng() * 33)
+  return offset < 2 ? 14 + offset : 48 + offset
 }
