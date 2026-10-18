@@ -9,5 +9,5 @@
 - Use shared `Ui*` components, scoped CSS, and central variables. Keep the UI accessible at 320px and in current browsers; prefer native controls. Theme files and flavor mapping belong in `src/styles/themes/`, selected reactively from the route.
 - Keep generator settings in routes with reload and Back/Forward support. Results are temporary; details visibility stays in app state.
 - Read the relevant [current decisions](docs/decisions/) before structural changes. Update the existing notes to match agreed behavior; do not accumulate history or plans for absent features.
-- After meaningful generator changes, run `npm run build`, `npm run test:unit -- --run`, and `npm run lint`. Cover affected behavior, especially flavor filtering and nested generation.
+- After making changes, run `npm run format`. After meaningful generator changes, also run `npm run build`, `npm run test:unit -- --run`, and `npm run lint`. Cover affected behavior, especially flavor filtering and nested generation.
 - Keep README accurate. Never claim browser or offline checks that were not run.

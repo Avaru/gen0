@@ -1,6 +1,12 @@
 import type { NameFragment } from './types'
 
 export const runnerNames: NameFragment[] = [
+  { tags: ['runner'], value: 'Cringeado', type: 'name' },
+  { tags: ['runner'], value: 'Fantasma', type: 'name' },
+  { tags: ['runner'], value: 'Basado', type: 'name' },
+  { tags: ['runner'], value: 'Lauch', type: 'name' },
+  { tags: ['runner'], value: 'Fragile', type: 'name' },
+  { tags: ['runner'], value: 'Rat', type: 'name' },
   { tags: ['runner'], value: 'Pummelfee', type: 'name' },
   { tags: ['runner'], value: 'Mausebär', type: 'name' },
   { tags: ['runner'], value: 'Rakete', type: 'name' },

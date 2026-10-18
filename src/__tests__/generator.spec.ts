@@ -33,7 +33,7 @@ describe('migrated generator', () => {
         (bit) => !bit.tags.some((tag) => additions.includes(tag)),
       ),
     ).toHaveLength(19478)
-    expect(load(DATA.NAME_FRAGMENTS, options)).toHaveLength(2186)
+    expect(load(DATA.NAME_FRAGMENTS, options)).toHaveLength(2192)
     // Includes the user's hair, face, and clothing words, with outer entries removed.
     expect(load(DATA.RUNNER_TRAITS, options)).toHaveLength(540)
     expect(load(DATA.FOOD, options)).toHaveLength(611)
