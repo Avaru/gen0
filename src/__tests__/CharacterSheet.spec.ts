@@ -37,6 +37,28 @@ afterEach(() => {
 })
 
 describe('editable CBR+PNK sheet', () => {
+  it('regenerates only the chosen augmentation with the sheet flavor and preserves glitch marks', async () => {
+    const pinia = createPinia()
+    const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
+    const store = useCharacterStore(pinia)
+    store.sheet.augmentations[0]!.description = 'Keep first'
+    store.sheet.augmentations[1]!.description = 'Replace second'
+    store.sheet.augmentations[1]!.glitched = true
+    store.sheet.augmentations[2]!.description = 'Keep third'
+    const generate = vi
+      .spyOn(generators, 'generateNames')
+      .mockReturnValue([
+        { primary: 'Generated augmentation', details: 'Feature\nManufacturer: Brand' },
+      ])
+    await wrapper.get('button[aria-label="Regenerate augmentation 2"]').trigger('click')
+    expect(generate).toHaveBeenCalledWith('augmentations', 1, { flavor: 'cyberpunk' })
+    expect(store.sheet.augmentations).toEqual([
+      { description: 'Keep first', glitched: false },
+      { description: 'Generated augmentation · Feature · Manufacturer: Brand', glitched: true },
+      { description: 'Keep third', glitched: false },
+    ])
+  })
+
   it('keeps one angle selected, saves it, randomizes it on Generate, and clears it on Reset', async () => {
     const pinia = createPinia()
     const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })

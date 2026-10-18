@@ -95,15 +95,17 @@ onBeforeUnmount(() => {
 <template>
   <form class="sheet" aria-label="CBR+PNK character sheet" @submit.prevent>
     <UiWorkspace>
-      <Transition name="guide">
-        <div v-if="showCharacterGuide" class="guide-reveal">
-          <div class="guide-clip">
-            <UiRunnerGuide id="runner-guide" />
-          </div>
-        </div>
-      </Transition>
       <div ref="first-column" class="sheet-column" :class="{ active: columns }" />
       <div ref="second-column" class="sheet-column" :class="{ active: columns }" />
+      <Teleport :to="secondColumn ?? '#sheet-column-unmounted'" :disabled="!columns">
+        <Transition name="guide">
+          <div v-if="showCharacterGuide" class="guide-reveal">
+            <div class="guide-clip">
+              <UiRunnerGuide id="runner-guide" />
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
       <!-- Source order is the phone reading and keyboard order. Teleport preserves each card's state. -->
       <Teleport :to="firstColumn ?? '#sheet-column-unmounted'" :disabled="!columns">
         <UiRunnerCard
@@ -169,7 +171,7 @@ onBeforeUnmount(() => {
         :to="(printing ? firstColumn : secondColumn) ?? '#sheet-column-unmounted'"
         :disabled="!columns"
       >
-        <UiAugmentationsCard v-model="sheet.augmentations" />
+        <UiAugmentationsCard v-model="sheet.augmentations" :flavor="flavor" />
       </Teleport>
       <Teleport :to="secondColumn ?? '#sheet-column-unmounted'" :disabled="!columns">
         <UiRollReferenceCards />
@@ -181,7 +183,6 @@ onBeforeUnmount(() => {
 <style scoped>
 .guide-reveal {
   display: grid;
-  grid-column: 1 / -1;
   grid-template-rows: 1fr;
   overflow: hidden;
 }

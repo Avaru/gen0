@@ -32,21 +32,9 @@ import UiSheetCard from './UiSheetCard.vue'
       </li>
       <li>
         <p>
-          Body modifications of all types—Cybernetics, Biotech and others—are widely adopted among
-          Runners. Define your starting <strong>Signature Augmentation</strong> by writing down its
+          Define your starting <strong>Signature Augmentation</strong> by writing down its
           model/brand and an outline of its primary feature,
           <em>e.g. Ashide™ Racing Legs.</em>
-        </p>
-        <p>
-          While taking action or resisting Consequences, you can mark
-          <UiSheetSymbol kind="stress" label="stress" /> or <strong>SPECIAL RESISTANCE</strong> to
-          leverage your Augmentation into it.
-        </p>
-        <p>
-          <em
-            >During the Run, you may declare additional Augmentations or extra functionalities of
-            existing ones as <strong>UPGRADES</strong> (panel 8).</em
-          >
         </p>
       </li>
       <li>
@@ -60,7 +48,6 @@ import UiSheetCard from './UiSheetCard.vue'
 
 <style scoped>
 .file-runner {
-  grid-column: 1 / -1;
   overflow-wrap: anywhere;
 }
 .file-runner ol {
@@ -83,6 +70,14 @@ import UiSheetCard from './UiSheetCard.vue'
 }
 .approach-rating {
   white-space: nowrap;
+}
+
+@media screen and (min-width: 56rem) {
+  .file-runner {
+    min-height: 35rem;
+    max-height: 36rem;
+    overflow-y: auto;
+  }
 }
 
 @media print {

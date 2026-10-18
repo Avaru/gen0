@@ -4,6 +4,26 @@ import UiSheetField from './UiSheetField.vue'
 import UiSheetCard from './UiSheetCard.vue'
 import type { CharacterSheet } from '@/data/characters/types'
 import UiToggle from './UiToggle.vue'
+import UiButton from './UiButton.vue'
+import { ref } from 'vue'
+import { generateNames } from '@/generator/categories'
+import type { Flavor } from '@/generator/options'
+
+const props = withDefaults(defineProps<{ flavor?: Flavor }>(), { flavor: 'cyberpunk' })
+const error = ref('')
+function regenerate(index: number) {
+  error.value = ''
+  try {
+    const result = generateNames('augmentations', 1, { flavor: props.flavor })[0]
+    if (!result) return
+    augmentations.value[index]!.description = [result.primary, result.details]
+      .filter(Boolean)
+      .join(' · ')
+      .replace(/\n/g, ' · ')
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : 'Could not generate an augmentation.'
+  }
+}
 
 const augmentations = defineModel<CharacterSheet['augmentations']>({ required: true })
 </script>
@@ -29,6 +49,12 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
           etc)</em
         >.
       </p>
+      <p>
+        <em
+          >you may declare additional Augmentations or extra functionalities of existing ones as
+          <strong>UPGRADES</strong></em
+        >
+      </p>
     </div>
     <div
       v-for="(augmentation, index) in augmentations"
@@ -36,13 +62,37 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
       class="augmentation-row"
       :class="{ glitched: augmentation.glitched }"
     >
-      <UiSheetField
-        v-model="augmentation.description"
-        multiline
-        :rows="1"
-        :filled="!!augmentation.description.trim()"
-        :aria-label="`Augmentation ${index + 1}`"
-      />
+      <div class="augmentation-field">
+        <UiSheetField
+          v-model="augmentation.description"
+          multiline
+          :rows="1"
+          :filled="!!augmentation.description.trim()"
+          :aria-label="`Augmentation ${index + 1}`"
+        />
+        <UiButton
+          class="regenerate"
+          variant="secondary"
+          :aria-label="`Regenerate augmentation ${index + 1}`"
+          :title="`Regenerate augmentation ${index + 1}`"
+          @click="regenerate(index)"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
+          </svg>
+        </UiButton>
+      </div>
       <UiToggle
         v-model="augmentation.glitched"
         label="Glitched"
@@ -50,6 +100,7 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
         :input-label="`Augmentation ${index + 1} glitched`"
       />
     </div>
+    <p v-if="error" role="alert">{{ error }}</p>
   </UiSheetCard>
 </template>
 
@@ -69,6 +120,37 @@ strong {
   transition: var(--control-color-transition);
 }
 
+.augmentation-field {
+  position: relative;
+  min-width: 0;
+  --field-end-padding: calc(var(--control-height) + var(--space-2));
+}
+.regenerate {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.regenerate::before,
+.regenerate::after {
+  display: none;
+}
+.regenerate:hover:enabled,
+.regenerate:active:enabled {
+  background: transparent;
+  color: var(--color-accent);
+}
+@media print {
+  .regenerate {
+    display: none !important;
+  }
+}
 .glitched {
   color: var(--color-hot);
 }
