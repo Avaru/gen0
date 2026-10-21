@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import './styles/themes/cyberpunk.css'
+import './styles/themes/never-midnight.css'
 import './styles/base.css'
 import './styles/character-print.css'
 

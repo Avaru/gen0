@@ -17,13 +17,13 @@ export function useCharacterUrl() {
     if (disposed || route!.path !== '/chars/cbrpnk') return
     try {
       const token = encodeCharacter(character.sheet)
-      if (token === route!.query.character || writtenTokens.has(token)) return
+      if (token === route!.query.char || writtenTokens.has(token)) return
       // Our own navigation must not reload an older sheet over newer typing.
       writtenTokens.add(token)
       try {
         await router!.replace({
           path: route!.path,
-          query: { ...route!.query, character: token },
+          query: { ...route!.query, char: token },
           hash: route!.hash,
         })
         error.value = ''
@@ -37,10 +37,10 @@ export function useCharacterUrl() {
   watch(() => character.sheet, updateUrl, { deep: true, flush: 'post' })
 
   watch(
-    () => [route.path, route.query.character],
+    () => [route.path, route.query.char],
     () => {
       if (route.path !== '/chars/cbrpnk') return
-      const token = route.query.character
+      const token = route.query.char
       if (typeof token === 'string' && writtenTokens.has(token)) return
       error.value = ''
       if (token === undefined) {

@@ -163,9 +163,9 @@ describe('runner result actions', () => {
       await wrapper.get('[aria-label="Open Echo in character sheet"]').trigger('click')
       await flushPromises()
       expect(router.currentRoute.value.path).toBe('/chars/cbrpnk')
-      expect(Object.keys(router.currentRoute.value.query)).toEqual(['character'])
+      expect(Object.keys(router.currentRoute.value.query)).toEqual(['char'])
       expect(character.sheet.runner).toEqual(runner)
-      expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
+      expect(decodeCharacter(router.currentRoute.value.query.char as string)).toEqual(
         character.sheet,
       )
       expect(character.sheet.stress).toBe(0)

@@ -7,7 +7,7 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 export interface GeneratorSettings {
   setting: SettingId
-  flavor: Flavor
+  flavor?: Flavor
   category: string
   gender: NameGender[]
   size: CORPORATION_SIZE[]
@@ -57,17 +57,24 @@ export function settingsQuery(settings: GeneratorSettings): Record<string, strin
   }
 }
 
+const flavorPaths: Record<Flavor, string> = {
+  cyberpunk: 'generic',
+  shadowrun: 'shadowrun',
+  'cyberpunk2020-2077': 'cp77',
+}
+
 export function settingsFromRoute(route: RouteLocationNormalizedLoaded): GeneratorSettings {
+  const flavor = route.meta.flavor ?? route.params.flavor ?? route.query.flavor
   return normalizeGeneratorSettings({
     ...route.query,
     setting: route.meta.setting ?? route.params.setting ?? route.query.setting,
-    flavor: route.meta.flavor ?? route.params.flavor ?? route.query.flavor,
+    flavor: Object.entries(flavorPaths).find(([, path]) => path === flavor)?.[0] ?? flavor,
     category: route.params.category ?? route.query.category,
   })
 }
 
 export function settingsPath(settings: GeneratorSettings): string {
-  return `/settings/${settings.setting}/${settings.flavor}/${settings.category}`
+  return `/${settings.setting}/${settings.flavor ? `${flavorPaths[settings.flavor]}/` : ''}${settings.category}`
 }
 
 /** Compare query contents; their property order has no meaning. */

@@ -10,7 +10,6 @@ import { routes as appRoutes } from '../router'
 import GeneratorView from '../views/GeneratorView.vue'
 import AboutView from '../views/AboutView.vue'
 import CharacterView from '../views/CharacterView.vue'
-import { settings as registeredSettings, type SettingDefinition } from '@/generator/settingRegistry'
 import { createTestPinia as createPinia } from './helpers/pinia'
 
 enableAutoUnmount(afterEach)
@@ -68,97 +67,67 @@ async function setup(url = '/', attachTo?: HTMLElement) {
 }
 
 describe('name generator interface', () => {
-  it('hides the setting picker when only one setting is registered', async () => {
-    const { wrapper } = await setup('/settings/cyberpunk/shadowrun/runners')
-    expect(wrapper.find('nav button[aria-haspopup="dialog"]').exists()).toBe(false)
-    expect(wrapper.find('nav dialog').exists()).toBe(false)
+  it('changes to Never Midnight and restores Cyberpunk with browser Back', async () => {
+    const { wrapper, router } = await setup('/cyberpunk/shadowrun/runners', document.body)
+    const trigger = wrapper.get('nav button[aria-haspopup="dialog"]')
+    await trigger.trigger('click')
+    const dialog = wrapper.get('nav dialog')
+    expect((dialog.element as HTMLDialogElement).open).toBe(true)
+    expect(document.activeElement).toBe(dialog.get('.close').element)
+    await dialog.get('[data-setting="cyberpunk"]').trigger('click')
+    await flushPromises()
+    expect(document.activeElement).toBe(trigger.element)
+    expect(router.currentRoute.value.path).toBe('/cyberpunk/shadowrun/runners')
+    await trigger.trigger('click')
+    await wrapper.get('[data-setting="never-midnight"]').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/never-midnight/german')
+    expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('never-midnight')
+    expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(false)
+    expect(wrapper.find('input[name="flavor"]').exists()).toBe(false)
+    expect(wrapper.get('header .caption').text()).toBe('Never Midnight / Name generator')
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    await chooseCategory(wrapper, 'polish')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/never-midnight/polish')
+    router.back()
+    await flushPromises()
+    router.back()
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/cyberpunk/shadowrun/runners')
+    expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
     expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(true)
     wrapper.unmount()
   })
 
-  it('changes setting, hides Cyberpunk navigation, and restores it with browser Back', async () => {
-    // A temporary fixture exercises a second setting without shipping invented content.
-    const definitions = registeredSettings as unknown as SettingDefinition[]
-    definitions.push({
-      id: 'test',
-      label: 'Test setting',
-      caption: 'Test generator',
-      theme: 'cyberpunk',
-      flavors: [{ id: 'cyberpunk', label: 'Generic' }],
-      defaultFlavor: 'cyberpunk',
-      defaultCategory: 'test-names',
-      categories: [
-        {
-          id: 'test-names',
-          label: 'Test names',
-          group: 'People',
-          generate: () => ({ primary: 'Test result' }),
-        },
-      ],
-    })
-    try {
-      const { wrapper, router } = await setup(
-        '/settings/cyberpunk/shadowrun/runners',
-        document.body,
-      )
-      const trigger = wrapper.get('nav button[aria-haspopup="dialog"]')
-      await trigger.trigger('click')
-      const dialog = wrapper.get('nav dialog')
-      expect((dialog.element as HTMLDialogElement).open).toBe(true)
-      expect(document.activeElement).toBe(dialog.get('.close').element)
-      await dialog.get('[data-setting="cyberpunk"]').trigger('click')
-      await flushPromises()
-      expect(document.activeElement).toBe(trigger.element)
-      expect(router.currentRoute.value.path).toBe('/settings/cyberpunk/shadowrun/runners')
-      await trigger.trigger('click')
-      await wrapper.get('[data-setting="test"]').trigger('click')
-      await flushPromises()
-      expect(router.currentRoute.value.path).toBe('/settings/test/cyberpunk/test-names')
-      expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(false)
-      expect(wrapper.find('input[name="flavor"]').exists()).toBe(false)
-      expect(wrapper.get('header .caption').text()).toBe('Test generator')
-      expect(wrapper.findAll('li')).toHaveLength(10)
-      expect(wrapper.findAll('li')[0]!.text()).toContain('Test result')
-      await router.push('/settings/test/cyberpunk/runners')
-      await flushPromises()
-      expect(router.currentRoute.value.path).toBe('/settings/test/cyberpunk/test-names')
-      router.back()
-      await flushPromises()
-      router.back()
-      await flushPromises()
-      expect(router.currentRoute.value.path).toBe('/settings/cyberpunk/shadowrun/runners')
-      expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(true)
-      wrapper.unmount()
-    } finally {
-      definitions.pop()
-    }
-  })
-
-  it('redirects legacy About links while preserving their options', async () => {
-    const { wrapper, router } = await setup('/shadowrun/german/about?gender=f')
-    expect(router.currentRoute.value.fullPath).toBe(
-      '/settings/cyberpunk/shadowrun/german/about?gender=f',
-    )
-    expect(wrapper.get('nav a').attributes('href')).toBe(
-      '/settings/cyberpunk/shadowrun/german?gender=f',
-    )
+  it('restores Never Midnight country and name forms from a direct link', async () => {
+    const { wrapper, router } = await setup('/never-midnight/russian?gender=f&flavor=shadowrun')
+    expect(router.currentRoute.value.fullPath).toBe('/never-midnight/russian?gender=f')
+    expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('never-midnight')
+    expect(wrapper.get('#results-heading').text()).toBe('Russian')
+    expect(wrapper.findAll('li')).toHaveLength(10)
+    expect(wrapper.find('input[name="gender"][value="f"]').element).toHaveProperty('checked', true)
     wrapper.unmount()
   })
 
-  it.each(['cyberpunk', 'shadowrun', 'cyberpunk2020-2077'])(
-    'preserves old %s links while replacing them with a setting URL',
+  it.each(['generic', 'shadowrun', 'cp77'])(
+    'restores the %s flavor from its short URL',
     async (flavor) => {
-      const { wrapper, router } = await setup(`/${flavor}/german?gender=f`)
-      expect(router.currentRoute.value.fullPath).toBe(
-        `/settings/cyberpunk/${flavor}/german?gender=f`,
+      const path = `/cyberpunk/${flavor}/german?gender=f`
+      const { wrapper, router } = await setup(path)
+      expect(router.currentRoute.value.fullPath).toBe(path)
+      const value =
+        flavor === 'generic' ? 'cyberpunk' : flavor === 'cp77' ? 'cyberpunk2020-2077' : flavor
+      expect(wrapper.get(`input[name="flavor"][value="${value}"]`).element).toHaveProperty(
+        'checked',
+        true,
       )
-      expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(true)
       wrapper.unmount()
     },
   )
 
   it('scrolls to the top only for top-menu navigation, including the current page', async () => {
-    const { wrapper, router } = await setup('/settings/cyberpunk/cyberpunk/german', document.body)
+    const { wrapper, router } = await setup('/cyberpunk/generic/german', document.body)
     const focus = vi.spyOn(wrapper.get('main').element as HTMLElement, 'focus')
     try {
       expect(scrollTo).not.toHaveBeenCalled()
@@ -194,9 +163,9 @@ describe('name generator interface', () => {
   })
 
   it.each([
-    ['/settings/cyberpunk/cyberpunk/german?gender=f', '/chars/cbrpnk'],
-    ['/settings/cyberpunk/shadowrun/corporations?size=a', '/chars/cbrpnk'],
-    ['/settings/cyberpunk/cyberpunk2020-2077/german?gender=f', '/chars/cbrpnk'],
+    ['/cyberpunk/generic/german?gender=f', '/chars/cbrpnk'],
+    ['/cyberpunk/shadowrun/corporations?size=a', '/chars/cbrpnk'],
+    ['/cyberpunk/cp77/german?gender=f', '/chars/cbrpnk'],
   ])('switches to Generic from %s when opening the sheet', async (url, expected) => {
     const { wrapper, router } = await setup(url)
     const link = wrapper.findAll('nav a').find((item) => item.text() === 'CBR+PNK')!
@@ -204,17 +173,14 @@ describe('name generator interface', () => {
     await link.trigger('click')
     await flushPromises()
     expect(router.currentRoute.value.path).toBe(expected)
-    expect(typeof router.currentRoute.value.query.character).toBe('string')
+    expect(typeof router.currentRoute.value.query.char).toBe('string')
     expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
-    expect(wrapper.find('nav a[href="/settings/cyberpunk/cyberpunk/runners"]').exists()).toBe(true)
+    expect(wrapper.find('nav a[href="/cyberpunk/generic/runners"]').exists()).toBe(true)
     wrapper.unmount()
   })
 
   it('opens the character sheet in Generic, retains edits across navigation, and returns to Generic', async () => {
-    const { wrapper, router } = await setup(
-      '/settings/cyberpunk/cyberpunk2020-2077/german?gender=f',
-      document.body,
-    )
+    const { wrapper, router } = await setup('/cyberpunk/cp77/german?gender=f', document.body)
     try {
       await wrapper.get('nav a[href="/chars/cbrpnk"]').trigger('click')
       await flushPromises()
@@ -225,7 +191,7 @@ describe('name generator interface', () => {
       await wrapper.get(rating).setValue(true)
       await wrapper.get('nav a[href$="/runners/about"]').trigger('click')
       await flushPromises()
-      expect(router.currentRoute.value.query.character).toBeUndefined()
+      expect(router.currentRoute.value.query.char).toBeUndefined()
       await wrapper.get('nav a[href="/chars/cbrpnk"]').trigger('click')
       await flushPromises()
       expect(wrapper.get(rating).element).toHaveProperty('checked', true)
@@ -235,7 +201,7 @@ describe('name generator interface', () => {
       )
       await wrapper.get('nav a').trigger('click')
       await flushPromises()
-      expect(router.currentRoute.value.fullPath).toBe('/settings/cyberpunk/cyberpunk/runners')
+      expect(router.currentRoute.value.fullPath).toBe('/cyberpunk/generic/runners')
     } finally {
       wrapper.unmount()
     }
@@ -245,9 +211,7 @@ describe('name generator interface', () => {
     async (flavor) => {
       const { wrapper, router } = await setup(`/chars/cbrpnk?flavor=${flavor}`)
       expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
-      expect(wrapper.find('nav a[href="/settings/cyberpunk/cyberpunk/runners"]').exists()).toBe(
-        true,
-      )
+      expect(wrapper.find('nav a[href="/cyberpunk/generic/runners"]').exists()).toBe(true)
       await router.replace({ path: '/chars/cbrpnk', query: { flavor: 'cyberpunk2020-2077' } })
       await flushPromises()
       expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
@@ -270,7 +234,7 @@ describe('name generator interface', () => {
     )
     wrapper.unmount()
   })
-  it.each(['/about', '/settings/cyberpunk/shadowrun/german/about'])(
+  it.each(['/about', '/cyberpunk/shadowrun/german/about'])(
     'does not focus content when loading %s',
     async (url) => {
       const history = createMemoryHistory()
@@ -295,12 +259,12 @@ describe('name generator interface', () => {
     },
   )
   it('focuses new page content while keeping focus on controls for setting changes', async () => {
-    const { wrapper, router } = await setup('/settings/cyberpunk/cyberpunk/german', document.body)
+    const { wrapper, router } = await setup('/cyberpunk/generic/german', document.body)
     try {
       const flavor = wrapper.get('input[name="flavor"][value="cyberpunk"]')
         .element as HTMLInputElement
       flavor.focus()
-      await router.push('/settings/cyberpunk/cyberpunk/russian')
+      await router.push('/cyberpunk/generic/russian')
       await flushPromises()
       expect(document.activeElement).toBe(flavor)
       await wrapper.get('nav a').trigger('click')
@@ -319,10 +283,9 @@ describe('name generator interface', () => {
     }
   })
   it('restores path settings and query options on direct links and fresh app loads', async () => {
-    const url =
-      '/settings/cyberpunk/shadowrun/german?gender=f&flavor=cyberpunk&category=corporations'
+    const url = '/cyberpunk/shadowrun/german?gender=f&flavor=cyberpunk&category=corporations'
     const { wrapper, router } = await setup(url)
-    expect(router.currentRoute.value.fullPath).toBe('/settings/cyberpunk/shadowrun/german?gender=f')
+    expect(router.currentRoute.value.fullPath).toBe('/cyberpunk/shadowrun/german?gender=f')
     expect(wrapper.get('input[name="flavor"][value="shadowrun"]').element).toHaveProperty(
       'checked',
       true,
@@ -341,10 +304,10 @@ describe('name generator interface', () => {
 
   it('normalizes incomplete and unsupported paths using existing fallbacks', async () => {
     for (const [url, expected] of [
-      ['/settings/cyberpunk/shadowrun', '/settings/cyberpunk/shadowrun/runners'],
-      ['/unknown/known-corporations', '/settings/cyberpunk/cyberpunk/corporations'],
-      ['/settings/cyberpunk/cyberpunk/missing', '/settings/cyberpunk/cyberpunk/runners'],
-      ['/settings/cyberpunk/cyberpunk/about', '/settings/cyberpunk/cyberpunk/runners'],
+      ['/cyberpunk/shadowrun', '/cyberpunk/shadowrun/runners'],
+      ['/cyberpunk/generic/known-corporations', '/cyberpunk/generic/corporations'],
+      ['/cyberpunk/generic/missing', '/cyberpunk/generic/runners'],
+      ['/cyberpunk/generic/about', '/cyberpunk/generic/runners'],
     ]) {
       const { wrapper, router } = await setup(url)
       expect(router.currentRoute.value.fullPath).toBe(expected)
@@ -355,7 +318,7 @@ describe('name generator interface', () => {
 
   it('falls back to Generic runners for a saved Birka fashion link', async () => {
     const { wrapper, router } = await setup('/?flavor=birka&category=fashion-items')
-    expect(router.currentRoute.value.path).toBe('/settings/cyberpunk/cyberpunk/runners')
+    expect(router.currentRoute.value.path).toBe('/cyberpunk/generic/runners')
     expect(router.currentRoute.value.query).toEqual({})
     expect(wrapper.find('input[name="flavor"][value="birka"]').exists()).toBe(false)
     expect(wrapper.find('[data-category="fashion-items"]').exists()).toBe(false)
@@ -407,7 +370,7 @@ describe('name generator interface', () => {
   })
 
   it('keeps phone category choices in place, including choosing the current category', async () => {
-    const { wrapper, router } = await setup('/settings/cyberpunk/cyberpunk/german')
+    const { wrapper, router } = await setup('/cyberpunk/generic/german')
     await wrapper.get('#category').trigger('click')
     await wrapper.get('.close').trigger('click')
     expect(scroll).not.toHaveBeenCalled()
@@ -428,7 +391,7 @@ describe('name generator interface', () => {
   it('adds twenty names at the bottom without moving the viewport or replacing existing names', async () => {
     const height = vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(2000)
     const position = vi.spyOn(window, 'scrollY', 'get').mockReturnValue(0)
-    const { wrapper } = await setup('/settings/cyberpunk/cyberpunk/german')
+    const { wrapper } = await setup('/cyberpunk/generic/german')
     try {
       expect(wrapper.text()).not.toContain('Generate more')
       const original = wrapper.findAll('li').map((item) => item.text())
@@ -477,25 +440,21 @@ describe('name generator interface', () => {
     const query = { ...router.currentRoute.value.query }
     await wrapper.get('nav a').trigger('click')
     await flushPromises()
-    expect(router.currentRoute.value.path).toBe(
-      '/settings/cyberpunk/cyberpunk2020-2077/german/about',
-    )
+    expect(router.currentRoute.value.path).toBe('/cyberpunk/cp77/german/about')
     expect(wrapper.get('h1').text()).toBe('About gen 0')
     expect(wrapper.text()).toContain('Anton Katzer')
     expect(wrapper.get('.shell').attributes('data-theme')).toBe('cyberpunk')
     expect(wrapper.find('#category').exists()).toBe(false)
     await wrapper.get('nav a').trigger('click')
     await flushPromises()
-    expect(router.currentRoute.value.path).toBe('/settings/cyberpunk/cyberpunk2020-2077/german')
+    expect(router.currentRoute.value.path).toBe('/cyberpunk/cp77/german')
     expect(router.currentRoute.value.query).toEqual(query)
     expect(wrapper.findAll('li')).toHaveLength(10)
     wrapper.unmount()
 
     const direct = await setup('/about')
     expect(direct.wrapper.text()).toContain('Anton Katzer')
-    expect(direct.wrapper.get('nav a').attributes('href')).toBe(
-      '/settings/cyberpunk/cyberpunk/runners',
-    )
+    expect(direct.wrapper.get('nav a').attributes('href')).toBe('/cyberpunk/generic/runners')
     direct.wrapper.unmount()
   })
 
@@ -829,7 +788,7 @@ describe('name generator interface', () => {
     const { wrapper, router } = await setup(
       '/?flavor=unknown&category=known-corporations&size=invalid&count=1000',
     )
-    expect(router.currentRoute.value.path).toBe('/settings/cyberpunk/cyberpunk/corporations')
+    expect(router.currentRoute.value.path).toBe('/cyberpunk/generic/corporations')
     expect(router.currentRoute.value.query).toEqual({})
     expect(wrapper.findAll('li')).toHaveLength(10)
     expect(wrapper.find('#count').exists()).toBe(false)

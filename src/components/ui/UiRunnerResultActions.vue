@@ -33,7 +33,7 @@ async function openCharacter() {
     character.applyArchetype({ flavor: 'cyberpunk' })
     await router.push({
       path: '/chars/cbrpnk',
-      query: { character: encodeCharacter(character.sheet) },
+      query: { char: encodeCharacter(character.sheet) },
     })
   } catch {
     error.value = 'Could not open this runner in the character sheet.'

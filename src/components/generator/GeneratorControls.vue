@@ -45,7 +45,7 @@ const sizeOptions = [
 <template>
   <form aria-label="Generator settings" @submit.prevent="generate">
     <UiSegments
-      v-if="flavorOptions.length > 1"
+      v-if="settings.flavor && flavorOptions.length > 1"
       :model-value="settings.flavor"
       label="Flavor"
       name="flavor"

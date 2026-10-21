@@ -65,8 +65,8 @@ describe('compressed character links', () => {
       row.glitched = true
     })
     const url = new URL('https://example.com/gen0/chars/cbrpnk')
-    url.searchParams.set('character', encodeCharacter(sheet))
-    const token = url.searchParams.get('character')!
+    url.searchParams.set('char', encodeCharacter(sheet))
+    const token = url.searchParams.get('char')!
     expect(url.pathname).toBe('/gen0/chars/cbrpnk')
     expect(token).toMatch(/^[A-Za-z0-9_-]+$/)
     expect(decodeCharacter(token)).toEqual(sheet)
@@ -103,7 +103,7 @@ describe('compressed character links', () => {
     }
   })
 
-  it('prefers the URL over local storage, updates edits, and restores Back/Forward', async () => {
+  it('loads ?char over local storage, updates edits, and restores Back/Forward', async () => {
     const pinia = createTestPinia()
     const store = useCharacterStore(pinia)
     store.sheet.runner.alias = 'First'
@@ -115,17 +115,15 @@ describe('compressed character links', () => {
       history: createMemoryHistory(),
       routes: [{ path: '/chars/cbrpnk', component: CharacterView }],
     })
-    await router.push(`/chars/cbrpnk?character=${first}`)
+    await router.push(`/chars/cbrpnk?char=${first}`)
     const wrapper = mount(CharacterView, { global: { plugins: [pinia, router] } })
     expect(store.sheet.runner.alias).toBe('First')
     expect(JSON.parse(localStorage.getItem('gen0.character')!).runner.alias).toBe('First')
     store.sheet.runner.alias = 'Edited'
     await flushPromises()
     expect(store.sheet.runner.alias).toBe('Edited')
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
-      store.sheet,
-    )
-    await router.push(`/chars/cbrpnk?character=${second}`)
+    expect(decodeCharacter(router.currentRoute.value.query.char as string)).toEqual(store.sheet)
+    await router.push(`/chars/cbrpnk?char=${second}`)
     expect(store.sheet.runner.alias).toBe('Second')
     router.back()
     await flushPromises()
@@ -133,7 +131,7 @@ describe('compressed character links', () => {
     router.forward()
     await flushPromises()
     expect(store.sheet.runner.alias).toBe('Second')
-    await router.push('/chars/cbrpnk?character=broken')
+    await router.push('/chars/cbrpnk?char=broken')
     expect(wrapper.get('[role="alert"]').text()).toContain('kept')
     expect(store.sheet.runner.alias).toBe('Second')
     await router.push('/chars/cbrpnk')
@@ -166,9 +164,7 @@ describe('compressed character links', () => {
     )
     await flushPromises()
     expect(store.sheet.runner.alias).toBe('Locally saved')
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
-      store.sheet,
-    )
+    expect(decodeCharacter(router.currentRoute.value.query.char as string)).toEqual(store.sheet)
     replace.mockClear()
     store.sheet.runner.alias = 'Newest edit'
     store.sheet.stress = 3
@@ -176,17 +172,13 @@ describe('compressed character links', () => {
     await nextTick()
     expect(replace).toHaveBeenCalledTimes(1)
     await flushPromises()
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
-      store.sheet,
-    )
+    expect(decodeCharacter(router.currentRoute.value.query.char as string)).toEqual(store.sheet)
     expect(router.currentRoute.value.query.flavor).toBe('shadowrun')
     expect(router.currentRoute.value.hash).toBe('#sheet')
     expect(load).not.toHaveBeenCalled()
     store.reset()
     await flushPromises()
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
-      store.sheet,
-    )
+    expect(decodeCharacter(router.currentRoute.value.query.char as string)).toEqual(store.sheet)
     wrapper.unmount()
   })
 
@@ -197,7 +189,7 @@ describe('compressed character links', () => {
       history: createMemoryHistory(),
       routes: [{ path: '/chars/cbrpnk', component: CharacterView }],
     })
-    await router.push(`/chars/cbrpnk?character=${encodeCharacter(store.sheet)}`)
+    await router.push(`/chars/cbrpnk?char=${encodeCharacter(store.sheet)}`)
     const wrapper = mount(
       defineComponent({
         setup() {
@@ -222,9 +214,7 @@ describe('compressed character links', () => {
     releases[1]!()
     await flushPromises()
     expect(store.sheet.runner.alias).toBe('Latest')
-    expect(decodeCharacter(router.currentRoute.value.query.character as string)).toEqual(
-      store.sheet,
-    )
+    expect(decodeCharacter(router.currentRoute.value.query.char as string)).toEqual(store.sheet)
     removeGuard()
     wrapper.unmount()
   })

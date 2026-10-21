@@ -176,4 +176,19 @@ const animationRun = ref(0)
     animation: none;
   }
 }
+/* A slightly misregistered stamp in the Never Midnight setting. */
+.brand:where([data-theme='never-midnight'] *) {
+  font-size: clamp(3.5rem, 13vw, 6rem);
+  letter-spacing: -0.04em;
+  color: var(--color-hot);
+  border: 3px double currentColor;
+  padding: 0.15em 0.15em 0.05em;
+  transform: rotate(-3deg);
+}
+.layer:where([data-theme='never-midnight'] *) {
+  display: none;
+}
+.ink:where([data-theme='never-midnight'] *) {
+  text-shadow: 1px 1px var(--color-page);
+}
 </style>

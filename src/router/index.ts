@@ -1,8 +1,17 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { normalizeGeneratorSettings, settingsPath, settingsQuery } from '@/generator/settings'
 
 export const routes: RouteRecordRaw[] = [
   { path: '/', component: () => import('@/views/GeneratorView.vue') },
+  {
+    path: '/never-midnight/:category/about',
+    meta: { setting: 'never-midnight' },
+    component: () => import('@/views/AboutView.vue'),
+  },
+  {
+    path: '/never-midnight/:category?',
+    meta: { setting: 'never-midnight' },
+    component: () => import('@/views/GeneratorView.vue'),
+  },
   { path: '/about', component: () => import('@/views/AboutView.vue') },
   {
     path: '/chars/cbrpnk',
@@ -10,29 +19,15 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/CharacterView.vue'),
   },
   {
-    path: '/settings/:setting/:flavor/:category/about',
+    path: '/cyberpunk/:flavor(generic|shadowrun|cp77)/:category/about',
+    meta: { setting: 'cyberpunk' },
     component: () => import('@/views/AboutView.vue'),
   },
   {
-    path: '/settings/:setting/:flavor?/:category?',
+    path: '/cyberpunk/:flavor(generic|shadowrun|cp77)?/:category?',
+    meta: { setting: 'cyberpunk' },
     component: () => import('@/views/GeneratorView.vue'),
   },
-  {
-    path: '/:flavor/:category/about',
-    redirect: (route) => {
-      const selection = normalizeGeneratorSettings({
-        ...route.query,
-        flavor: route.params.flavor,
-        category: route.params.category,
-      })
-      return {
-        path: settingsPath(selection) + '/about',
-        query: settingsQuery(selection),
-        hash: route.hash,
-      }
-    },
-  },
-  { path: '/:flavor/:category?', component: () => import('@/views/GeneratorView.vue') },
 ]
 
 const router = createRouter({
