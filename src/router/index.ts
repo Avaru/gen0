@@ -2,16 +2,6 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
 export const routes: RouteRecordRaw[] = [
   { path: '/', component: () => import('@/views/GeneratorView.vue') },
-  {
-    path: '/never-midnight/:category/about',
-    meta: { setting: 'never-midnight' },
-    component: () => import('@/views/AboutView.vue'),
-  },
-  {
-    path: '/never-midnight/:category?',
-    meta: { setting: 'never-midnight' },
-    component: () => import('@/views/GeneratorView.vue'),
-  },
   { path: '/about', component: () => import('@/views/AboutView.vue') },
   {
     path: '/chars/cbrpnk',

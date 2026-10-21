@@ -47,7 +47,6 @@ defineExpose({
     <div class="heading">
       <h1 id="results-heading">{{ label }}</h1>
       <UiToggle
-        v-if="setting !== 'never-midnight'"
         :model-value="showDetails"
         label="details"
         @update:model-value="$emit('update:showDetails', $event)"

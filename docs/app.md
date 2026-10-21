@@ -4,9 +4,9 @@ All generator data is bundled. Generation runs in the browser without a backend,
 
 ## Use
 
-The Setting picker appears in the top navigation only when more than one setting is registered. Choose Cyberpunk for its Generic, Shadowrun, or combined CP 2020/77 flavor, or Never Midnight for German, Russian, and Polish names under Names by country. Never Midnight reuses the personal-name data and composition rules without Cyberpunk character details, and uses a paper-and-ink theme with red stamps, Courier Prime, and Special Elite from Google Fonts. It has no flavor selector. The CBR+PNK navigation link appears only for Cyberpunk, regardless of flavor. Opening the generator or changing settings produces 10 names; scrolling to the bottom adds 20. Generate names rerolls the batch. Gender and corporation-size checkboxes choose the allowed results.
+The Setting picker appears in the top navigation only when more than one setting is registered. Cyberpunk offers Generic, Shadowrun, and combined CP 2020/77 flavors. The CBR+PNK navigation link appears only for Cyberpunk, regardless of flavor. Opening the generator or changing settings produces 10 names; scrolling to the bottom adds 20. Generate names rerolls the batch. Gender and corporation-size checkboxes choose the allowed results.
 
-Setting/flavor/category use paths such as `/cyberpunk/shadowrun/runners`; flavor segments are `generic`, `shadowrun`, or `cp77`. Never Midnight uses `/never-midnight/german`. Applicable gender/size choices use query parameters. Reload and Back/Forward restore settings. Results are temporary. The details toggle survives navigation but resets on reload. About retains settings when returning to the generator.
+Setting/flavor/category use paths such as `/cyberpunk/shadowrun/runners`; flavor segments are `generic`, `shadowrun`, or `cp77`. Applicable gender/size choices use query parameters. Reload and Back/Forward restore settings. Results are temporary. The details toggle survives navigation but resets on reload. About retains settings when returning to the generator.
 
 The header shows `v/{commit hash}` in small text above the right end of the striped separator. The hash is supplied during the build: Vercel’s `VERCEL_GIT_COMMIT_SHA` when available, otherwise local Git HEAD, or `unknown` without either. Uncommitted changes do not change this version.
 

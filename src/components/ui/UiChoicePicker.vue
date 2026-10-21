@@ -358,7 +358,7 @@ h3 {
     pointer-events: none;
   }
   .choices button:not(.primary):hover {
-    background: var(--color-primary-hover, #fff);
+    background: #fff;
     color: var(--color-on-accent);
   }
   .choices button:hover .current {

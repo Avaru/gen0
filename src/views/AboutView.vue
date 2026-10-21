@@ -31,10 +31,9 @@ const paragraphs = [
   'Created by Anton Katzer, gen 0 continues the name generators from RPGenerator and itemcards.com. ' +
     'All fragments used to build the lists are hand-crafted, sourced from census data, or inspired ' +
     'by cyberpunk universes, providing names and ideas for your tabletop roleplaying sessions.',
-  'The Cyberpunk setting offers Generic, Shadowrun and Cyberpunk 2020/2077 flavors. ' +
+  'This version focuses on cyberpunk, with Generic, Shadowrun and Cyberpunk 2020/2077 flavors. ' +
     'Alongside personal names, you’ll find runner handles, corporations, weapons, entertainment ' +
-    'and things to discover on hacked devices. Never Midnight reuses German, Russian and Polish ' +
-    'personal names. The name lists have grown over the years from ' +
+    'and things to discover on hacked devices. The name lists have grown over the years from ' +
     'census data, freely available name lists and ideas developed at the gaming table.',
   'The generator is always in development. Imagine a 90s “under construction” GIF here and ' +
     'pretend it fits the retro cyberpunk aesthetic.',
