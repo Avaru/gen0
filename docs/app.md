@@ -4,9 +4,9 @@ All generator data is bundled. Generation runs in the browser without a backend,
 
 ## Use
 
-Choose Generic, Shadowrun, or combined CP 2020/77, then search the category picker. Opening the generator or changing settings produces 10 names; scrolling to the bottom adds 20. Generate names rerolls the batch. Gender and corporation-size checkboxes choose the allowed results.
+The Setting picker appears in the top navigation only when more than one setting is registered. Cyberpunk is currently the only setting, so the picker is hidden; choose its Generic, Shadowrun, or combined CP 2020/77 flavor, then search the category picker. The CBR+PNK navigation link appears only for Cyberpunk, regardless of flavor. Opening the generator or changing settings produces 10 names; scrolling to the bottom adds 20. Generate names rerolls the batch. Gender and corporation-size checkboxes choose the allowed results.
 
-Flavor/category use paths such as `/shadowrun/runners`; applicable gender/size choices use query parameters. Reload and Back/Forward restore settings. Results are temporary. The details toggle survives navigation but resets on reload. About retains settings when returning to the generator.
+Setting/flavor/category use paths such as `/settings/cyberpunk/shadowrun/runners`; old `/shadowrun/runners` links normalize to the equivalent setting URL; applicable gender/size choices use query parameters. Reload and Back/Forward restore settings. Results are temporary. The details toggle survives navigation but resets on reload. About retains settings when returning to the generator.
 
 The header shows `v/{commit hash}` in small text above the right end of the striped separator. The hash is supplied during the build: Vercel’s `VERCEL_GIT_COMMIT_SHA` when available, otherwise local Git HEAD, or `unknown` without either. Uncommitted changes do not change this version.
 
@@ -26,8 +26,8 @@ The Augmentations card copies the supplied rules and provides three blank text l
 - `src/stores/character.ts`: Pinia state for the editable sheet, linked to catalogue IDs; blank values are `null`, distinct from zero.
 - `src/patterns/cyberpunk/`: composition grouped by purpose; shared names, jobs, and species live in `people/`, and nationality rules live in `nationality/traditions.ts`.
 - `src/builders/`: data loading/flavor filtering in `load.ts`, independent selection pools, and cached personal-name pools.
-- `src/generator/`: categories, options, alternate labels, and route normalization.
+- `src/generator/`: setting registry, category definitions in `definitions/`, options, alternate labels, and route normalization. Each registry entry supplies categories, flavors, defaults, theme, caption, and optional character-sheet navigation. Shared category dispatch selects only the active setting’s categories; new settings are not added to flavor tags.
 - `src/views/`, `src/components/`: pages and shared controls.
-- `src/styles/`: shared variables and flavor themes.
+- `src/styles/`: shared variables and setting themes. Add theme CSS under `themes/`, import it in `main.ts`, extend the theme type, and select it in the setting registry.
 
 Follow [working instructions](../AGENTS.md) and the [current decisions](decisions/). Source coverage and reuse terms: [personal names](name-data-sources.md), [corporations](data-sources.md), and [regional mixes](sovereignty-name-sources.md). Required notices ship in `public/name-data-notices.txt`.

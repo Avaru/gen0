@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 
 const props = defineProps<{ id: string; title: string; closeLabel: string; fitContent?: boolean }>()
 defineEmits<{ close: [] }>()
 const dialog = ref<HTMLDialogElement>()
 const closeButton = ref<HTMLButtonElement>()
-function showModal() {
+const initialized = ref(false)
+async function showModal() {
+  initialized.value = true
+  await nextTick()
   dialog.value?.showModal()
   closeButton.value?.focus({ preventScroll: true })
 }
@@ -39,7 +42,7 @@ defineExpose({ showModal, close })
     @close="$emit('close')"
     @keydown.tab="wrapFocus"
   >
-    <div class="panel">
+    <div v-if="initialized" class="panel">
       <header>
         <h2 :id="`${props.id}-heading`">{{ title }}</h2>
         <div class="header-actions">

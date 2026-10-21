@@ -18,7 +18,11 @@ export function useGeneratorSettings() {
   watch(
     () => route.fullPath,
     () => {
-      if (route.matched.some((record) => record.path.endsWith('/about'))) return
+      if (
+        route.path === '/chars/cbrpnk' ||
+        route.matched.some((record) => record.path.endsWith('/about'))
+      )
+        return
       const query = settingsQuery(settings.value)
       const path = settingsPath(settings.value)
       if (route.path !== path || !matchesSettingsQuery(route.query, query))

@@ -9,6 +9,7 @@ const props = defineProps<{
   results: Generated[]
   busy: boolean
   label: string
+  setting?: string
   category?: string
   error: string
   showDetails: boolean
@@ -109,7 +110,10 @@ defineExpose({
             </div>
           </template>
         </div>
-        <UiRunnerResultActions v-if="category === 'runners' && showDetails" :result="result" />
+        <UiRunnerResultActions
+          v-if="(!setting || setting === 'cyberpunk') && category === 'runners' && showDetails"
+          :result="result"
+        />
       </li>
     </ol>
   </section>

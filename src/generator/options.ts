@@ -1,12 +1,14 @@
+import type { SettingId } from './settingRegistry'
 import type { NameGender } from '@/data/nameTypes'
 import { GENUS } from '@/builders/types'
 import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 
-export const flavors = [
+export const cyberpunkFlavors = [
   { id: 'cyberpunk', label: 'Generic' },
   { id: 'shadowrun', label: 'Shadowrun' },
   { id: 'cyberpunk2020-2077', label: 'CP 2020/77' },
 ] as const
+export const flavors = [...cyberpunkFlavors] as const
 export type Flavor = (typeof flavors)[number]['id']
 
 export const givenNameGenders = [GENUS.M, GENUS.F] as const
@@ -26,6 +28,7 @@ export function normalizeSelections<T extends string>(
 }
 
 export interface GenerationOptions {
+  setting?: SettingId
   runnerArchetypeId?: string
   flavor?: Flavor
   // Overrides take priority over a flavor; exclusion takes priority over inclusion.

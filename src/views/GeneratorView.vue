@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, useTemplateRef, watch } from 'vue'
+import { computed, inject, nextTick, onBeforeUnmount, ref, useTemplateRef, watch } from 'vue'
 import { availableCategories, generateNames } from '@/generator/categories'
 import type { Generated } from '@/patterns/types'
 import { useGeneratorSettings } from '@/composables/useGeneratorSettings'
@@ -11,7 +11,7 @@ const { settings, update } = useGeneratorSettings()
 const showDetails = inject('showDetails', ref(true))
 const resultList = useTemplateRef<InstanceType<typeof GeneratorResults>>('resultList')
 const category = computed(() =>
-  availableCategories({ flavor: settings.value.flavor }).find(
+  availableCategories({ setting: settings.value.setting, flavor: settings.value.flavor }).find(
     (item) => item.id === settings.value.category,
   ),
 )
@@ -19,8 +19,12 @@ const results = ref<Generated[]>([])
 const error = ref('')
 const busy = ref(false)
 let request = 0
+onBeforeUnmount(() => {
+  request++
+})
 watch(
   [
+    () => settings.value.setting,
     () => settings.value.flavor,
     () => settings.value.category,
     () => settings.value.gender.join(','),
@@ -46,6 +50,7 @@ async function generate(append = false, revealFirstName = false) {
     await nextTick()
     if (current !== request) return
     const generated = generateNames(selection.category, append ? 20 : 10, {
+      setting: selection.setting,
       flavor: selection.flavor,
       genders: selection.gender,
       corporationSizes: selection.size,
@@ -81,6 +86,7 @@ async function generate(append = false, revealFirstName = false) {
       :busy="busy"
       :label="category?.label ?? 'Generated names'"
       :category="settings.category"
+      :setting="settings.setting"
       :pending-pools="category?.pendingPools"
       :error="error"
       :show-details="showDetails"

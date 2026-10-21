@@ -6,6 +6,12 @@ import {
 } from '@/generator/settings'
 
 describe('Generator settings normalization', () => {
+  it('defaults unknown settings to Cyberpunk without losing valid flavor and category choices', () => {
+    expect(
+      normalizeGeneratorSettings({ setting: 'missing', flavor: 'shadowrun', category: 'german' }),
+    ).toMatchObject({ setting: 'cyberpunk', flavor: 'shadowrun', category: 'german' })
+  })
+
   it('applies the same fallback to a link and to a flavor update', () => {
     const previous = normalizeGeneratorSettings({
       flavor: 'shadowrun',

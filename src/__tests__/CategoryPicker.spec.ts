@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, describe, expect, it } from 'vitest'
-import { enableAutoUnmount, mount } from '@vue/test-utils'
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import UiCategoryPicker from '@/components/ui/UiCategoryPicker.vue'
 import { mockDialog } from './helpers/dialog'
 import { mockMedia } from './helpers/media'
@@ -28,6 +28,7 @@ describe('category picker', () => {
     media.clear()
     const wrapper = setup()
     await wrapper.get('#category').trigger('click')
+    await flushPromises()
     expect(wrapper.get('input').attributes('autofocus')).toBeUndefined()
     expect(document.activeElement).toBe(wrapper.get('.close').element)
     ;(wrapper.get('input').element as HTMLInputElement).focus()
@@ -35,6 +36,7 @@ describe('category picker', () => {
     expect(wrapper.findAll('[data-category]')).toHaveLength(1)
     await wrapper.get('.close').trigger('click')
     await wrapper.get('#category').trigger('click')
+    await flushPromises()
     expect(document.activeElement).toBe(wrapper.get('.close').element)
     wrapper.unmount()
   })
@@ -42,6 +44,7 @@ describe('category picker', () => {
   it('searches names and group words together without changing the selection', async () => {
     const wrapper = setup()
     await wrapper.get('#category').trigger('click')
+    await flushPromises()
     expect(document.activeElement).toBe(wrapper.get('input').element)
     expect(wrapper.get('[aria-current]').attributes('data-category')).toBe('runners')
     await wrapper.get('input').setValue('  NATIONALITY   jap  ')
@@ -60,6 +63,7 @@ describe('category picker', () => {
   it('shows an empty search message and does not choose an ambiguous or empty result', async () => {
     const wrapper = setup()
     await wrapper.get('#category').trigger('click')
+    await flushPromises()
     await wrapper.get('input').trigger('keydown', { key: 'Enter' })
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
     await wrapper.get('input').setValue('nonexistent')
@@ -74,11 +78,13 @@ describe('category picker', () => {
   it('cancels without changing category and starts a fresh search on reopening', async () => {
     const wrapper = setup()
     await wrapper.get('#category').trigger('click')
+    await flushPromises()
     await wrapper.get('input').setValue('organization')
     await wrapper.get('.close').trigger('click')
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
     expect(wrapper.get('#category').attributes('aria-expanded')).toBe('false')
     await wrapper.get('#category').trigger('click')
+    await flushPromises()
     expect((wrapper.get('input').element as HTMLInputElement).value).toBe('')
     await wrapper.get('[data-category="corporations"]').trigger('click')
     expect(wrapper.emitted('update:modelValue')).toEqual([['corporations']])
@@ -88,6 +94,7 @@ describe('category picker', () => {
   it('wraps Tab at both ends of the dialog', async () => {
     const wrapper = setup()
     await wrapper.get('#category').trigger('click')
+    await flushPromises()
     const first = wrapper.get('.close')
     const last = wrapper.get('[data-category="runners"]')
     ;(first.element as HTMLButtonElement).focus()
@@ -102,6 +109,7 @@ describe('category picker', () => {
     const wrapper = setup()
     await wrapper.setProps({ options: options.filter((option) => option.id !== 'corporations') })
     await wrapper.get('#category').trigger('click')
+    await flushPromises()
     await wrapper.get('input').setValue('corporation')
     expect(wrapper.findAll('[data-category]')).toHaveLength(0)
     wrapper.unmount()

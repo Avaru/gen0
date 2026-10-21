@@ -1,16 +1,31 @@
 <script setup lang="ts">
 import type { Theme } from '@/styles/themes'
-import { useRoute, type NavigationFailure } from 'vue-router'
+import { useRoute, useRouter, type NavigationFailure } from 'vue-router'
 import { computed, nextTick, provide, ref, useTemplateRef, watch } from 'vue'
-import { settingsFromRoute, settingsPath, settingsQuery } from '@/generator/settings'
+import {
+  normalizeGeneratorSettings,
+  settingsFromRoute,
+  settingsPath,
+  settingsQuery,
+} from '@/generator/settings'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
 import UiBrandTitle from '@/components/ui/UiBrandTitle.vue'
 import UiButton from './UiButton.vue'
+import UiSettingPicker from './UiSettingPicker.vue'
+import { getSetting, settings } from '@/generator/settingRegistry'
 defineProps<{ theme: Theme }>()
 const showCharacterGuide = ref(false)
 provide('showCharacterGuide', showCharacterGuide)
 const version = __APP_VERSION__
 const route = useRoute()
+const router = useRouter()
+const selectedSettings = computed(() => settingsFromRoute(route))
+const setting = computed(() => getSetting(selectedSettings.value.setting))
+function selectSetting(id: string) {
+  if (id === selectedSettings.value.setting) return
+  const next = normalizeGeneratorSettings({ setting: id })
+  void router.push({ path: settingsPath(next), query: settingsQuery(next) })
+}
 const main = useTemplateRef<HTMLElement>('main')
 const isAbout = computed(() => route.matched.some((record) => record.path.endsWith('/about')))
 const isCharacter = computed(() => route.matched.some((record) => record.path === '/chars/cbrpnk'))
@@ -66,6 +81,11 @@ const aboutNavigation = computed(() => ({
   <div class="shell" :data-theme="theme">
     <header>
       <nav aria-label="Main navigation">
+        <UiSettingPicker
+          v-if="settings.length > 1"
+          :model-value="selectedSettings.setting"
+          @update:model-value="selectSetting"
+        />
         <RouterLink v-slot="{ href, navigate }" :to="navigation" custom>
           <a :href="href" @click="navigateFromMenu($event, navigate)"
             ><span class="link-label">{{
@@ -78,12 +98,17 @@ const aboutNavigation = computed(() => ({
             ><span class="link-label">About</span></a
           >
         </RouterLink>
-        <RouterLink v-slot="{ href, navigate }" to="/chars/cbrpnk" custom>
+        <RouterLink
+          v-if="setting.characterSheet"
+          v-slot="{ href, navigate }"
+          :to="setting.characterSheet.path"
+          custom
+        >
           <a
             :href="href"
             :aria-current="isCharacter ? 'page' : undefined"
             @click="navigateFromMenu($event, navigate)"
-            ><span class="link-label">CBR+PNK</span></a
+            ><span class="link-label">{{ setting.characterSheet.label }}</span></a
           >
         </RouterLink>
       </nav>
@@ -91,7 +116,7 @@ const aboutNavigation = computed(() => ({
       <h1 v-if="isCharacter" class="caption">
         CBR+PNK <span class="caption-line">Runner sheet</span>
       </h1>
-      <span v-else class="caption">Cyberpunk name generator</span>
+      <span v-else class="caption">{{ setting.caption }}</span>
       <div v-if="isCharacter" class="character-actions">
         <UiButton
           :aria-expanded="showCharacterGuide"

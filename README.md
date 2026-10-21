@@ -1,6 +1,6 @@
 # gen0
 
-Local Vue/TypeScript cyberpunk name generator. See the [app guide](docs/app.md) for usage, code layout, and data sources.
+Local Vue/TypeScript name generator with setting-specific categories and themes. Cyberpunk is the first setting, with Generic, Shadowrun, and CP 2020/77 flavors. When more than one setting is registered, a compact Setting button in the top navigation opens the setting picker; the CBR+PNK link is available only in Cyberpunk. Existing flavor/category links still work. See the [app guide](docs/app.md) for usage, code layout, and data sources.
 
 Runner results include an archetype linked to their main profession and a random CBR+PNK angle. With details shown, the arrow in each result's top-right corner opens that runner in a fresh character sheet with matching profile stats and augmentation; the image button copies a square portrait prompt using the same name, description, archetype and angle. The prompt offers several lettering styles and positions for the name. The sheet's description image button uses the same prompt and is hidden when the description is empty. Successful copying triggers a short glitch burst on the image button; hovering gives a lighter glitch. Neither shows a success message.
 

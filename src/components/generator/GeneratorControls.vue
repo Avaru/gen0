@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { GENUS } from '@/builders/types'
 import { availableCategories } from '@/generator/categories'
-import { flavors } from '@/generator/options'
+import { getSetting } from '@/generator/settingRegistry'
 import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 import type { GeneratorSettings } from '@/generator/settings'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -21,12 +21,16 @@ function generate() {
   generationClicks.value++
   emit('generate')
 }
-const available = computed(() => availableCategories({ flavor: props.settings.flavor }))
+const available = computed(() =>
+  availableCategories({ setting: props.settings.setting, flavor: props.settings.flavor }),
+)
 const category = computed(() => available.value.find((item) => item.id === props.settings.category))
 const hideChoiceLabel = computed(
   () => Number(!!category.value?.gender) + Number(!!category.value?.corporationSize) === 1,
 )
-const flavorOptions = flavors.map((item) => ({ value: item.id, label: item.label }))
+const flavorOptions = computed(() =>
+  getSetting(props.settings.setting).flavors.map((item) => ({ value: item.id, label: item.label })),
+)
 const genderOptions = [
   { value: GENUS.M, label: 'Masculine' },
   { value: GENUS.F, label: 'Feminine' },
@@ -41,6 +45,7 @@ const sizeOptions = [
 <template>
   <form aria-label="Generator settings" @submit.prevent="generate">
     <UiSegments
+      v-if="flavorOptions.length > 1"
       :model-value="settings.flavor"
       label="Flavor"
       name="flavor"

@@ -23,6 +23,7 @@ mockMedia()
 
 async function chooseArchetype(wrapper: ReturnType<typeof mount>, id: string) {
   await wrapper.get('#runner-generate').trigger('click')
+  await flushPromises()
   await wrapper.get(`[data-choice="${id}"]`).trigger('click')
   await flushPromises()
 }
@@ -280,6 +281,7 @@ describe('editable CBR+PNK sheet', () => {
     store.sheet.runner.alias = 'Keep me'
     const before = JSON.stringify(store.sheet)
     await wrapper.get('#runner-generate').trigger('click')
+    await flushPromises()
     expect(wrapper.get('dialog').element).toHaveProperty('open', true)
     expect(wrapper.find('input[type="search"]').exists()).toBe(false)
     expect(wrapper.get('dialog input[aria-label="bit random"]').element).toHaveProperty(
@@ -307,6 +309,7 @@ describe('editable CBR+PNK sheet', () => {
     })
     expect(chance.mock.calls.filter(([value]) => value === 0.2)).toHaveLength(0)
     await wrapper.get('#runner-generate').trigger('click')
+    await flushPromises()
     await wrapper.get('dialog input[aria-label="bit random"]').setValue(true)
     await wrapper.get('[data-choice="hacker"]').trigger('click')
     await flushPromises()
@@ -314,6 +317,7 @@ describe('editable CBR+PNK sheet', () => {
     expect(store.sheet.attributeRatings.map((row) => row.value)).not.toEqual(baseline.approaches)
     expect(store.sheet.skillRatings.map((row) => row.value)).not.toEqual(baseline.skills)
     await wrapper.get('#runner-generate').trigger('click')
+    await flushPromises()
     await wrapper.get('dialog input[aria-label="bit random"]').setValue(false)
     chance.mockClear()
     await wrapper.get('[data-choice="hacker"]').trigger('click')
@@ -371,6 +375,9 @@ describe('editable CBR+PNK sheet', () => {
     expect(store.sheet).toEqual(blank)
     expect(JSON.parse(localStorage.getItem('gen0.character')!)).toEqual(blank)
     expect(wrapper.find('#runner-archetype').exists()).toBe(false)
+    expect(wrapper.findAll('[data-choice]')).toHaveLength(0)
+    await wrapper.get('#runner-generate').trigger('click')
+    await flushPromises()
     expect(useCharacterStore(createPinia()).sheet).toEqual(blank)
     expect(wrapper.get('#runner-alias').element).toHaveProperty('value', '')
     expect(wrapper.get('#runner-description').element).toHaveProperty('value', '')
@@ -902,6 +909,9 @@ describe('editable CBR+PNK sheet', () => {
     const wrapper = mount(CharacterView, { global: { plugins: [pinia] } })
     const store = useCharacterStore(pinia)
     expect(wrapper.find('#runner-archetype').exists()).toBe(false)
+    expect(wrapper.findAll('[data-choice]')).toHaveLength(0)
+    await wrapper.get('#runner-generate').trigger('click')
+    await flushPromises()
     expect(
       wrapper.findAll('[data-choice]').map((option) => option.attributes('data-choice')),
     ).toEqual(cbrPnkCatalogue.archetypes.map((item) => item.id))

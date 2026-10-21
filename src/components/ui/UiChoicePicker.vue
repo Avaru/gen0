@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useId } from 'vue'
+import { computed, ref, useId } from 'vue'
 import UiButton from './UiButton.vue'
 import UiModal from './UiModal.vue'
 
@@ -43,8 +43,7 @@ const groups = computed(() => [...new Set(filtered.value.map((option) => option.
 
 async function open() {
   query.value = ''
-  await nextTick()
-  dialog.value?.showModal()
+  await dialog.value?.showModal()
   opened.value = true
   if (props.searchable && window.matchMedia('(min-width: 40rem) and (pointer: fine)').matches) {
     search.value?.focus({ preventScroll: true })
