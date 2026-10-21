@@ -67,8 +67,8 @@ button::after {
   color: var(--color-on-accent);
 }
 .primary:hover:enabled {
-  --button-rest-color: #fff;
-  background: #fff;
+  --button-rest-color: var(--color-primary-hover, #fff);
+  background: var(--color-primary-hover, #fff);
   color: var(--color-on-accent);
 }
 .primary:active:enabled {
@@ -84,7 +84,7 @@ button::after {
   border-bottom-color: color-mix(in srgb, var(--color-on-page) 65%, var(--color-page));
 }
 .primary.on-background:hover:enabled {
-  --button-rest-color: #fff;
+  --button-rest-color: var(--color-primary-hover, #fff);
   background: var(--button-rest-color);
   color: var(--color-on-accent);
 }

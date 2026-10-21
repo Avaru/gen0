@@ -8,6 +8,8 @@ The Setting picker appears in the top navigation only when more than one setting
 
 Setting/flavor/category use paths such as `/cyberpunk/shadowrun/runners`; flavor segments are `generic`, `shadowrun`, or `cp77`. Applicable gender/size choices use query parameters. Reload and Back/Forward restore settings. Results are temporary. The details toggle survives navigation but resets on reload. About retains settings when returning to the generator.
 
+Never Midnight is enabled only by `VITE_ENABLE_NEVER_MIDNIGHT=true`. Set this in the ignored `.env.local` for local development; restart Vite after changing it. With the variable unset or any other value, the setting and `/never-midnight/:category` routes are absent, including on Vercel. When enabled, the Setting picker offers its German, Russian, and Polish names, with German as the default, no flavors, and a paper-and-ink theme.
+
 The header shows `v/{commit hash}` in small text above the right end of the striped separator. The hash is supplied during the build: Vercel’s `VERCEL_GIT_COMMIT_SHA` when available, otherwise local Git HEAD, or `unknown` without either. Uncommitted changes do not change this version.
 
 Setting names and terminology follow the selected flavor. Generated company histories, products, prices, and places are fictional. Regional naming coverage is incomplete; missing pools are marked TODO.

@@ -2,6 +2,8 @@
 
 Local Vue/TypeScript name generator with setting-specific categories and themes. Cyberpunk offers Generic, Shadowrun, and CP 2020/77 flavors. The CBR+PNK link opens the Cyberpunk runner sheet. Generator URLs use `/cyberpunk/generic/runners`, `/cyberpunk/shadowrun/runners`, or `/cyberpunk/cp77/runners`. See the [app guide](docs/app.md) for usage, code layout, and data sources.
 
+Never Midnight is available only when `VITE_ENABLE_NEVER_MIDNIGHT=true` at build time. For local use, put that line in `.env.local` (ignored by Git) and restart Vite. Leave the variable unset on Vercel to exclude the setting and its routes. It reuses German, Russian, and Polish personal names in a paper-and-ink theme at `/never-midnight/german`.
+
 Runner results include an archetype linked to their main profession and a random CBR+PNK angle. With details shown, the arrow in each result's top-right corner opens that runner in a fresh character sheet with matching profile stats and augmentation; the image button copies a square portrait prompt using the same name, description, archetype and angle. The prompt offers several lettering styles and positions for the name. The sheet's description image button uses the same prompt and is hidden when the description is empty. Successful copying triggers a short glitch burst on the image button; hovering gives a lighter glitch. Neither shows a success message.
 
 I do not allow any of the data in this project to be used for training or developing AI models without my explicit permission.

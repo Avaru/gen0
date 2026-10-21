@@ -2,7 +2,7 @@
 
 Bundle the data with a Vue/TypeScript/Vite app so generation needs no backend or remote data connection. Keep itemcards.com unchanged; exclude its fantasy/DSA generators.
 
-- Settings own their categories, defaults, flavors, theme, caption, and optional character-sheet navigation in `src/generator/settingRegistry.ts`. Cyberpunk is the initial and default setting; it preserves all existing content. A setting is separate from flavor tags; sharing data or composition is explicit.
+- Settings own their categories, defaults, flavors, theme, caption, and optional character-sheet navigation in `src/generator/settingRegistry.ts`. Cyberpunk is the initial and default setting; it preserves all existing content. Never Midnight is registered only when `VITE_ENABLE_NEVER_MIDNIGHT=true`, reuses existing German/Russian/Polish personal-name data without Cyberpunk details, and defaults to German. Its composition lives in `src/patterns/never-midnight/`. A setting is separate from flavor tags; sharing data or composition is explicit.
 - Within Cyberpunk, Generic is the default. Shadowrun and combined Cyberpunk 2020/2077 are whole flavors, with setting details enabled together.
 - Editable lists live in `src/data/`; preserve human-made entries, source order, and duplicate weights. AI-authored additions require explicit consent. Source links and reuse notices remain available for review.
 - Ordinary tags select pools; flavor tags restrict availability. Include/exclude options override defaults, with exclusions winning. Pass options explicitly through all nested calls.

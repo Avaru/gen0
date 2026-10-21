@@ -10,6 +10,7 @@ import { routes as appRoutes } from '../router'
 import GeneratorView from '../views/GeneratorView.vue'
 import AboutView from '../views/AboutView.vue'
 import CharacterView from '../views/CharacterView.vue'
+import { neverMidnightEnabled } from '@/generator/settingRegistry'
 import { createTestPinia as createPinia } from './helpers/pinia'
 
 enableAutoUnmount(afterEach)
@@ -67,13 +68,68 @@ async function setup(url = '/', attachTo?: HTMLElement) {
 }
 
 describe('name generator interface', () => {
-  it('hides the setting picker when only Cyberpunk is registered', async () => {
-    const { wrapper } = await setup('/cyberpunk/shadowrun/runners')
-    expect(wrapper.find('nav button[aria-haspopup="dialog"]').exists()).toBe(false)
-    expect(wrapper.find('nav dialog').exists()).toBe(false)
-    expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(true)
-    wrapper.unmount()
-  })
+  it.skipIf(neverMidnightEnabled)(
+    'hides the setting picker when only Cyberpunk is registered',
+    async () => {
+      const { wrapper } = await setup('/cyberpunk/shadowrun/runners')
+      expect(wrapper.find('nav button[aria-haspopup="dialog"]').exists()).toBe(false)
+      expect(wrapper.find('nav dialog').exists()).toBe(false)
+      expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(true)
+      wrapper.unmount()
+    },
+  )
+
+  it.runIf(neverMidnightEnabled)(
+    'changes to Never Midnight and restores Cyberpunk with browser Back',
+    async () => {
+      const { wrapper, router } = await setup('/cyberpunk/shadowrun/runners', document.body)
+      const trigger = wrapper.get('nav button[aria-haspopup="dialog"]')
+      await trigger.trigger('click')
+      const dialog = wrapper.get('nav dialog')
+      expect((dialog.element as HTMLDialogElement).open).toBe(true)
+      expect(document.activeElement).toBe(dialog.get('.close').element)
+      await dialog.get('[data-setting="cyberpunk"]').trigger('click')
+      await flushPromises()
+      expect(document.activeElement).toBe(trigger.element)
+      expect(router.currentRoute.value.path).toBe('/cyberpunk/shadowrun/runners')
+      await trigger.trigger('click')
+      await wrapper.get('[data-setting="never-midnight"]').trigger('click')
+      await flushPromises()
+      expect(router.currentRoute.value.path).toBe('/never-midnight/german')
+      expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('never-midnight')
+      expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(false)
+      expect(wrapper.find('input[name="flavor"]').exists()).toBe(false)
+      expect(wrapper.get('header .caption').text()).toBe('Never Midnight / Name generator')
+      expect(wrapper.findAll('li')).toHaveLength(10)
+      await chooseCategory(wrapper, 'polish')
+      await flushPromises()
+      expect(router.currentRoute.value.path).toBe('/never-midnight/polish')
+      router.back()
+      await flushPromises()
+      router.back()
+      await flushPromises()
+      expect(router.currentRoute.value.path).toBe('/cyberpunk/shadowrun/runners')
+      expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
+      expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(true)
+      wrapper.unmount()
+    },
+  )
+
+  it.runIf(neverMidnightEnabled)(
+    'restores Never Midnight country and name forms from a direct link',
+    async () => {
+      const { wrapper, router } = await setup('/never-midnight/russian?gender=f&flavor=shadowrun')
+      expect(router.currentRoute.value.fullPath).toBe('/never-midnight/russian?gender=f')
+      expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('never-midnight')
+      expect(wrapper.get('#results-heading').text()).toBe('Russian')
+      expect(wrapper.findAll('li')).toHaveLength(10)
+      expect(wrapper.find('input[name="gender"][value="f"]').element).toHaveProperty(
+        'checked',
+        true,
+      )
+      wrapper.unmount()
+    },
+  )
 
   it.each(['generic', 'shadowrun', 'cp77'])(
     'restores the %s flavor from its short URL',
