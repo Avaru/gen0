@@ -1,4 +1,4 @@
-/** Everyday selection copied from the existing shared hair styles. */
+/** Everyday shared styles and approved Never Midnight additions. */
 export const neverMidnightHairStyles = [
   'long hair',
   'short hair',
@@ -15,6 +15,12 @@ export const neverMidnightHairStyles = [
   'side-swept bangs',
   'fringe bangs',
   'blunt bangs',
+  'long wavy hair',
+  'long curly hair',
+  'thick shoulder-length hair',
+  'voluminous hair',
+  'long straight hair',
+  'very long hair',
 ] as const
 
 /** User-supplied Never Midnight traits; keep separate from the Cyberpunk pools. */

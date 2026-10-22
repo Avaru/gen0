@@ -59,28 +59,15 @@ async function remove(index: number) {
             auto-grow
           />
           <UiButton
+            appearance="icon"
+            icon="reroll"
             v-if="rerollable && !locked"
             class="reroll"
             variant="secondary"
             :aria-label="`Reroll ${singular.toLowerCase()} ${index + 1}`"
             :title="`Reroll ${singular.toLowerCase()} ${index + 1}`"
             @click="emit('reroll', index)"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
-            </svg>
-          </UiButton>
+          />
         </div>
         <UiShadeRating
           v-if="id !== 'spells' && entry.value !== undefined"
@@ -127,24 +114,14 @@ async function remove(index: number) {
   position: relative;
   min-width: 0;
 }
-.description-field.rerollable :deep(.sheet-field) {
-  padding-right: calc(1.75rem + var(--space-1));
+.description-field.rerollable {
+  --field-end-padding: calc(1.75rem + var(--space-1));
 }
 .reroll {
+  --button-icon-size: 1.75rem;
   position: absolute;
   bottom: 0;
   right: 0;
-  display: grid;
-  place-items: center;
-  width: 1.75rem;
-  height: var(--control-height);
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-.reroll::before,
-.reroll::after {
-  display: none;
 }
 .remove-entry {
   --button-padding-inline: 0;

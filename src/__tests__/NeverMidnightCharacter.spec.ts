@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { nextTick } from 'vue'
+import { disposePinia } from 'pinia'
 import { createStudentSheet } from '@/data/characters/never-midnight'
 import { useNeverMidnightCharacterStore, encodeStudent } from '@/stores/neverMidnightCharacter'
 import { encodeSheetToken } from '@/helper/sheetToken'
@@ -339,6 +340,56 @@ describe('Never Midnight student sheet', () => {
       expect(store.sheet.student.name).toBe('Kept')
       expect(wrapper.get('[role=alert]').text()).toContain('Could not load')
     }
+  })
+
+  it('batches student edits and flushes the last edit on store disposal without later writes', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      const pinia = createTestPinia()
+      const store = useNeverMidnightCharacterStore(pinia)
+      const writes = vi.spyOn(Storage.prototype, 'setItem')
+      store.sheet.student.name = 'First'
+      await nextTick()
+      await vi.advanceTimersByTimeAsync(100)
+      store.sheet.student.name = 'Second'
+      await nextTick()
+      await vi.advanceTimersByTimeAsync(199)
+      expect(writes).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(1)
+      expect(writes).toHaveBeenCalledTimes(1)
+      store.sheet.student.keepsake = 'Last edit'
+      await nextTick()
+      disposePinia(pinia)
+      expect(JSON.parse(localStorage.getItem('gen0.character.never-midnight')!).student).toEqual({
+        name: 'Second',
+        description: '',
+        keepsake: 'Last edit',
+      })
+      expect(writes).toHaveBeenCalledTimes(2)
+      window.dispatchEvent(new Event('pagehide'))
+      await vi.advanceTimersByTimeAsync(200)
+      expect(writes).toHaveBeenCalledTimes(2)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('keeps the complete student file when spell generation fails during summoning', () => {
+    const store = useNeverMidnightCharacterStore(createTestPinia())
+    store.sheet.student.keepsake = 'Manual keepsake'
+    store.sheet.means.Voice = 3
+    const before = JSON.stringify(store.sheet)
+    vi.spyOn(generators, 'generateNames').mockReturnValue([
+      { primary: 'Generated name', secondary: 'Cook' },
+    ])
+    vi.spyOn(spells, 'spell').mockImplementation(() => {
+      throw new Error('Unavailable')
+    })
+    store.generateStudent('german')
+    expect(JSON.stringify(store.sheet)).toBe(before)
+    expect(store.generationError).toContain('Could not summon')
+    store.reset()
+    expect(store.generationError).toBe('')
   })
 
   it('saves on pagehide, restores local content and keeps CBR+PNK storage separate', async () => {

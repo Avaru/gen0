@@ -15,5 +15,12 @@ const linkError = useCharacterUrl({
 
 <template>
   <p v-if="linkError" role="alert">{{ linkError }}</p>
-  <UiStudentSheet v-model="sheet" :can-reset="hasContent" @reset="character.reset" />
+  <UiStudentSheet
+    v-model="sheet"
+    :can-reset="hasContent"
+    :generation-error="character.generationError"
+    @reset="character.reset"
+    @generate="character.generateStudent"
+    @reroll-spell="character.rerollSpell"
+  />
 </template>

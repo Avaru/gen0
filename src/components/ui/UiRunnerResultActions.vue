@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { usePreferencesStore } from '@/stores/preferences'
 const preferences = usePreferencesStore()
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Generated } from '@/patterns/types'
 import { runnerImagePrompt } from '@/helper/runnerImagePrompt'
 import { encodeCharacter } from '@/helper/characterLink'
 import { useCharacterStore } from '@/stores/character'
 import UiButton from './UiButton.vue'
+import { useClipboard } from '@/composables/useClipboard'
 
 const props = defineProps<{ result: Generated }>()
 const router = useRouter()
@@ -17,11 +18,9 @@ const runner = computed(() => ({
   archetypeId: props.result.archetypeId,
   angle: props.result.angle,
 }))
-const error = ref('')
-const copyActivation = ref(0)
+const { error, activation: copyActivation, copy, reset: resetCopy } = useClipboard()
 watch(runner, () => {
-  error.value = ''
-  copyActivation.value = 0
+  resetCopy()
 })
 
 async function openCharacter() {
@@ -40,20 +39,15 @@ async function openCharacter() {
   }
 }
 
-async function copyPrompt() {
-  error.value = ''
-  try {
-    await navigator.clipboard.writeText(runnerImagePrompt(runner.value))
-    copyActivation.value++
-  } catch {
-    error.value = 'Could not copy the image prompt. Please allow clipboard access and try again.'
-  }
+function copyPrompt() {
+  return copy(runnerImagePrompt(runner.value))
 }
 </script>
 
 <template>
   <div class="runner-actions">
     <UiButton
+      appearance="icon"
       class="icon-button"
       variant="secondary"
       feedback="icon"
@@ -77,6 +71,8 @@ async function copyPrompt() {
       </svg>
     </UiButton>
     <UiButton
+      appearance="icon"
+      icon="portrait"
       v-if="preferences.soullessCorpMode && runner.description.trim()"
       class="icon-button"
       variant="secondary"
@@ -85,24 +81,7 @@ async function copyPrompt() {
       :aria-label="`Copy image prompt for ${result.primary}`"
       title="Copy image prompt"
       @click="copyPrompt"
-    >
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-        focusable="false"
-      >
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <circle cx="8.5" cy="8.5" r="1.5" />
-        <path d="m21 15-5-5L5 21" />
-      </svg>
-    </UiButton>
+    />
     <span v-if="error" class="error" role="alert">{{ error }}</span>
   </div>
 </template>
@@ -119,24 +98,8 @@ async function copyPrompt() {
 }
 .icon-button {
   --button-icon-rest-color: var(--color-muted);
-  display: grid;
-  place-items: center;
-  justify-items: end;
-  width: var(--space-8);
-  height: var(--control-height);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--color-muted);
-}
-.icon-button::before,
-.icon-button::after {
-  display: none;
-}
-.icon-button:hover:enabled,
-.icon-button:active:enabled {
-  background: transparent;
-  color: var(--color-accent);
+  --button-icon-size: var(--space-8);
+  --button-icon-align: end;
 }
 .error {
   font-size: var(--font-sheet-rule-size);

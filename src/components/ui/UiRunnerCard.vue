@@ -19,6 +19,7 @@ import UiButton from './UiButton.vue'
 import UiChoicePicker from './UiChoicePicker.vue'
 import UiDiamondChoice from './UiDiamondChoice.vue'
 import UiToggle from './UiToggle.vue'
+import { useClipboard } from '@/composables/useClipboard'
 const archetypes = cbrPnkCatalogue.archetypes.map((item) => {
   const profile = cbrPnkCatalogue.archetypeSystemProfiles.find(
     (entry) => entry.archetypeId === item.id && entry.systemId === 'cbr-pnk',
@@ -71,17 +72,9 @@ const archetypes = cbrPnkCatalogue.archetypes.map((item) => {
 
 const props = defineProps<{ flavor: Flavor; canReset: boolean }>()
 const runner = defineModel<CharacterSheet['runner']>({ required: true })
-const error = ref('')
-const copyActivation = ref(0)
-async function copyImagePrompt() {
-  error.value = ''
-  const prompt = runnerImagePrompt(runner.value)
-  try {
-    await navigator.clipboard.writeText(prompt)
-    copyActivation.value++
-  } catch {
-    error.value = 'Could not copy the image prompt. Please allow clipboard access and try again.'
-  }
+const { error, activation: copyActivation, copy } = useClipboard()
+function copyImagePrompt() {
+  return copy(runnerImagePrompt(runner.value))
 }
 const confirmingReset = ref(false)
 const bitRandom = ref(false)
@@ -174,27 +167,14 @@ function regenerate(field: 'alias' | 'description') {
     <div class="runner-field">
       <UiSheetField id="runner-alias" v-model="runner.alias" variant="runner" label="Handle" />
       <UiButton
+        appearance="icon"
+        icon="reroll"
         class="regenerate"
         variant="secondary"
         aria-label="Regenerate handle"
         title="Regenerate handle"
         @click="regenerate('alias')"
-      >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
-        </svg>
-      </UiButton>
+      />
     </div>
     <div class="runner-field">
       <UiSheetField
@@ -206,28 +186,17 @@ function regenerate(field: 'alias' | 'description') {
         print-class="runner-description"
       />
       <UiButton
+        appearance="icon"
+        icon="reroll"
         class="regenerate"
         variant="secondary"
         aria-label="Regenerate details and looks"
         title="Regenerate details and looks"
         @click="regenerate('description')"
-      >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
-        </svg>
-      </UiButton>
+      />
       <UiButton
+        appearance="icon"
+        icon="portrait"
         v-if="preferences.soullessCorpMode && runner.description.trim()"
         class="regenerate copy-prompt"
         variant="secondary"
@@ -236,24 +205,7 @@ function regenerate(field: 'alias' | 'description') {
         aria-label="Copy image prompt"
         title="Copy image prompt"
         @click="copyImagePrompt"
-      >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <circle cx="8.5" cy="8.5" r="1.5" />
-          <path d="m21 15-5-5L5 21" />
-        </svg>
-      </UiButton>
+      />
     </div>
     <fieldset class="angle">
       <legend>Angle // Convey what ultimately you run for:</legend>
@@ -315,25 +267,9 @@ function regenerate(field: 'alias' | 'description') {
   position: absolute;
   top: 0;
   right: 0;
-  display: grid;
-  place-items: center;
-  width: var(--control-height);
-  height: var(--control-height);
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-.runner-field > .regenerate::before,
-.runner-field > .regenerate::after {
-  display: none;
 }
 .runner-field > .copy-prompt {
   top: calc(var(--control-height) + var(--space-1));
-}
-.runner-card .runner-field > .regenerate:hover:enabled,
-.runner-card .runner-field > .regenerate:active:enabled {
-  background: transparent;
-  color: var(--color-accent);
 }
 @media print {
   .regenerate {

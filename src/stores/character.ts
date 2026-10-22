@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import { computed, onScopeDispose, ref, watch } from 'vue'
+import { useSheetStorage } from '@/composables/useSheetStorage'
+import { computed, ref, watch } from 'vue'
 import { cbrPnkCatalogue } from '@/data/characters/cbr-pnk'
 import {
   cbrPnkAngles,
@@ -149,21 +150,7 @@ export const useCharacterStore = defineStore('character', () => {
   } catch {
     // Missing access or invalid JSON leaves the sheet blank.
   }
-  let saveTimer: ReturnType<typeof setTimeout> | undefined
-  let pendingSave = false
-  function save() {
-    clearTimeout(saveTimer)
-    saveTimer = undefined
-    pendingSave = false
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(sheet.value))
-    } catch {
-      // The sheet remains editable when storage is unavailable.
-    }
-  }
-  function flushSave() {
-    if (pendingSave) save()
-  }
+  const { save, scheduleSave } = useSheetStorage(storageKey, () => sheet.value)
   // Typing only reads the editable strings; it does not traverse or serialize the whole sheet.
   watch(
     () => [
@@ -173,11 +160,7 @@ export const useCharacterStore = defineStore('character', () => {
       ...sheet.value.augmentations.map((row) => row.description),
       ...sheet.value.expertises.map((row) => row.custom),
     ],
-    () => {
-      pendingSave = true
-      clearTimeout(saveTimer)
-      saveTimer = setTimeout(save, 200)
-    },
+    scheduleSave,
   )
   // Checkboxes, generation and reset still save at the end of the current Vue update.
   watch(
@@ -199,16 +182,6 @@ export const useCharacterStore = defineStore('character', () => {
     save,
     { deep: true },
   )
-  function visibilityChanged() {
-    if (document.visibilityState === 'hidden') flushSave()
-  }
-  window.addEventListener('pagehide', flushSave)
-  document.addEventListener('visibilitychange', visibilityChanged)
-  onScopeDispose(() => {
-    flushSave()
-    window.removeEventListener('pagehide', flushSave)
-    document.removeEventListener('visibilitychange', visibilityChanged)
-  })
   function applyArchetype(options: GenerationOptions & { bitRandom?: boolean } = {}) {
     const profile = cbrPnkCatalogue.archetypeSystemProfiles.find(
       (item) =>

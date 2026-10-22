@@ -10,6 +10,7 @@ withDefaults(
     autoGrow?: boolean
     variant?: 'boxed' | 'line' | 'runner'
     filled?: boolean
+    compact?: boolean
     printClass?: string
   }>(),
   {
@@ -36,7 +37,7 @@ const value = defineModel<string>({ required: true })
     ref="field"
     v-model="value"
     class="sheet-field"
-    :class="[variant, { filled, 'auto-grow': autoGrow }]"
+    :class="[variant, { filled, compact, 'auto-grow': autoGrow }]"
     :rows="rows"
   />
   <input
@@ -46,7 +47,7 @@ const value = defineModel<string>({ required: true })
     ref="field"
     v-model="value"
     class="sheet-field"
-    :class="[variant, { filled }]"
+    :class="[variant, { filled, compact }]"
     type="text"
   />
   <label v-if="label" :for="id">{{ label }}</label>
@@ -113,5 +114,35 @@ textarea {
 .sheet-field:focus-visible {
   outline: var(--control-focus-width) solid var(--control-focus-color, var(--color-focus));
   outline-offset: var(--control-focus-offset);
+}
+.line {
+  font-family: var(--sheet-field-font, inherit);
+  font-weight: var(--sheet-field-weight, 600);
+  line-height: var(--sheet-field-line-height, normal);
+  padding-inline-start: var(--sheet-field-padding-inline, var(--field-padding, var(--space-2)));
+  padding-inline-end: var(
+    --field-end-padding,
+    var(--sheet-field-padding-inline, var(--field-padding, var(--space-2)))
+  );
+  padding-top: var(--sheet-field-padding-top, var(--field-padding, var(--space-2)));
+  padding-bottom: var(--sheet-field-padding-bottom, var(--field-padding, var(--space-2)));
+  border-image: var(--sheet-field-border-image, none);
+}
+.line.auto-grow {
+  line-height: var(--sheet-field-line-height, 1.4);
+  padding-top: var(--sheet-field-padding-top, calc((var(--control-height) - 1lh - 2px) / 2));
+  padding-bottom: var(--sheet-field-padding-bottom, calc((var(--control-height) - 1lh - 2px) / 2));
+}
+.sheet-field.compact {
+  min-height: 1.5rem;
+  height: 1.5rem;
+  padding-block: 2px;
+  border-bottom: 1px solid var(--color-muted);
+  border-image: none;
+}
+@media (forced-colors: active) {
+  .sheet-field {
+    border-image: none;
+  }
 }
 </style>

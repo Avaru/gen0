@@ -71,27 +71,14 @@ const augmentations = defineModel<CharacterSheet['augmentations']>({ required: t
           :aria-label="`Augmentation ${index + 1}`"
         />
         <UiButton
+          appearance="icon"
+          icon="reroll"
           class="regenerate"
           variant="secondary"
           :aria-label="`Regenerate augmentation ${index + 1}`"
           :title="`Regenerate augmentation ${index + 1}`"
           @click="regenerate(index)"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
-          </svg>
-        </UiButton>
+        />
       </div>
       <UiToggle
         v-model="augmentation.glitched"
@@ -129,21 +116,7 @@ strong {
   min-width: 0;
 }
 .regenerate {
-  display: grid;
-  place-items: center;
-  width: var(--regenerate-width);
-  height: var(--control-height);
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-.regenerate::before,
-.regenerate::after {
-  display: none;
-}
-.regenerate :deep(.button-text) {
-  display: grid;
-  place-items: center;
+  --button-icon-size: var(--regenerate-width);
 }
 @media print {
   .augmentation-field {

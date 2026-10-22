@@ -39,7 +39,7 @@ describe.runIf(neverMidnightEnabled)('Never Midnight names', () => {
           {
             primary: expected,
             age: '37 years',
-            appearance: 'White bob cut, heart-shaped face',
+            appearance: `White ${neverMidnightHairStyles[Math.floor(neverMidnightHairStyles.length * 0.4)]}, heart-shaped face`,
             secondary: neverMidnightJobs[Math.floor(neverMidnightJobs.length * 0.4)],
           },
         ])
@@ -74,11 +74,27 @@ describe('Never Midnight appearance', () => {
     expect(neverMidnightLooks()).toBe(style === 'bald' ? 'bald' : `dyed ${style}`)
   })
 
-  it('uses only existing styles and leaves the full Cyberpunk selection available', () => {
+  it('keeps approved additions local and leaves the full Cyberpunk selection available', () => {
     const sharedStyles = runnerTraits
       .filter((trait) => trait.type === 'hair-style')
       .map((trait) => trait.value)
-    expect(neverMidnightHairStyles.every((style) => sharedStyles.includes(style))).toBe(true)
+    const additions = [
+      'long wavy hair',
+      'long curly hair',
+      'thick shoulder-length hair',
+      'voluminous hair',
+      'long straight hair',
+      'very long hair',
+    ]
+    for (const style of additions) {
+      expect(neverMidnightHairStyles).toContain(style)
+      expect(sharedStyles).not.toContain(style)
+    }
+    expect(
+      neverMidnightHairStyles.every(
+        (style) => sharedStyles.includes(style) || additions.includes(style),
+      ),
+    ).toBe(true)
     for (const style of ['dreadlocks', 'mohawk', 'afro', 'undercut', 'spiky hair', 'skinhead']) {
       expect(sharedStyles).toContain(style)
       expect(neverMidnightHairStyles).not.toContain(style)

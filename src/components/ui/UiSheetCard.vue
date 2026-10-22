@@ -62,6 +62,17 @@ withDefaults(
   --card-title-shadow: none;
   --control-focus-color: var(--color-on-accent);
 }
+.sheet-card::before {
+  content: var(--theme-sheet-rule-content, none);
+  position: absolute;
+  top: calc(-1 * var(--theme-panel-rule-width));
+  left: calc(-1 * var(--theme-panel-border-width));
+  right: calc(-1 * var(--theme-panel-border-width));
+  height: var(--theme-panel-rule-width);
+  background: var(--theme-sheet-rule-wear);
+  opacity: 0.5;
+  pointer-events: none;
+}
 .sheet-card::after {
   content: '';
   position: absolute;
@@ -80,6 +91,12 @@ withDefaults(
   line-height: 1.35;
 }
 .card-heading {
+  --button-font-size: var(--sheet-action-font-size, 1.375rem);
+  --button-padding-inline: var(--sheet-action-padding-inline, var(--space-6));
+  --button-padding-block: var(--sheet-action-padding-block, var(--space-2));
+  --button-min-height: var(--sheet-action-min-height, auto);
+  --button-margin-top: var(--sheet-action-margin-top, 0);
+  --button-line-height: var(--sheet-action-line-height, normal);
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -87,7 +104,12 @@ withDefaults(
   margin-bottom: var(--card-heading-gap, var(--space-4));
   min-width: 0;
 }
+/* Direct action buttons align like action groups without parent overrides. */
+:slotted(button) {
+  margin-inline-start: auto;
+}
 h2 {
+  mask-image: var(--theme-sheet-heading-mask, none);
   --scramble-color: var(--card-title);
   min-width: 0;
   font-family: var(--font-display);
@@ -104,6 +126,14 @@ h2 {
     line-height: 1;
     text-box-trim: trim-start;
     text-box-edge: cap alphabetic;
+  }
+}
+@media (forced-colors: active) {
+  h2 {
+    mask-image: none;
+  }
+  .sheet-card::before {
+    display: none;
   }
 }
 </style>
