@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = withDefaults(
   defineProps<{
@@ -12,13 +12,14 @@ const props = withDefaults(
 )
 
 const glyphs = Array.from('ЖДЯЮФБИЦШЩЭЫЧЛП')
+const letters = computed(() => Array.from(props.text))
 const replacements = ref<string[]>([])
 let media: MediaQueryList | undefined
-let frame: number | undefined
+let timer: ReturnType<typeof setTimeout> | undefined
 
 function stop() {
-  if (frame !== undefined) cancelAnimationFrame(frame)
-  frame = undefined
+  clearTimeout(timer)
+  timer = undefined
   replacements.value = []
 }
 
@@ -26,29 +27,27 @@ function play() {
   stop()
   if (!media || media.matches || !props.text) return
   const start = performance.now()
-  let lastUpdate = -Infinity
-  const letters = Array.from(props.text)
-  const candidates = letters.flatMap((letter, index) => (/\p{L}/u.test(letter) ? [index] : []))
+  const characters = letters.value
+  const candidates = characters.flatMap((letter, index) => (/\p{L}/u.test(letter) ? [index] : []))
   const selected = new Set<number>()
   const count = Math.min(2, Math.ceil(candidates.length / 8))
   for (let i = 0; i < count; i++) {
     const pick = Math.floor(Math.random() * candidates.length)
     selected.add(candidates.splice(pick, 1)[0]!)
   }
-  function tick(now: number) {
-    if (media?.matches || now - start >= 320) {
+  if (!selected.size) return
+  function tick() {
+    const elapsed = performance.now() - start
+    if (media?.matches || elapsed >= 320) {
       stop()
       return
     }
-    if (now - lastUpdate >= 90) {
-      replacements.value = letters.map((letter, index) =>
-        selected.has(index) ? glyphs[Math.floor(Math.random() * glyphs.length)]! : letter,
-      )
-      lastUpdate = now
-    }
-    frame = requestAnimationFrame(tick)
+    replacements.value = characters.map((letter, index) =>
+      selected.has(index) ? glyphs[Math.floor(Math.random() * glyphs.length)]! : letter,
+    )
+    timer = setTimeout(tick, Math.min(90, 320 - elapsed))
   }
-  tick(start)
+  tick()
 }
 
 function motionChanged() {
@@ -70,7 +69,7 @@ onBeforeUnmount(() => {
 <template>
   <span class="symbol-text" :class="{ active: replacements.length, 'fixed-layout': fixedLayout }">
     <span v-if="fixedLayout" class="symbol-source"
-      ><span v-for="(letter, index) in Array.from(text)" :key="index" class="fixed-cell"
+      ><span v-for="(letter, index) in letters" :key="index" class="fixed-cell"
         ><span
           class="fixed-original"
           :class="{ concealed: replacements.length && replacements[index] !== letter }"
@@ -86,7 +85,7 @@ onBeforeUnmount(() => {
     <span v-else class="symbol-source">{{ text }}</span>
     <span v-if="!fixedLayout && replacements.length" class="symbol-overlay" aria-hidden="true">
       <span
-        v-for="(letter, index) in Array.from(text)"
+        v-for="(letter, index) in letters"
         :key="index"
         class="cell"
         :class="{ replaced: replacements[index] !== letter }"

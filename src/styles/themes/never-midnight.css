@@ -194,3 +194,17 @@
     opacity: 0.65;
   }
 }
+
+@media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
+  .control-shimmer:where([data-theme='never-midnight'] *)::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 -3px -2px;
+    border: solid transparent;
+    border-width: 0 0 3px 2px;
+    border-image: var(--theme-control-border-shimmer) 1;
+    pointer-events: none;
+    opacity: 0;
+    animation: nm-border-shimmer 9s ease-in-out infinite alternate;
+  }
+}

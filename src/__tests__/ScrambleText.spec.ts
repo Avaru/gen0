@@ -357,6 +357,11 @@ describe('Never Midnight typing reveal', () => {
 })
 
 describe('Never Midnight symbol animation', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+  afterEach(() => vi.useRealTimers())
+
   it('supports the shared button prop, updated labels, and disabled buttons', async () => {
     const label = ref('Add spell')
     const button = mount(UiButton, {
@@ -404,9 +409,9 @@ describe('Never Midnight symbol animation', () => {
     expect(wrapper.get('.symbol-overlay').attributes('aria-hidden')).toBe('true')
     expect(wrapper.findAll('.glyph').map((glyph) => glyph.text())).toEqual(['Ж', 'e', 'n', '', '0'])
     vi.mocked(Math.random).mockReturnValue(0.6)
-    await advance(100)
+    await vi.advanceTimersByTimeAsync(100)
     expect(wrapper.findAll('.glyph')[0]!.text()).not.toBe('Ж')
-    await advance(420)
+    await vi.advanceTimersByTimeAsync(420)
     expect(wrapper.find('.symbol-overlay').exists()).toBe(false)
     await wrapper.setProps({ replayKey: 1 })
     expect(wrapper.find('.symbol-overlay').exists()).toBe(true)
@@ -425,7 +430,7 @@ describe('Never Midnight symbol animation', () => {
       const initialPositions = wrapper
         .findAll('.cell')
         .map((cell) => cell.classes().includes('replaced'))
-      await advance(100)
+      await vi.advanceTimersByTimeAsync(100)
       expect(wrapper.findAll('.cell').map((cell) => cell.classes().includes('replaced'))).toEqual(
         initialPositions,
       )
@@ -448,16 +453,17 @@ describe('Never Midnight symbol animation', () => {
     })
     await nextTick()
     expect(brand.find('.symbol-overlay').exists()).toBe(false)
+    expect(brand.find('.layer').exists()).toBe(false)
     expect(button.find('.symbol-overlay').exists()).toBe(false)
     await button.trigger('mouseenter')
     expect(button.find('.symbol-overlay').exists()).toBe(true)
-    await advance(420)
+    await vi.advanceTimersByTimeAsync(420)
     await button.trigger('focus')
     expect(button.find('.symbol-overlay').exists()).toBe(true)
-    await advance(420)
+    await vi.advanceTimersByTimeAsync(420)
     await button.setProps({ activation: 1 })
     expect(button.find('.symbol-overlay').exists()).toBe(true)
-    await advance(420)
+    await vi.advanceTimersByTimeAsync(420)
     await brand.trigger('mouseenter')
     expect(
       brand
@@ -473,8 +479,37 @@ describe('Never Midnight symbol animation', () => {
     theme.value = 'cyberpunk'
     await nextTick()
     expect(brand.findComponent(UiSymbolText).exists()).toBe(false)
+    expect(brand.findAll('.layer')).toHaveLength(2)
     expect(button.findComponent(UiSymbolText).exists()).toBe(false)
     expect(button.text()).toBe('Generate names')
+  })
+
+  it('cleans up pending symbol updates on text changes, reduced motion and unmount', async () => {
+    const wrapper = mount(UiSymbolText, {
+      props: { text: 'gen0', autoplay: true, fixedLayout: true },
+    })
+    await nextTick()
+    expect(vi.getTimerCount()).toBe(1)
+    expect(requestFrame).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(320)
+    expect(wrapper.find('.fixed-glyph').exists()).toBe(false)
+    expect(vi.getTimerCount()).toBe(0)
+    await wrapper.setProps({ replayKey: 1 })
+    expect(vi.getTimerCount()).toBe(1)
+    await wrapper.setProps({ text: 'gen 0' })
+    expect(vi.getTimerCount()).toBe(0)
+    await wrapper.setProps({ replayKey: 2 })
+    reduced = true
+    listeners.forEach((listener) => listener())
+    await nextTick()
+    expect(wrapper.find('.fixed-glyph').exists()).toBe(false)
+    expect(vi.getTimerCount()).toBe(0)
+    reduced = false
+    await wrapper.setProps({ replayKey: 3 })
+    expect(vi.getTimerCount()).toBe(1)
+    wrapper.unmount()
+    expect(vi.getTimerCount()).toBe(0)
+    expect(listeners.size).toBe(0)
   })
 
   it('skips symbol animation for reduced motion', async () => {

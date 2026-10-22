@@ -15,8 +15,14 @@ const symbols = computed(() => theme.value === 'never-midnight')
     @mouseenter="animationRun++"
     @pointerdown="animationRun++"
   >
-    <span :key="`hot-${animationRun}`" class="layer layer--hot" aria-hidden="true">gen 0</span>
-    <span :key="`signal-${animationRun}`" class="layer layer--signal" aria-hidden="true"
+    <span v-if="!symbols" :key="`hot-${animationRun}`" class="layer layer--hot" aria-hidden="true"
+      >gen 0</span
+    >
+    <span
+      v-if="!symbols"
+      :key="`signal-${animationRun}`"
+      class="layer layer--signal"
+      aria-hidden="true"
       >gen 0</span
     >
     <span class="ink"
@@ -212,9 +218,6 @@ const symbols = computed(() => theme.value === 'never-midnight')
   clip-path: polygon(0 20%, 24% 0, 25% 32%, 78% 10%, 100% 25%, 97% 70%, 63% 100%, 36% 73%, 0 90%);
   rotate: -1deg;
   pointer-events: none;
-}
-.layer:where([data-theme='never-midnight'] *) {
-  display: none;
 }
 .ink:where([data-theme='never-midnight'] *) {
   text-shadow: none;

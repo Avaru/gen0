@@ -10,7 +10,7 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
       :checked="modelValue"
       @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
     />
-    <span class="track" aria-hidden="true"></span>
+    <span class="track" :class="{ 'control-shimmer': !hazard }" aria-hidden="true"></span>
     <span class="toggle-text">{{ label }}</span>
   </label>
 </template>
@@ -227,19 +227,7 @@ label:not(.hazard):where([data-theme='never-midnight'] *) .track {
   border-width: 0 0 3px 2px;
   position: relative;
 }
-@media (prefers-reduced-motion: no-preference) {
-  label:not(.hazard):where([data-theme='never-midnight'] *) .track::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 -3px -2px;
-    border: solid transparent;
-    border-width: 0 0 3px 2px;
-    border-image: var(--theme-control-border-shimmer) 1;
-    pointer-events: none;
-    opacity: 0;
-    animation: nm-border-shimmer 9s ease-in-out infinite alternate;
-  }
-}
+
 @media (forced-colors: active) {
   input {
     position: static;

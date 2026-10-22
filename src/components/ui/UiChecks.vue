@@ -29,7 +29,7 @@ function change(value: Value, event: Event) {
   <fieldset>
     <legend :class="{ 'visually-hidden': hideLabel }">{{ label }}</legend>
     <div class="choices">
-      <label v-for="option in options" :key="option.value">
+      <label v-for="option in options" :key="option.value" class="control-shimmer">
         <input
           type="checkbox"
           :name="name"
@@ -144,6 +144,7 @@ input:where([data-theme='never-midnight'] *) {
 }
 input:where([data-theme='never-midnight'] *) {
   border-width: 0 0 2px 1px;
+  background: transparent;
 }
 input:where([data-theme='never-midnight'] *):checked {
   background: var(--color-ritual);
@@ -160,19 +161,7 @@ label:where([data-theme='never-midnight'] *) {
   border-width: 0 0 3px 2px;
   position: relative;
 }
-@media (prefers-reduced-motion: no-preference) {
-  label:where([data-theme='never-midnight'] *)::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 -3px -2px;
-    border: solid transparent;
-    border-width: 0 0 3px 2px;
-    border-image: var(--theme-control-border-shimmer) 1;
-    pointer-events: none;
-    opacity: 0;
-    animation: nm-border-shimmer 9s ease-in-out infinite alternate;
-  }
-}
+
 @media (forced-colors: active) {
   label:where([data-theme='never-midnight'] *),
   input:where([data-theme='never-midnight'] *) {

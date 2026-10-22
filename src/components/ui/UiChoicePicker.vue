@@ -87,7 +87,7 @@ function enter() {
       v-else
       :id="triggerId"
       ref="trigger"
-      class="trigger"
+      class="trigger control-shimmer"
       type="button"
       aria-haspopup="dialog"
       :aria-expanded="opened"
@@ -497,19 +497,7 @@ button.trigger:where([data-theme='never-midnight'] *) {
 button.trigger:where([data-theme='never-midnight'] *):is(:hover, :active) {
   background: var(--theme-control-wash-hover);
 }
-@media (prefers-reduced-motion: no-preference) {
-  button.trigger:where([data-theme='never-midnight'] *)::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 -3px -2px;
-    border: solid transparent;
-    border-width: 0 0 3px 2px;
-    border-image: var(--theme-control-border-shimmer) 1;
-    pointer-events: none;
-    opacity: 0;
-    animation: nm-border-shimmer 9s ease-in-out infinite alternate;
-  }
-}
+
 @media (forced-colors: active) {
   button.trigger:where([data-theme='never-midnight'] *),
   input:where([data-theme='never-midnight'] *) {
