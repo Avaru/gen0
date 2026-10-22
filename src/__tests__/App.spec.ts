@@ -99,7 +99,7 @@ describe('name generator interface', () => {
       expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('never-midnight')
       expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(false)
       expect(wrapper.find('input[name="flavor"]').exists()).toBe(false)
-      expect(wrapper.get('header .caption').text()).toBe('Never Midnight / Name generator')
+      expect(wrapper.get('header .caption').text()).toBe('Never Midnight\nName generator')
       expect(wrapper.findAll('li')).toHaveLength(10)
       await chooseCategory(wrapper, 'polish')
       await flushPromises()

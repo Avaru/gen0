@@ -153,6 +153,103 @@ dialog.fit-content {
 .fit-content .panel {
   height: auto;
 }
+dialog:where([data-theme='never-midnight'] *) {
+  --color-surface: #211a29;
+  --color-subtle: #382a43;
+  --color-text: #eee0f0;
+  --color-muted: #c6b1cd;
+  --color-signal: #eee0f0;
+  --color-border: #9573aa;
+  --color-control-border: #9573aa;
+  --color-focus: var(--color-neon);
+  width: min(44rem, calc(100% - 1.5rem));
+  height: min(48rem, calc(100dvh - 1.5rem));
+  margin: auto;
+  border: 2px dashed var(--color-ritual);
+  border-top: 7px double var(--color-neon);
+  border-right: 5px dashed var(--color-neon);
+  box-shadow:
+    7px 7px 0 #080808,
+    10px 10px 0 #8052ac80;
+  background: var(--color-surface);
+  rotate: -0.6deg;
+  overflow: hidden;
+}
+dialog:where([data-theme='never-midnight'] *)::backdrop {
+  background-color: #100a17dc;
+  background-image: var(--theme-page-texture);
+  background-size: var(--theme-page-texture-size);
+  backdrop-filter: blur(7px) saturate(0.4);
+}
+.panel:where([data-theme='never-midnight'] *) {
+  position: relative;
+  isolation: isolate;
+}
+.panel:where([data-theme='never-midnight'] *)::before,
+.panel:where([data-theme='never-midnight'] *)::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: min(75vw, 28rem);
+  aspect-ratio: 1;
+  background: var(--color-neon);
+  mask: var(--theme-arcane-seal) center / contain no-repeat;
+  pointer-events: none;
+  opacity: 0.2;
+}
+.panel:where([data-theme='never-midnight'] *)::before {
+  top: 3rem;
+  right: -5rem;
+  rotate: 23deg;
+}
+.panel:where([data-theme='never-midnight'] *)::after {
+  bottom: -5rem;
+  left: -4rem;
+  width: min(60vw, 20rem);
+  background: var(--color-ritual);
+  rotate: -31deg;
+  opacity: 0.5;
+}
+header:where([data-theme='never-midnight'] *) {
+  position: relative;
+  border-bottom: 2px dashed var(--color-neon);
+  margin: 0 var(--space-4) var(--space-4);
+  padding-inline: 0;
+}
+h2:where([data-theme='never-midnight'] *) {
+  font-family: var(--font-brutal);
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 400;
+  color: var(--color-page);
+  background: var(--color-on-page);
+  padding: 0.08em 0.12em;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  rotate: -2deg;
+}
+.close:where([data-theme='never-midnight'] *) {
+  border: 2px dashed var(--color-neon);
+  rotate: 5deg;
+  color: var(--color-neon);
+  background: transparent;
+}
+@media (max-width: 39.999rem) {
+  dialog:where([data-theme='never-midnight'] *) {
+    rotate: 0deg;
+  }
+}
+@media (forced-colors: active) {
+  .panel:where([data-theme='never-midnight'] *)::before,
+  .panel:where([data-theme='never-midnight'] *)::after {
+    display: none;
+  }
+  dialog:where([data-theme='never-midnight'] *) {
+    border-color: CanvasText;
+  }
+}
 @media print {
   dialog {
     display: none !important;

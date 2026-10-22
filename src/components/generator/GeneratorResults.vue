@@ -269,8 +269,80 @@ strong {
   }
 }
 h1:where([data-theme='never-midnight'] *) {
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-text);
-  color: var(--color-on-accent);
+  font-family: var(--font-brutal);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 4vw, 2.75rem);
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  background-image: var(--theme-heading-fill);
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  transform: rotate(-1deg);
+}
+@media (forced-colors: active) {
+  h1:where([data-theme='never-midnight'] *) {
+    background-image: none;
+    color: CanvasText;
+  }
+}
+section:where([data-theme='never-midnight'] *) {
+  border: 1px solid #8b80604d;
+  padding-left: 2.5rem;
+  rotate: 0.2deg;
+  transform-origin: top left;
+}
+section:where([data-theme='never-midnight'] *)::before {
+  content: '';
+  position: absolute;
+  top: -1.75rem;
+  right: 1rem;
+  width: 7rem;
+  aspect-ratio: 1;
+  background: var(--color-ritual);
+  border: 0;
+  border-radius: 0;
+  mask-image: var(--theme-arcane-seal);
+  mask-size: contain;
+  opacity: 0.65;
+  mix-blend-mode: multiply;
+  transform: rotate(-13deg);
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+section:where([data-theme='never-midnight'] *):is(:hover, :focus-within, :active)::before {
+  transform: rotate(21deg) scale(1.08);
+}
+@media (prefers-reduced-motion: reduce) {
+  section:where([data-theme='never-midnight'] *)::before {
+    transition: none;
+  }
+}
+section:where([data-theme='never-midnight'] *)::after {
+  top: auto;
+  bottom: -0.5rem;
+  right: -0.5rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--color-ritual);
+  mask-image: var(--theme-arcane-seal);
+  mask-size: contain;
+  rotate: 37deg;
+  opacity: 0.55;
+}
+li:where([data-theme='never-midnight'] *) {
+  border-top-style: dashed;
+}
+li:where([data-theme='never-midnight'] *):nth-child(3n + 2)::after {
+  width: 4rem;
+  height: 7px;
+  transform: rotate(-8deg);
+  opacity: 1;
+}
+@media (forced-colors: active) {
+  section:where([data-theme='never-midnight'] *)::before,
+  section:where([data-theme='never-midnight'] *)::after {
+    display: none;
+  }
 }
 </style>

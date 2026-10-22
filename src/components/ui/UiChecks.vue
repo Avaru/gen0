@@ -137,7 +137,48 @@ input:checked {
 input:checked::after {
   visibility: visible;
 }
+label:where([data-theme='never-midnight'] *),
+input:where([data-theme='never-midnight'] *) {
+  border: 2px solid var(--color-ritual);
+  border-image: var(--theme-control-border) 1;
+}
+input:where([data-theme='never-midnight'] *) {
+  border-width: 0 0 2px 1px;
+}
+input:where([data-theme='never-midnight'] *):checked {
+  background: var(--color-ritual);
+}
+label:where([data-theme='never-midnight'] *),
+label:where([data-theme='never-midnight'] *):has(input:checked) {
+  background: var(--theme-control-wash);
+}
+label:where([data-theme='never-midnight'] *):is(:hover, :active),
+label:where([data-theme='never-midnight'] *):has(input:checked):is(:hover, :active) {
+  background: var(--theme-control-wash-hover);
+}
+label:where([data-theme='never-midnight'] *) {
+  border-width: 0 0 3px 2px;
+  position: relative;
+}
+@media (prefers-reduced-motion: no-preference) {
+  label:where([data-theme='never-midnight'] *)::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 -3px -2px;
+    border: solid transparent;
+    border-width: 0 0 3px 2px;
+    border-image: var(--theme-control-border-shimmer) 1;
+    pointer-events: none;
+    opacity: 0;
+    animation: nm-border-shimmer 9s ease-in-out infinite alternate;
+  }
+}
 @media (forced-colors: active) {
+  label:where([data-theme='never-midnight'] *),
+  input:where([data-theme='never-midnight'] *) {
+    border-image: none;
+    border-color: ButtonText;
+  }
   input {
     appearance: auto;
     clip-path: none;

@@ -1,14 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Rubik+Mono+One&family=Special+Elite&display=swap');
 
-/* Heavy ink, concrete grey, and faint scratched ritual marks. */
+/* Bureaucratic paper caught inside a ritual. */
 :root:has([data-theme='never-midnight']) {
   color-scheme: light;
   --radius-sm: 0;
   --radius-lg: 0;
-  --font-body: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-body: 'Special Elite', 'Courier New', monospace;
   --font-body-size: 0.875rem;
-  --font-display: 'Archivo Black', 'Arial Black', sans-serif;
-  --font-result-name: var(--font-display);
+  --font-display: 'Rubik Mono One', 'Arial Black', sans-serif;
+  --font-brutal: var(--font-display);
+  --font-wordmark: 'Anton', 'Arial Narrow', sans-serif;
+  --font-result-name: 'Archivo Black', 'Arial Black', sans-serif;
   --font-result-name-size: 1.1875rem;
   --font-result-heading-size: 1.5rem;
   --font-modal-heading-size: 1.375rem;
@@ -46,16 +48,16 @@
       currentColor 64%
     )
     1;
-  --generator-panel-padding: 1rem;
+  --generator-panel-padding: 1.5rem;
   --generator-row-padding: 0.75rem;
   --button-font-size: 0.875rem;
   --font-control-size: 0.8125rem;
   --font-small-control-size: 0.75rem;
-  --color-page: #b8b8b5;
+  --color-page: #10120f;
   --color-text: #080808;
   --color-muted: #55554f;
-  --color-surface: #dededb;
-  --color-subtle: #c4c4c0;
+  --color-surface: #e6e1cd;
+  --color-subtle: #cfccb7;
   --color-border: #161616;
   --color-control-border: #161616;
   --color-accent: #161616;
@@ -66,31 +68,129 @@
   --color-destructive: #862d75;
   --color-on-destructive: #fafaf7;
   --color-signal: #161616;
-  --color-neon: #75ff00;
+  --color-neon: #9fba87;
+  --color-ritual: #8052ac;
+  --theme-control-border-stops:
+    color-mix(in srgb, var(--color-ritual) 85%, var(--color-text)),
+    color-mix(in srgb, var(--color-neon) 85%, var(--color-text)) 48%,
+    color-mix(in srgb, var(--color-ritual) 85%, var(--color-text));
+  --theme-control-border: linear-gradient(115deg, var(--theme-control-border-stops));
+  --theme-control-border-shimmer: linear-gradient(295deg, var(--theme-control-border-stops));
+  --theme-control-wash:
+    url('./assets/never-midnight-paper.png'),
+    linear-gradient(115deg, #8052ac24, #9fba871c 58%, #8052ac0d);
+  --theme-control-wash-hover:
+    url('./assets/never-midnight-paper.png'),
+    linear-gradient(115deg, #8052ac35, #9fba8730 58%, #8052ac1a);
   --color-hot: var(--color-neon);
-  --color-on-page: #161616;
+  --color-on-page: #d8d9cd;
   --color-link-background: #fafaf7;
   --color-primary-hover: #363636;
   --theme-check-shape: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  --theme-panel-shadow: 4px 4px 0 #161616;
+  --theme-panel-shadow: 2px 3px 0 #bab39b, 3px 4px 0 #171911, 6px 7px 0 #08080880;
   --theme-panel-fill: var(--color-surface);
-  --theme-panel-border-width: 3px;
-  --theme-panel-rule-width: 8px;
-  --theme-header-rule-width: 1px;
+  --theme-panel-border-width: 1px;
+  --theme-panel-rule-width: 1px;
+  --theme-header-rule-width: 6px;
   --theme-title-color: var(--color-text);
+  --theme-heading-fill: linear-gradient(
+    115deg,
+    #49295f 0%,
+    var(--color-ritual) 35%,
+    #687c4f 72%,
+    #b9b49a 100%
+  );
   --theme-heading-weight: 900;
   --theme-name-color: var(--color-text);
   --theme-name-weight: 900;
   --theme-heading-slant: 0deg;
   --theme-heading-shadow: none;
   --theme-rule: linear-gradient(var(--color-on-page), var(--color-on-page));
-  --theme-page-texture: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22680%22%20height%3D%22680%22%20viewBox%3D%220%200%20680%20680%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23181815%22%20stroke-width%3D%221%22%20opacity%3D%22.12%22%20stroke-linecap%3D%22square%22%3E%3Cpath%20d%3D%22M452%2074c84-24%20165%2021%20178%20104s-46%20150-125%20154M460%2080c77-19%20151%2021%20163%20100s-42%20142-119%20148M521%2054l-15%2049m-11-32%2039%2014M598%20297l-25-33m-6%2021%2037-16M59%20448l68%20121%2073-118-141-3%2068%20117M70%20460l57%20104%2063-103M103%20584l49-4m-29-13%203%2029M322%20390l22-31%2014%2033-36-2M330%20347l20%2056%22%2F%3E%3Cpath%20d%3D%22m14%20202%2074-3m-65%207%2041-1M397%20594l96-4m-71%209%2042-2M231%20125l2%2022m-12-12%2023%202%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E');
-  --theme-page-texture-size: 680px 680px;
-  --theme-panel-texture: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%22320%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23181815%22%20opacity%3D%22.09%22%3E%3Cpath%20d%3D%22m349%204%20101%202m-86%204%2072-2M468%2012l-2%2065m5-54-2%2034M398%2018l9%2019%2013-18-22-1M12%20273l-3%2035%2071-2m-62%205%2038-1%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E');
-  --theme-panel-edge:
-    linear-gradient(176deg, transparent 38%, var(--color-text) 40% 48%, transparent 50%),
-    linear-gradient(3deg, transparent 60%, var(--color-hot) 62% 73%, transparent 75%);
+  --theme-page-texture:
+    url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221100%22%20height%3D%221000%22%20viewBox%3D%220%200%201100%201000%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23c5b6d5%22%20opacity%3D%22.23%22%3E%3Cg%20transform%3D%22translate%28790%20360%29%20rotate%28-19%29%22%3E%3Ccircle%20r%3D%22310%22%20stroke-width%3D%222%22%2F%3E%3Ccircle%20r%3D%22297%22%2F%3E%3Ccircle%20r%3D%22260%22%20stroke-dasharray%3D%221%2012%22%20stroke-width%3D%229%22%2F%3E%3Cpath%20d%3D%22M-270%20155%200-310%20270%20155Z%20M0%20310-270-155%20270-155Z%22%20stroke-width%3D%222%22%2F%3E%3Cellipse%20rx%3D%22175%22%20ry%3D%2270%22%2F%3E%3Cellipse%20rx%3D%2265%22%20ry%3D%22180%22%2F%3E%3Ccircle%20r%3D%2232%22%2F%3E%3Cpath%20d%3D%22M-370%200H370M0-370V370M-250-250%20250%20250M250-250-250%20250%22%2F%3E%3Cpath%20d%3D%22M-328-14v28m656-28v28M-14-328h28M-14%20328h28%22%20stroke-width%3D%225%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22m32%20760%20190-110-53%20204-137-94%20190-110M-10%20932l370-91M96%20620l22%20330M50%20914l218-162%22%20stroke-width%3D%222%22%2F%3E%3Ccircle%20cx%3D%22126%22%20cy%3D%22797%22%20r%3D%22132%22%2F%3E%3Ccircle%20cx%3D%22130%22%20cy%3D%22800%22%20r%3D%22137%22%2F%3E%3C%2Fg%3E%3Cg%20stroke%3D%22%239fba87%22%20fill%3D%22none%22%20opacity%3D%22.55%22%3E%3Cpath%20d%3D%22m425%2082%2048%20119-85-38%2094-54-28%20145M956%20738l45%20138m-66-94%2085%2036%22%20stroke-width%3D%223%22%2F%3E%3Ccircle%20cx%3D%22945%22%20cy%3D%22827%22%20r%3D%22106%22%20stroke-dasharray%3D%22195%20470%22%20stroke-width%3D%222%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E'),
+    repeating-linear-gradient(0deg, #d8d9cd05 0 1px, transparent 1px 4px);
+  --theme-page-texture-size: 1100px 1000px, 100% 4px;
+  --theme-paper-guide: repeating-linear-gradient(180deg, #756b4d80 0 3px, transparent 3px 8px);
+  --theme-panel-texture:
+    radial-gradient(
+      circle at 13px 60px,
+      #10120f 0 5px,
+      #81785b90 5px 6px,
+      #fbf4dd 6px 7px,
+      transparent 8px
+    ),
+    radial-gradient(
+      circle at 13px 50%,
+      #10120f 0 5px,
+      #81785b90 5px 6px,
+      #fbf4dd 6px 7px,
+      transparent 8px
+    ),
+    radial-gradient(
+      circle at 13px calc(100% - 48px),
+      #10120f 0 5px,
+      #81785b90 5px 6px,
+      #fbf4dd 6px 7px,
+      transparent 8px
+    ),
+    linear-gradient(
+      225deg,
+      #10120f 0 11px,
+      #a2997d 12px,
+      #f6efd8 13px 23px,
+      #a2997d70 24px,
+      transparent 26px
+    ),
+    linear-gradient(90deg, transparent 29px, #80745838 30px, #fff8e3b0 31px, transparent 33px),
+    linear-gradient(
+      0deg,
+      transparent calc(38% - 4px),
+      #81755820 calc(38% - 1px),
+      #fff9e880 38%,
+      transparent calc(38% + 3px),
+      transparent calc(73% - 4px),
+      #81755820 calc(73% - 1px),
+      #fff9e880 73%,
+      transparent calc(73% + 3px)
+    ),
+    linear-gradient(
+      90deg,
+      transparent calc(50% - 3px),
+      #81755818 calc(50% - 1px),
+      #fff9e865 50%,
+      transparent calc(50% + 3px)
+    ),
+    url('./assets/never-midnight-wear.svg'),
+    radial-gradient(ellipse at 96% 9%, #88683a1f, transparent 26%),
+    radial-gradient(ellipse at 6% 82%, #77603e1c, transparent 19%),
+    url('./assets/never-midnight-paper.png'),
+    linear-gradient(108deg, #a496652b, transparent 35% 75%, #a4966520);
+  --theme-panel-edge: repeating-linear-gradient(
+    90deg,
+    var(--color-text) 0 2px,
+    transparent 2px 4px,
+    var(--color-text) 4px 5px,
+    transparent 5px 8px,
+    var(--color-text) 8px 12px,
+    transparent 12px 14px
+  );
   --theme-label-mark: linear-gradient(var(--color-hot), var(--color-hot));
-  --theme-row-mark: none;
+  --theme-row-mark: linear-gradient(
+    105deg,
+    transparent 20%,
+    var(--color-hot) 21% 68%,
+    transparent 69%
+  );
+  --theme-arcane-seal: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2237%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2231%22%20stroke-dasharray%3D%222%205%22%2F%3E%3Cpath%20d%3D%22M50%2012%2082%2069H18ZM50%2089V64M8%2050h19m46%200h19M50%202v17M2%208h19M8%202v19M79%2092h19m-6-13v19%22%2F%3E%3Cellipse%20cx%3D%2250%22%20cy%3D%2250%22%20rx%3D%2212%22%20ry%3D%2225%22%2F%3E%3Cpath%20d%3D%22M60%2032a20%2020%200%201%200%200%2036%2023%2023%200%200%201%200-36Z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E');
   --theme-button-detail: none;
+}
+
+/* Fade a cached border overlay instead of recalculating an inherited gradient. */
+@keyframes nm-border-shimmer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.65;
+  }
 }

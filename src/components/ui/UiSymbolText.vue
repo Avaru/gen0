@@ -6,6 +6,7 @@ const props = withDefaults(
     text: string
     replayKey?: unknown
     autoplay?: boolean
+    fixedLayout?: boolean
   }>(),
   { autoplay: false },
 )
@@ -67,9 +68,23 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <span class="symbol-text" :class="{ active: replacements.length }">
-    <span class="symbol-source">{{ text }}</span>
-    <span v-if="replacements.length" class="symbol-overlay" aria-hidden="true">
+  <span class="symbol-text" :class="{ active: replacements.length, 'fixed-layout': fixedLayout }">
+    <span v-if="fixedLayout" class="symbol-source"
+      ><span v-for="(letter, index) in Array.from(text)" :key="index" class="fixed-cell"
+        ><span
+          class="fixed-original"
+          :class="{ concealed: replacements.length && replacements[index] !== letter }"
+          >{{ letter }}</span
+        ><span
+          v-if="replacements.length && replacements[index] !== letter"
+          class="fixed-glyph"
+          aria-hidden="true"
+          >{{ replacements[index] }}</span
+        ></span
+      ></span
+    >
+    <span v-else class="symbol-source">{{ text }}</span>
+    <span v-if="!fixedLayout && replacements.length" class="symbol-overlay" aria-hidden="true">
       <span
         v-for="(letter, index) in Array.from(text)"
         :key="index"
@@ -91,6 +106,33 @@ onBeforeUnmount(() => {
 }
 .symbol-text.active > .symbol-source {
   opacity: 0;
+}
+.fixed-layout.active > .symbol-source {
+  opacity: 1;
+}
+.fixed-cell {
+  position: relative;
+  display: inline-block;
+  white-space: pre;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+}
+.fixed-original.concealed {
+  visibility: hidden;
+}
+.fixed-glyph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scaleX(0.5);
+  pointer-events: none;
+  font-family: system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 0.85em;
+  line-height: 1;
+  color: var(--color-neon);
 }
 .symbol-overlay {
   position: absolute;

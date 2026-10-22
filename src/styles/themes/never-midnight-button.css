@@ -1,5 +1,10 @@
 button:not(.appearance-icon):where([data-theme='never-midnight'] *) {
-  border: 2px solid var(--color-text);
+  font-family: var(--font-brutal);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  border: 1px solid var(--color-text);
+  padding-inline: max(var(--button-padding-inline, 1rem), 1.5rem);
+  rotate: -0.5deg;
   border-bottom-width: 4px;
 }
 
@@ -7,4 +12,32 @@ button:where([data-theme='never-midnight'] .card-heading *)::before {
   content: '';
   position: absolute;
   inset: -0.375rem 0;
+}
+
+button:not(.appearance-icon):where([data-theme='never-midnight'] *)::after {
+  width: 1.5rem;
+  height: 1.5rem;
+  right: -0.25rem;
+  bottom: -0.25rem;
+  background: var(--color-ritual);
+  mask-image: var(--theme-arcane-seal);
+  mask-size: contain;
+  opacity: 0.85;
+  rotate: 18deg;
+}
+button.primary:where([data-theme='never-midnight'] *)::after,
+button.destructive:where([data-theme='never-midnight'] *)::after {
+  background: var(--color-neon);
+}
+button:not(.appearance-icon):where([data-theme='never-midnight'] *):is(
+    :hover,
+    :active,
+    :focus-visible
+  )::after {
+  rotate: -18deg;
+}
+@media (forced-colors: active) {
+  button:where([data-theme='never-midnight'] *)::after {
+    display: none;
+  }
 }

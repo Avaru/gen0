@@ -83,6 +83,47 @@ withDefaults(
   background: var(--theme-panel-edge);
   pointer-events: none;
 }
+.sheet-card:where([data-theme='never-midnight'] *) {
+  border: 1px solid #8b80604d;
+  padding-left: 2.5rem;
+  rotate: -0.25deg;
+}
+.sheet-card:where([data-theme='never-midnight'] *)::before {
+  top: 1rem;
+  bottom: 1rem;
+  left: 1.75rem;
+  right: auto;
+  width: 1px;
+  height: auto;
+  background: var(--theme-paper-guide);
+}
+.sheet-card:where([data-theme='never-midnight'] *):nth-child(even) {
+  rotate: 0.25deg;
+}
+.sheet-card:where([data-theme='never-midnight'] *)::after {
+  top: auto;
+  bottom: -0.5rem;
+  right: -0.5rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--color-ritual);
+  mask-image: var(--theme-arcane-seal);
+  mask-size: contain;
+  rotate: -19deg;
+  opacity: 0.6;
+}
+.card-heading:where([data-theme='never-midnight'] *) {
+  border-bottom: 2px dashed var(--color-text);
+  padding-bottom: var(--space-3);
+}
+h2:where([data-theme='never-midnight'] *) {
+  padding-right: var(--space-2);
+  text-decoration: underline;
+  text-decoration-color: var(--color-neon);
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: -0.08em;
+  text-decoration-skip-ink: none;
+}
 /* Rules passed into a card share typography without styling child component internals. */
 :slotted(.rule),
 :slotted(.rules) {
@@ -132,7 +173,8 @@ h2 {
   h2 {
     mask-image: none;
   }
-  .sheet-card::before {
+  .sheet-card::before,
+  .sheet-card::after {
     display: none;
   }
 }

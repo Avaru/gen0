@@ -108,4 +108,18 @@ function closed() {
   color: var(--color-signal);
   font-size: 0.75rem;
 }
+.settings button:where([data-theme='never-midnight'] *) {
+  font-family: var(--font-brutal);
+  font-weight: 400;
+  font-size: 0.8125rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-control-border);
+}
+.settings button:where([data-theme='never-midnight'] *):is([aria-current], :hover, :active) {
+  background: var(--color-subtle);
+}
+.selected:where([data-theme='never-midnight'] *) {
+  color: inherit;
+}
 </style>

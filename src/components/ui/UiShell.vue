@@ -283,14 +283,82 @@ header::before {
     padding: var(--space-8);
   }
 }
+.shell[data-theme='never-midnight'] {
+  position: relative;
+  isolation: isolate;
+}
+.shell[data-theme='never-midnight']::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 1.25rem;
+  right: 1.5rem;
+  width: clamp(8rem, 26vw, 19rem);
+  aspect-ratio: 1;
+  border: 1px solid var(--color-neon);
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 13deg,
+    color-mix(in srgb, var(--color-ritual) 70%, transparent) 0deg 1deg,
+    transparent 1deg 30deg
+  );
+  mask-image: radial-gradient(
+    circle,
+    transparent 0 48%,
+    #000 49% 51%,
+    transparent 52% 61%,
+    #000 62%
+  );
+  transform: rotate(-17deg);
+  animation: ritual-orbit 120s linear infinite;
+  opacity: 0.65;
+  pointer-events: none;
+}
 .shell[data-theme='never-midnight'] .caption {
-  max-width: 18rem;
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
+  align-self: flex-end;
+  white-space: pre-line;
+  max-width: 21rem;
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.1;
+  font-size: clamp(0.625rem, 1.4vw, 0.875rem);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-on-page);
+  transform: none;
 }
 .shell[data-theme='never-midnight'] header {
-  padding-bottom: var(--space-4);
+  padding-bottom: var(--space-6);
   border-bottom-width: 6px;
+  border-image: repeating-linear-gradient(
+      90deg,
+      var(--color-on-page) 0 23px,
+      transparent 23px 26px,
+      var(--color-on-page) 26px 29px,
+      transparent 29px 33px
+    )
+    1;
+}
+.shell[data-theme='never-midnight'] header::after {
+  display: none;
+}
+@keyframes ritual-orbit {
+  to {
+    transform: rotate(343deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell[data-theme='never-midnight']::before {
+    animation: none;
+  }
+}
+@media (forced-colors: active) {
+  .shell[data-theme='never-midnight']::before {
+    display: none;
+  }
+  .shell[data-theme='never-midnight'] .caption {
+    white-space: pre-line;
+    border: 1px solid CanvasText;
+  }
 }
 </style>

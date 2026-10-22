@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import UiCategoryPicker from '@/components/ui/UiCategoryPicker.vue'
 import { mockDialog } from './helpers/dialog'
+import { cyberpunkCategories } from '@/generator/definitions/cyberpunk'
 import { mockMedia } from './helpers/media'
 
 enableAutoUnmount(afterEach)
@@ -14,6 +15,12 @@ const options = [
   { id: 'japanese', label: 'Japanese', group: 'Names by nationality' },
   { id: 'corporations', label: 'Corporations', group: 'Organizations' },
   { id: 'runners', label: 'Runners', group: 'People' },
+  ...cyberpunkCategories
+    .filter(
+      (option) =>
+        option.group !== 'Names by nationality' && !['corporations', 'runners'].includes(option.id),
+    )
+    .slice(0, 6),
 ]
 
 function setup() {
@@ -24,6 +31,19 @@ function setup() {
 }
 
 describe('category picker', () => {
+  it.each([4, 9, 10])(
+    'shows search only from ten available categories (%i options)',
+    async (count) => {
+      const wrapper = setup()
+      await wrapper.setProps({ options: options.slice(0, count) })
+      await wrapper.get('#category').trigger('click')
+      await flushPromises()
+      expect(wrapper.find('input[type=search]').exists()).toBe(count >= 10)
+      expect(wrapper.find('.search').exists()).toBe(count >= 10)
+      expect(document.activeElement).toBe(wrapper.get(count < 10 ? '.close' : 'input').element)
+    },
+  )
+
   it('keeps search unfocused on phones and touch devices until it is selected', async () => {
     media.clear()
     const wrapper = setup()
@@ -96,7 +116,7 @@ describe('category picker', () => {
     await wrapper.get('#category').trigger('click')
     await flushPromises()
     const first = wrapper.get('.close')
-    const last = wrapper.get('[data-category="runners"]')
+    const last = wrapper.findAll('[data-category]').slice(-1)[0]!
     ;(first.element as HTMLButtonElement).focus()
     await first.trigger('keydown', { key: 'Tab', shiftKey: true })
     expect(document.activeElement).toBe(last.element)
@@ -105,13 +125,14 @@ describe('category picker', () => {
     wrapper.unmount()
   })
 
-  it('searches only the options currently allowed by the flavor', async () => {
+  it('hides search when flavor filtering leaves fewer than ten categories', async () => {
     const wrapper = setup()
     await wrapper.setProps({ options: options.filter((option) => option.id !== 'corporations') })
     await wrapper.get('#category').trigger('click')
     await flushPromises()
-    await wrapper.get('input').setValue('corporation')
-    expect(wrapper.findAll('[data-category]')).toHaveLength(0)
+    expect(wrapper.find('input[type=search]').exists()).toBe(false)
+    expect(wrapper.find('[data-category="corporations"]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-category]')).toHaveLength(9)
     wrapper.unmount()
   })
 })

@@ -434,4 +434,87 @@ h3 {
     opacity: 0;
   }
 }
+h3:where([data-theme='never-midnight'] *) {
+  text-transform: uppercase;
+  font-family: var(--font-brutal);
+  font-size: 1.125rem;
+  letter-spacing: -0.04em;
+  font-weight: 400;
+  width: fit-content;
+  color: var(--color-page);
+  background: var(--color-on-page);
+  padding: 0.08em 0.12em;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+  rotate: -1deg;
+}
+.choices button:where([data-theme='never-midnight'] *) {
+  --color-text: #080808;
+  --color-surface: #e6e1cd;
+  --color-subtle: #cbbbd3;
+  --color-signal: #8052ac;
+  font-family: var(--font-brutal);
+  font-weight: 400;
+  font-size: 0.8125rem;
+  letter-spacing: -0.035em;
+  position: relative;
+  border: 2px dashed var(--color-ritual);
+  border-bottom: 4px double var(--color-ritual);
+  padding: var(--space-4) 2.5rem var(--space-4) var(--space-4);
+  background: var(--color-surface);
+  color: var(--color-text);
+  rotate: -0.6deg;
+}
+.choices button:where([data-theme='never-midnight'] *):nth-child(even) {
+  rotate: 0.6deg;
+}
+.choices button:where([data-theme='never-midnight'] *)::after {
+  content: '';
+  position: absolute;
+  width: 2.5rem;
+  height: 2.5rem;
+  bottom: -0.5rem;
+  right: -0.5rem;
+  background: var(--color-ritual);
+  mask: var(--theme-arcane-seal) center / contain no-repeat;
+  opacity: 0.65;
+  pointer-events: none;
+}
+input:where([data-theme='never-midnight'] *)::placeholder {
+  color: var(--color-muted);
+  opacity: 0.8;
+}
+button.trigger:where([data-theme='never-midnight'] *),
+input:where([data-theme='never-midnight'] *) {
+  border: 2px solid var(--color-ritual);
+  border-image: var(--theme-control-border) 1;
+}
+button.trigger:where([data-theme='never-midnight'] *) {
+  background: var(--theme-control-wash);
+  border-width: 0 0 3px 2px;
+  position: relative;
+}
+button.trigger:where([data-theme='never-midnight'] *):is(:hover, :active) {
+  background: var(--theme-control-wash-hover);
+}
+@media (prefers-reduced-motion: no-preference) {
+  button.trigger:where([data-theme='never-midnight'] *)::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 -3px -2px;
+    border: solid transparent;
+    border-width: 0 0 3px 2px;
+    border-image: var(--theme-control-border-shimmer) 1;
+    pointer-events: none;
+    opacity: 0;
+    animation: nm-border-shimmer 9s ease-in-out infinite alternate;
+  }
+}
+@media (forced-colors: active) {
+  button.trigger:where([data-theme='never-midnight'] *),
+  input:where([data-theme='never-midnight'] *) {
+    border-image: none;
+    border-color: ButtonText;
+  }
+}
 </style>

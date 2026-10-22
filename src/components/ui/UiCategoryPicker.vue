@@ -10,6 +10,7 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
   <UiChoicePicker
     :model-value="modelValue"
     :options="options"
+    :searchable="options.length >= 10"
     @update:model-value="$emit('update:modelValue', $event)"
   />
 </template>

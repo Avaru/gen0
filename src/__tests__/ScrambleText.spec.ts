@@ -438,7 +438,7 @@ describe('Never Midnight symbol animation', () => {
     },
   )
 
-  it('animates the Never Midnight brand and button interactions only', async () => {
+  it('glitches the Never Midnight brand in fixed letter slots while animating button interactions', async () => {
     const theme = ref<Theme>('never-midnight')
     const global = { provide: { [themeKey as symbol]: theme } }
     const brand = mount(UiBrandTitle, { global })
@@ -447,7 +447,7 @@ describe('Never Midnight symbol animation', () => {
       slots: { default: 'Generate names' },
     })
     await nextTick()
-    expect(brand.find('.symbol-overlay').exists()).toBe(true)
+    expect(brand.find('.symbol-overlay').exists()).toBe(false)
     expect(button.find('.symbol-overlay').exists()).toBe(false)
     await button.trigger('mouseenter')
     expect(button.find('.symbol-overlay').exists()).toBe(true)
@@ -458,8 +458,18 @@ describe('Never Midnight symbol animation', () => {
     await button.setProps({ activation: 1 })
     expect(button.find('.symbol-overlay').exists()).toBe(true)
     await advance(420)
+    await brand.trigger('mouseenter')
+    expect(
+      brand
+        .findAll('.fixed-original')
+        .map((letter) => letter.text())
+        .join(''),
+    ).toBe('gen0')
+    expect(brand.findAll('.fixed-glyph')).toHaveLength(1)
+    expect(brand.find('.symbol-overlay').exists()).toBe(false)
     await brand.trigger('pointerdown')
-    expect(brand.find('.symbol-overlay').exists()).toBe(true)
+    expect(brand.findAll('.fixed-glyph')).toHaveLength(1)
+    expect(brand.find('.symbol-overlay').exists()).toBe(false)
     theme.value = 'cyberpunk'
     await nextTick()
     expect(brand.findComponent(UiSymbolText).exists()).toBe(false)

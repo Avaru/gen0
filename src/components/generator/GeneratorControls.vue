@@ -109,7 +109,35 @@ form::after {
   }
 }
 form:where([data-theme='never-midnight'] *) {
-  border: 3px solid var(--color-border);
-  border-top-width: 8px;
+  border: 1px solid #8b80604d;
+  padding-left: 2.5rem;
+  rotate: -0.35deg;
+}
+form:where([data-theme='never-midnight'] *)::after {
+  top: auto;
+  bottom: -0.8rem;
+  right: -0.6rem;
+  width: 4rem;
+  height: 4rem;
+  background: var(--color-ritual);
+  mask-image: var(--theme-arcane-seal);
+  mask-size: contain;
+  rotate: 17deg;
+  opacity: 0.75;
+}
+form:where([data-theme='never-midnight'] *)::before {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  bottom: 1rem;
+  left: 1.75rem;
+  width: 1px;
+  background: var(--theme-paper-guide);
+  pointer-events: none;
+}
+@media (forced-colors: active) {
+  form:where([data-theme='never-midnight'] *)::after {
+    display: none;
+  }
 }
 </style>

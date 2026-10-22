@@ -20,7 +20,7 @@ const symbols = computed(() => theme.value === 'never-midnight')
       >gen 0</span
     >
     <span class="ink"
-      ><UiSymbolText v-if="symbols" text="gen 0" :replay-key="animationRun" autoplay /><template
+      ><UiSymbolText v-if="symbols" text="gen0" :replay-key="animationRun" fixed-layout /><template
         v-else
         >gen 0</template
       ></span
@@ -190,18 +190,47 @@ const symbols = computed(() => theme.value === 'never-midnight')
     animation: none;
   }
 }
-/* Compact, plain wordmark for Never Midnight. */
+/* Condensed archival wordmark for Never Midnight. */
 .brand:where([data-theme='never-midnight'] *) {
-  font-size: clamp(2rem, 6vw, 3rem);
-  letter-spacing: -0.04em;
-  color: var(--color-text);
+  display: inline-flex;
+  font-family: var(--font-wordmark);
+  font-weight: 400;
+  font-size: clamp(5rem, 12vw, 7rem);
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
   line-height: 1;
   transform: none;
+}
+.brand:where([data-theme='never-midnight'] *)::after {
+  content: '';
+  position: absolute;
+  left: -0.025em;
+  right: -0.06em;
+  bottom: -0.1em;
+  height: 0.065em;
+  background: var(--color-ritual);
+  clip-path: polygon(0 20%, 24% 0, 25% 32%, 78% 10%, 100% 25%, 97% 70%, 63% 100%, 36% 73%, 0 90%);
+  rotate: -1deg;
+  pointer-events: none;
 }
 .layer:where([data-theme='never-midnight'] *) {
   display: none;
 }
 .ink:where([data-theme='never-midnight'] *) {
   text-shadow: none;
+  color: var(--color-on-page);
+  padding: 0;
+  display: inline-block;
+  transform: none;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+  padding-bottom: 0.01em;
+}
+@media (forced-colors: active) {
+  .ink:where([data-theme='never-midnight'] *) {
+    background-image: none;
+    color: CanvasText;
+    text-shadow: none;
+  }
 }
 </style>

@@ -33,7 +33,7 @@ const cyberpunkSetting = {
 const neverMidnightSetting = {
   id: 'never-midnight',
   label: 'Never Midnight',
-  caption: 'Never Midnight / Name generator',
+  caption: 'Never Midnight\nName generator',
   theme: 'never-midnight',
   flavors: [],
   defaultCategory: 'german',
