@@ -22,7 +22,7 @@ export function spell(): Generated {
   let firstConcept = true
   const primary = shape
     .replace('A/The', () => (concept.uncountable ? 'The' : randomFrom(['A', 'The'])))
-    .replace('Every', concept.uncountable ? 'All' : 'Every')
+    .replace('Every ', concept.uncountable ? '' : 'Every ')
     .replace('must/shall', () => randomFrom(['must', 'shall']))
     .replace('(never)', () => (rng() < 0.5 ? 'never ' : ''))
     .replace(/\(concept\)/g, () => {
@@ -34,6 +34,7 @@ export function spell(): Generated {
     })
     .replace('(expression)', verb)
     .replace(/^A ([aeiou])/i, 'An $1')
+    .replace(/^./, (letter) => letter.toUpperCase())
   const type = randomFrom(spellTypes)
   const article = /^[aeiou]/i.test(type) ? 'An' : 'A'
   return { primary, details: `${article} ${type} ${randomFrom(spellSources)}` }

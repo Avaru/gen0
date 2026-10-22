@@ -452,6 +452,7 @@ describe('Never Midnight symbol animation', () => {
       slots: { default: 'Generate names' },
     })
     await nextTick()
+    expect(brand.get('.ink').text()).toBe('gen0')
     expect(brand.find('.symbol-overlay').exists()).toBe(false)
     expect(brand.find('.layer').exists()).toBe(false)
     expect(button.find('.symbol-overlay').exists()).toBe(false)
@@ -470,7 +471,7 @@ describe('Never Midnight symbol animation', () => {
         .findAll('.fixed-original')
         .map((letter) => letter.text())
         .join(''),
-    ).toBe('gen0')
+    ).toBe('gen')
     expect(brand.findAll('.fixed-glyph')).toHaveLength(1)
     expect(brand.find('.symbol-overlay').exists()).toBe(false)
     await brand.trigger('pointerdown')

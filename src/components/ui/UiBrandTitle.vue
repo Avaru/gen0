@@ -26,10 +26,14 @@ const symbols = computed(() => theme.value === 'never-midnight')
       >gen 0</span
     >
     <span class="ink"
-      ><UiSymbolText v-if="symbols" text="gen0" :replay-key="animationRun" fixed-layout /><template
-        v-else
-        >gen 0</template
-      ></span
+      ><template v-if="symbols"
+        ><UiSymbolText
+          class="brand-prefix"
+          text="gen"
+          :replay-key="animationRun"
+          fixed-layout
+        />0</template
+      ><template v-else>gen 0</template></span
     >
   </span>
 </template>
@@ -207,6 +211,22 @@ const symbols = computed(() => theme.value === 'never-midnight')
   line-height: 1;
   transform: none;
 }
+.brand:where([data-theme='never-midnight'] *)::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  bottom: -0.15em;
+  left: 50%;
+  margin-left: -3em;
+  width: 6em;
+  aspect-ratio: 1;
+  background: color-mix(in srgb, var(--color-ritual) 30%, var(--color-on-page));
+  mask-image: var(--theme-arcane-seal-fine);
+  mask-size: contain;
+  rotate: -17deg;
+  opacity: 0.55;
+  pointer-events: none;
+}
 .brand:where([data-theme='never-midnight'] *)::after {
   content: '';
   position: absolute;
@@ -219,7 +239,11 @@ const symbols = computed(() => theme.value === 'never-midnight')
   rotate: -1deg;
   pointer-events: none;
 }
+.brand-prefix {
+  font-size: 0.85em;
+}
 .ink:where([data-theme='never-midnight'] *) {
+  z-index: 1;
   text-shadow: none;
   color: var(--color-on-page);
   padding: 0;

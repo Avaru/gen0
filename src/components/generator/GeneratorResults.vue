@@ -69,6 +69,7 @@ defineExpose({
       <h1 id="results-heading">{{ label }}</h1>
       <UiToggle
         v-if="hasDetails"
+        class="details-toggle"
         :model-value="showDetails"
         label="details"
         @update:model-value="$emit('update:showDetails', $event)"
@@ -306,16 +307,44 @@ section:where([data-theme='never-midnight'] *)::before {
   mask-size: contain;
   opacity: 0.65;
   mix-blend-mode: multiply;
-  transform: rotate(-13deg);
-  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  rotate: -13deg;
   pointer-events: none;
 }
-section:where([data-theme='never-midnight'] *):is(:hover, :focus-within, :active)::before {
-  transform: rotate(21deg) scale(1.08);
+@media (prefers-reduced-motion: no-preference) {
+  section:where([data-theme='never-midnight'] *):has(
+      .details-toggle :focus-visible,
+      .details-toggle:active
+    )::before {
+    animation: seal-glitch 240ms steps(1, end);
+  }
+  @media (hover: hover) {
+    section:where([data-theme='never-midnight'] *):has(.details-toggle:hover)::before {
+      animation: seal-glitch 240ms steps(1, end);
+    }
+  }
 }
-@media (prefers-reduced-motion: reduce) {
-  section:where([data-theme='never-midnight'] *)::before {
-    transition: none;
+@keyframes seal-glitch {
+  0%,
+  100% {
+    transform: none;
+    clip-path: none;
+  }
+  18% {
+    transform: translate(-7px, 2px) skewX(-18deg) scale(1.15, 0.85);
+    clip-path: inset(8% 0 35%);
+  }
+  36% {
+    transform: translate(9px, -3px) skewX(24deg);
+    clip-path: inset(40% 0 12%);
+    background: var(--color-neon);
+  }
+  54% {
+    transform: translate(-4px, 2px) scale(0.85, 1.2);
+    clip-path: inset(0 0 45%);
+  }
+  72% {
+    transform: translate(3px, -1px) skewX(-12deg);
+    clip-path: inset(22% 0 18%);
   }
 }
 section:where([data-theme='never-midnight'] *)::after {

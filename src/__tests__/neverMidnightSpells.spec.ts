@@ -94,7 +94,7 @@ describe('Never Midnight spells', () => {
     draw(0, 0, darkness, 0)
     expect(spell().primary).toBe('The darkness that never dreams')
     draw(1, 0, darkness, 0)
-    expect(spell().primary).toBe('All darkness must dream')
+    expect(spell().primary).toBe('Darkness must dream')
     draw(
       0,
       0,
@@ -103,6 +103,19 @@ describe('Never Midnight spells', () => {
     )
     expect(spell().primary).toBe('The earth that never dreams')
   })
+
+  it.each(spellConcepts.filter(({ uncountable }) => uncountable))(
+    'uses $value without Every or All in the command shape',
+    ({ value }) => {
+      const concept = spellConcepts.findIndex((entry) => entry.value === value)
+      const whisper = spellExpressions.findIndex(([base]) => base === 'whisper')
+      const subject = value[0]!.toUpperCase() + value.slice(1)
+      draw(1, whisper, concept, 0)
+      expect(spell().primary).toBe(`${subject} must whisper`)
+      draw(1, whisper, concept, 0.5)
+      expect(spell().primary).toBe(`${subject} shall whisper`)
+    },
+  )
 
   it('rolls the two concepts separately and conjugates the As shape', () => {
     draw(4).mockReturnValueOnce(1 - Number.EPSILON)

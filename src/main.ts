@@ -8,6 +8,9 @@ import { neverMidnightEnabled } from './generator/settingRegistry'
 import './styles/base.css'
 import './styles/character-print.css'
 
-if (neverMidnightEnabled) void import('./styles/themes/never-midnight.css')
+const app = createApp(App).use(createPinia()).use(router)
 
-createApp(App).use(createPinia()).use(router).mount('#app')
+Promise.all([
+  router.isReady(),
+  neverMidnightEnabled ? import('./styles/themes/never-midnight.css') : undefined,
+]).then(() => app.mount('#app'))
