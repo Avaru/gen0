@@ -4,7 +4,11 @@ import type { Generated } from '@/patterns/types'
 import UiToggle from '@/components/ui/UiToggle.vue'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
 import UiRunnerResultActions from '@/components/ui/UiRunnerResultActions.vue'
+import UiNeverMidnightResultActions from '@/components/ui/UiNeverMidnightResultActions.vue'
+import { usePreferencesStore } from '@/stores/preferences'
+import { countries } from '@/patterns/never-midnight/names'
 import { scrollToContent } from '@/components/ui/scrollToContent'
+const preferences = usePreferencesStore()
 const props = defineProps<{
   results: Generated[]
   busy: boolean
@@ -16,6 +20,13 @@ const props = defineProps<{
   pendingPools?: readonly string[]
 }>()
 const emit = defineEmits<{ more: []; 'update:showDetails': [value: boolean] }>()
+const showNeverMidnightPrompt = computed(
+  () =>
+    props.setting === 'never-midnight' &&
+    countries.some((country) => country === props.category) &&
+    props.showDetails &&
+    preferences.soullessCorpMode,
+)
 const hasDetails = computed(() =>
   props.results.some(
     (result) =>
@@ -72,7 +83,13 @@ defineExpose({
     <p v-if="error" class="error" role="alert">{{ error }}</p>
     <ol v-if="results.length" ref="list" role="list">
       <li v-for="(result, index) in results" :key="index">
-        <div class="name" :class="{ 'runner-name': category === 'runners' && showDetails }">
+        <div
+          class="name"
+          :class="{
+            'runner-name': category === 'runners' && showDetails,
+            'portrait-name': showNeverMidnightPrompt,
+          }"
+        >
           <strong
             ><UiScrambleText
               :text="result.primary"
@@ -125,6 +142,7 @@ defineExpose({
           v-if="(!setting || setting === 'cyberpunk') && category === 'runners' && showDetails"
           :result="result"
         />
+        <UiNeverMidnightResultActions v-if="showNeverMidnightPrompt" :result="result" />
       </li>
     </ol>
   </section>
@@ -218,6 +236,10 @@ li::after {
 .runner-name > .runner-secondary {
   display: block;
   padding-right: calc(var(--space-8) * 2 + var(--space-2));
+}
+.portrait-name > strong {
+  display: block;
+  padding-right: calc(var(--space-8) + var(--space-2));
 }
 strong {
   font-family: var(--font-result-name, var(--font-display));

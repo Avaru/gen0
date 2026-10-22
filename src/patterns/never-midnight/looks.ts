@@ -1,6 +1,7 @@
 import Bits from '@/builders/Bits'
 import { DATA, load } from '@/builders/load'
 import {
+  neverMidnightHairStyles,
   neverMidnightHairColors,
   neverMidnightClothingConditions,
   neverMidnightClothingStyles,
@@ -9,10 +10,10 @@ import type { GenerationOptions } from '@/generator/options'
 import { p } from '@/helper/prob'
 import { randomFrom } from '@/helper/randomFrom'
 
-/** Share hair styles and face shapes, but use only the approved hair colors. */
+/** Use everyday hair styles, approved colors, and shared face shapes. */
 export function neverMidnightLooks(options: GenerationOptions = {}): string {
   const traits = new Bits(load(DATA.RUNNER_TRAITS, options)).tag('character')
-  const style = traits.type('hair-style').take().value
+  const style = randomFrom(neverMidnightHairStyles)
   const hair = style === 'bald' ? style : `${randomFrom(neverMidnightHairColors)} ${style}`
   const face = p(0.5) ? `${traits.type('face-shape').take().value} face` : undefined
   const clothing = p(0.25) ? neverMidnightClothing(options) : undefined

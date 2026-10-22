@@ -16,7 +16,7 @@ export interface SettingDefinition {
   characterSheet?: { label: string; path: string }
 }
 
-export const neverMidnightEnabled = import.meta.env.VITE_ENABLE_NEVER_MIDNIGHT === 'true'
+export const neverMidnightEnabled = __NEVER_MIDNIGHT__
 
 const cyberpunkSetting = {
   id: 'cyberpunk',

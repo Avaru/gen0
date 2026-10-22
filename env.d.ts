@@ -2,6 +2,4 @@
 
 declare const __APP_VERSION__: string
 
-interface ImportMetaEnv {
-  readonly VITE_ENABLE_NEVER_MIDNIGHT?: string
-}
+declare const __NEVER_MIDNIGHT__: boolean

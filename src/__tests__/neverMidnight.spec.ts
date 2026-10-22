@@ -4,7 +4,7 @@ import { normalizeGeneratorSettings } from '@/generator/settings'
 import { neverMidnightEnabled } from '@/generator/settingRegistry'
 import { countryName } from '@/patterns/never-midnight/names'
 import { neverMidnightLooks, neverMidnightClothing } from '@/patterns/never-midnight/looks'
-import { neverMidnightHairColors } from '@/data/never-midnight-traits'
+import { neverMidnightHairColors, neverMidnightHairStyles } from '@/data/never-midnight-traits'
 import {
   neverMidnightJobs,
   neverMidnightCatalogueJobs,
@@ -39,7 +39,7 @@ describe.runIf(neverMidnightEnabled)('Never Midnight names', () => {
           {
             primary: expected,
             age: '37 years',
-            appearance: 'White afro, heart-shaped face',
+            appearance: 'White bob cut, heart-shaped face',
             secondary: neverMidnightJobs[Math.floor(neverMidnightJobs.length * 0.4)],
           },
         ])
@@ -66,6 +66,25 @@ describe.runIf(neverMidnightEnabled)('Never Midnight names', () => {
 })
 
 describe('Never Midnight appearance', () => {
+  it.each(neverMidnightHairStyles)('selects the everyday style %s', (style) => {
+    const index = neverMidnightHairStyles.indexOf(style)
+    vi.spyOn(Math, 'random')
+      .mockReturnValue(0.75)
+      .mockReturnValueOnce((index + 0.5) / neverMidnightHairStyles.length)
+    expect(neverMidnightLooks()).toBe(style === 'bald' ? 'bald' : `dyed ${style}`)
+  })
+
+  it('uses only existing styles and leaves the full Cyberpunk selection available', () => {
+    const sharedStyles = runnerTraits
+      .filter((trait) => trait.type === 'hair-style')
+      .map((trait) => trait.value)
+    expect(neverMidnightHairStyles.every((style) => sharedStyles.includes(style))).toBe(true)
+    for (const style of ['dreadlocks', 'mohawk', 'afro', 'undercut', 'spiky hair', 'skinhead']) {
+      expect(sharedStyles).toContain(style)
+      expect(neverMidnightHairStyles).not.toContain(style)
+    }
+  })
+
   it.each(neverMidnightHairColors)('can select the approved color %s', (color) => {
     const index = neverMidnightHairColors.indexOf(color)
     vi.spyOn(Math, 'random')
@@ -76,8 +95,8 @@ describe('Never Midnight appearance', () => {
   })
 
   it('reuses bald without adding a hair color', () => {
-    const styles = runnerTraits.filter((trait) => trait.type === 'hair-style')
-    const index = styles.findIndex((trait) => trait.value === 'bald')
+    const styles = neverMidnightHairStyles
+    const index = styles.indexOf('bald')
     vi.spyOn(Math, 'random')
       .mockReturnValue(0.75)
       .mockReturnValueOnce((index + 0.5) / styles.length)

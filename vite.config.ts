@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
@@ -20,14 +20,15 @@ function appVersion() {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   define: {
     __APP_VERSION__: JSON.stringify(appVersion()),
+    __NEVER_MIDNIGHT__: JSON.stringify(
+      loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), 'SETTING_')
+        .SETTING_NEVER_MIDNIGHT === 'true',
+    ),
   },
-  plugins: [
-    vue(),
-    vueDevTools(),
-  ],
+  plugins: [vue(), vueDevTools()],
   build: {
     rolldownOptions: {
       output: {
@@ -54,4 +55,4 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-})
+}))
