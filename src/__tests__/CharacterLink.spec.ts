@@ -156,7 +156,12 @@ describe('compressed character links', () => {
     const wrapper = mount(
       defineComponent({
         setup() {
-          useCharacterUrl()
+          useCharacterUrl({
+            path: '/chars/cbrpnk',
+            sheet: () => store.sheet,
+            encode: encodeCharacter,
+            load: store.loadCharacterToken,
+          })
           return () => null
         },
       }),
@@ -193,7 +198,12 @@ describe('compressed character links', () => {
     const wrapper = mount(
       defineComponent({
         setup() {
-          useCharacterUrl()
+          useCharacterUrl({
+            path: '/chars/cbrpnk',
+            sheet: () => store.sheet,
+            encode: encodeCharacter,
+            load: store.loadCharacterToken,
+          })
           return () => null
         },
       }),

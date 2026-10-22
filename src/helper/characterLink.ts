@@ -1,4 +1,4 @@
-import { deflateSync, inflateSync, strToU8, strFromU8 } from 'fflate'
+import { encodeSheetToken, decodeSheetToken } from './sheetToken'
 import type { CharacterSheet } from '@/data/characters/types'
 
 // Version 1 orders are fixed: never derive these positions from catalogue sorting.
@@ -18,7 +18,6 @@ const skillIds = [
   'streetwise',
   'attune',
 ].map((key) => `cbr-pnk.skill.${key}`)
-const maxBytes = 262144
 
 function array(value: unknown, length: number): unknown[] {
   if (!Array.isArray(value) || value.length !== length) throw new Error('Invalid character link')
@@ -47,24 +46,12 @@ export function encodeCharacter(sheet: CharacterSheet): string {
     sheet.specialArmor,
     sheet.augmentations.map((row) => [row.description, row.glitched]),
   ]
-  const bytes = strToU8(JSON.stringify(compact))
-  if (bytes.length >= maxBytes) throw new Error('Character is too large for a link')
-  const compressed = deflateSync(bytes)
-  let binary = ''
-  for (const byte of compressed) binary += String.fromCharCode(byte)
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  return encodeSheetToken(compact)
 }
 
 /** Returns untrusted sheet data; the store validates it before replacing any edits. */
 export function decodeCharacter(token: string): unknown {
-  if (!token || token.length > maxBytes * 2 || !/^[A-Za-z0-9_-]+$/.test(token))
-    throw new Error('Invalid character link')
-  const binary = atob(token.replace(/-/g, '+').replace(/_/g, '/'))
-  const compressed = Uint8Array.from(binary, (char) => char.charCodeAt(0))
-  // A fixed output buffer bounds allocation even for hostile compressed input.
-  const bytes = inflateSync(compressed, { out: new Uint8Array(maxBytes) })
-  if (bytes.length >= maxBytes) throw new Error('Character is too large for a link')
-  const data = array(JSON.parse(strFromU8(bytes)), 11)
+  const data = array(decodeSheetToken(token), 11)
   if (data[0] !== 1) throw new Error('Unsupported character link version')
   const runner = array(data[1], 4)
   const attributes = array(data[2], attributeIds.length)

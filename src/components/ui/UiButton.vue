@@ -1,22 +1,56 @@
 <script setup lang="ts">
-withDefaults(
+import { Comment, Fragment, Text, inject, ref, useSlots, type VNode } from 'vue'
+import { themeKey } from '@/styles/themes'
+import UiSymbolText from './UiSymbolText.vue'
+
+const theme = inject(themeKey, ref('cyberpunk'))
+const interaction = ref(0)
+const slots = useSlots()
+const props = withDefaults(
   defineProps<{
     type?: 'button' | 'submit'
     variant?: 'primary' | 'secondary' | 'destructive' | 'destructive-secondary'
     onBackground?: boolean
     activation?: number
     feedback?: 'fill' | 'icon'
+    garble?: boolean
+    disabled?: boolean
   }>(),
   {
     type: 'button',
     variant: 'primary',
     activation: 0,
     feedback: 'fill',
+    garble: undefined,
   },
 )
+function plainText(nodes: VNode[]): string | undefined {
+  let text = ''
+  for (const node of nodes) {
+    if (node.type === Comment) continue
+    if (node.type === Text && typeof node.children === 'string') text += node.children
+    else if (node.type === Fragment && Array.isArray(node.children)) {
+      const part = plainText(node.children as VNode[])
+      if (part === undefined) return undefined
+      text += part
+    } else return undefined
+  }
+  return text
+}
+function symbolText() {
+  if (props.disabled || !(props.garble ?? theme.value === 'never-midnight')) return ''
+  return plainText(slots.default?.() ?? [])?.trim() ?? ''
+}
+function interact() {
+  if (!props.disabled) interaction.value++
+}
 </script>
 <template>
   <button
+    @mouseenter="interact"
+    @pointerdown="interact"
+    @focus="interact"
+    :disabled="disabled"
     :type="type"
     :class="[
       variant,
@@ -24,7 +58,12 @@ withDefaults(
       activation ? (activation % 2 ? 'pulse-a' : 'pulse-b') : undefined,
     ]"
   >
-    <span class="button-text"><slot /></span>
+    <span class="button-text"
+      ><UiSymbolText
+        v-if="symbolText()"
+        :text="symbolText()"
+        :replay-key="`${interaction}-${activation}`" /><slot v-else
+    /></span>
   </button>
 </template>
 <style scoped>
@@ -104,27 +143,35 @@ button::after {
 }
 .destructive {
   --button-feedback-color: var(--color-signal);
-  --button-rest-color: var(--color-hot);
-  background: var(--color-hot);
-  color: var(--color-on-accent);
+  --button-rest-color: var(--color-destructive, var(--color-hot));
+  background: var(--color-destructive, var(--color-hot));
+  color: var(--color-on-destructive, var(--color-on-accent));
 }
 .destructive:hover:enabled {
-  --button-rest-color: color-mix(in srgb, var(--color-hot) 85%, white);
+  --button-rest-color: color-mix(in srgb, var(--color-destructive, var(--color-hot)) 85%, white);
   background: var(--button-rest-color);
 }
 .destructive:active:enabled {
-  background: color-mix(in srgb, var(--color-hot) 85%, var(--color-on-accent));
+  background: color-mix(
+    in srgb,
+    var(--color-destructive, var(--color-hot)) 85%,
+    var(--color-on-destructive, var(--color-on-accent))
+  );
 }
 .destructive-secondary {
-  border-color: var(--color-hot);
+  border-color: var(--color-destructive, var(--color-hot));
   background: var(--color-surface);
-  color: var(--color-hot);
+  color: var(--color-destructive, var(--color-hot));
 }
 .destructive-secondary:hover:enabled {
   background: var(--color-subtle);
 }
 .destructive-secondary:active:enabled {
-  background: color-mix(in srgb, var(--color-hot) 16%, var(--color-surface));
+  background: color-mix(
+    in srgb,
+    var(--color-destructive, var(--color-hot)) 16%,
+    var(--color-surface)
+  );
 }
 .pulse-a,
 .pulse-b {
@@ -155,13 +202,13 @@ button::after {
     background-color: var(--button-feedback-color);
   }
 }
-.icon-feedback.pulse-a {
+.icon-feedback:where([data-theme='cyberpunk'] *).pulse-a {
   animation: icon-pulse-a 550ms steps(1, end);
 }
-.icon-feedback.pulse-b {
+.icon-feedback:where([data-theme='cyberpunk'] *).pulse-b {
   animation: icon-pulse-b 550ms steps(1, end);
 }
-.icon-feedback:active:enabled {
+.icon-feedback:where([data-theme='cyberpunk'] *):active:enabled {
   animation: icon-pulse-a 550ms steps(1, end);
 }
 @keyframes icon-pulse-a {
@@ -256,32 +303,32 @@ button::after {
   }
 }
 @media screen and (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .icon-feedback:hover:enabled .button-text {
+  .icon-feedback:where([data-theme='cyberpunk'] *):hover:enabled .button-text {
     animation: icon-hover-glitch 240ms steps(1, end);
   }
 }
 @media screen {
-  .primary {
+  .primary:where([data-theme='cyberpunk'] *) {
     overflow: hidden;
   }
 }
 @media screen and (prefers-reduced-motion: no-preference) {
-  .icon-feedback:active:enabled .button-text {
+  .icon-feedback:where([data-theme='cyberpunk'] *):active:enabled .button-text {
     animation: icon-hover-glitch 240ms steps(1, end);
   }
-  .primary:active:enabled .button-text {
+  .primary:where([data-theme='cyberpunk'] *):active:enabled .button-text {
     transform: translateX(3px) scale(1.15, 0.9);
     animation: hover-text-glitch 240ms steps(1, end);
   }
-  .primary:active:enabled::before {
+  .primary:where([data-theme='cyberpunk'] *):active:enabled::before {
     animation: hover-noise-glitch 240ms steps(1, end);
   }
-  .primary .button-text {
+  .primary:where([data-theme='cyberpunk'] *) .button-text {
     position: relative;
     z-index: 1;
     transition: transform 60ms ease-out;
   }
-  .primary::before {
+  .primary:where([data-theme='cyberpunk'] *)::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -300,11 +347,11 @@ button::after {
       17px 13px;
   }
   @media (hover: hover) {
-    .primary:hover:enabled .button-text {
+    .primary:where([data-theme='cyberpunk'] *):hover:enabled .button-text {
       transform: translateX(3px) scale(1.15, 0.9);
       animation: hover-text-glitch 240ms steps(1, end);
     }
-    .primary:hover:enabled::before {
+    .primary:where([data-theme='cyberpunk'] *):hover:enabled::before {
       animation: hover-noise-glitch 240ms steps(1, end);
     }
   }
@@ -368,5 +415,9 @@ button::after {
   .pulse-b {
     animation: none;
   }
+}
+button:where([data-theme='never-midnight'] *) {
+  border: 2px solid var(--color-text);
+  border-bottom-width: 4px;
 }
 </style>

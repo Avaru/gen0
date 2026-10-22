@@ -38,6 +38,7 @@ const neverMidnightSetting = {
   flavors: [],
   defaultCategory: 'german',
   categories: neverMidnightCategories,
+  characterSheet: { label: 'Student sheet', path: '/chars/never-midnight' },
 } as const satisfies SettingDefinition
 
 export type SettingId = typeof cyberpunkSetting.id | typeof neverMidnightSetting.id

@@ -1,61 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap');
 
-/* Paper, carbon ink, red stamps, and a faint occult registration mark. */
+/* Heavy ink, concrete grey, and faint scratched ritual marks. */
 :root:has([data-theme='never-midnight']) {
   color-scheme: light;
   --radius-sm: 0;
   --radius-lg: 0;
-  --font-body: 'Courier Prime', 'Courier New', monospace;
-  --font-display: 'Special Elite', 'Courier Prime', 'Courier New', monospace;
-  --font-control-size: 1rem;
-  --font-small-control-size: 0.875rem;
-  --color-page: #e8e5dc;
-  --color-text: #24241f;
-  --color-muted: #605f57;
-  --color-surface: #f9f7ef;
-  --color-subtle: #eeece3;
-  --color-border: #aaa79b;
-  --color-control-border: #77756c;
-  --color-accent: #8f302e;
-  --color-accent-hover: #782523;
-  --color-on-accent: #fffaf0;
-  --color-focus: #653e73;
+  --font-body: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-body-size: 0.875rem;
+  --font-display: 'Archivo Black', 'Arial Black', sans-serif;
+  --font-result-name: var(--font-display);
+  --font-result-name-size: 1.1875rem;
+  --font-result-heading-size: 1.5rem;
+  --font-modal-heading-size: 1.375rem;
+  --generator-panel-padding: 1rem;
+  --generator-row-padding: 0.75rem;
+  --button-font-size: 0.875rem;
+  --font-control-size: 0.8125rem;
+  --font-small-control-size: 0.75rem;
+  --color-page: #b8b8b5;
+  --color-text: #080808;
+  --color-muted: #55554f;
+  --color-surface: #dededb;
+  --color-subtle: #c4c4c0;
+  --color-border: #161616;
+  --color-control-border: #161616;
+  --color-accent: #161616;
+  --color-accent-hover: #363636;
+  --color-on-accent: #fafaf7;
+  --color-focus: #080808;
   --color-error: #8f302e;
-  --color-signal: #494b3e;
-  --color-hot: #8f302e;
-  --color-on-page: #24241f;
-  --color-link-background: #f9f7ef;
-  --color-primary-hover: #782523;
+  --color-destructive: #862d75;
+  --color-on-destructive: #fafaf7;
+  --color-signal: #161616;
+  --color-neon: #75ff00;
+  --color-hot: var(--color-neon);
+  --color-on-page: #161616;
+  --color-link-background: #fafaf7;
+  --color-primary-hover: #363636;
   --theme-check-shape: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  --theme-panel-shadow: 2px 3px 0 #24241f12;
+  --theme-panel-shadow: 4px 4px 0 #161616;
   --theme-panel-fill: var(--color-surface);
-  --theme-panel-border-width: 1px;
-  --theme-panel-rule-width: 2px;
+  --theme-panel-border-width: 3px;
+  --theme-panel-rule-width: 8px;
   --theme-header-rule-width: 1px;
   --theme-title-color: var(--color-text);
-  --theme-heading-weight: 400;
+  --theme-heading-weight: 900;
   --theme-name-color: var(--color-text);
-  --theme-name-weight: 400;
+  --theme-name-weight: 900;
   --theme-heading-slant: 0deg;
   --theme-heading-shadow: none;
   --theme-rule: linear-gradient(var(--color-on-page), var(--color-on-page));
-  --theme-page-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%2324241f' opacity='.045' filter='url(%23n)' d='M0 0h160v160H0z'/%3E%3C/svg%3E");
-  --theme-page-texture-size: 160px 160px;
-  --theme-panel-texture: radial-gradient(
-    circle at 90% 4rem,
-    transparent 2.4rem,
-    #653e730c 2.45rem 2.5rem,
-    transparent 2.55rem 2.8rem,
-    #653e730c 2.85rem 2.9rem,
-    transparent 2.95rem
-  );
-  --theme-panel-edge: linear-gradient(
-    90deg,
-    var(--color-text) 0 65%,
-    transparent 65% 72%,
-    var(--color-text) 72%
-  );
+  --theme-page-texture: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22680%22%20height%3D%22680%22%20viewBox%3D%220%200%20680%20680%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23181815%22%20stroke-width%3D%221%22%20opacity%3D%22.12%22%20stroke-linecap%3D%22square%22%3E%3Cpath%20d%3D%22M452%2074c84-24%20165%2021%20178%20104s-46%20150-125%20154M460%2080c77-19%20151%2021%20163%20100s-42%20142-119%20148M521%2054l-15%2049m-11-32%2039%2014M598%20297l-25-33m-6%2021%2037-16M59%20448l68%20121%2073-118-141-3%2068%20117M70%20460l57%20104%2063-103M103%20584l49-4m-29-13%203%2029M322%20390l22-31%2014%2033-36-2M330%20347l20%2056%22%2F%3E%3Cpath%20d%3D%22m14%20202%2074-3m-65%207%2041-1M397%20594l96-4m-71%209%2042-2M231%20125l2%2022m-12-12%2023%202%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E');
+  --theme-page-texture-size: 680px 680px;
+  --theme-panel-texture: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%22320%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23181815%22%20opacity%3D%22.09%22%3E%3Cpath%20d%3D%22m349%204%20101%202m-86%204%2072-2M468%2012l-2%2065m5-54-2%2034M398%2018l9%2019%2013-18-22-1M12%20273l-3%2035%2071-2m-62%205%2038-1%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E');
+  --theme-panel-edge:
+    linear-gradient(176deg, transparent 38%, var(--color-text) 40% 48%, transparent 50%),
+    linear-gradient(3deg, transparent 60%, var(--color-hot) 62% 73%, transparent 75%);
   --theme-label-mark: linear-gradient(var(--color-hot), var(--color-hot));
-  --theme-row-mark: linear-gradient(var(--color-border), var(--color-border));
+  --theme-row-mark: none;
   --theme-button-detail: none;
 }

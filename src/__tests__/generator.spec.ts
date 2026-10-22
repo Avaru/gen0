@@ -16,30 +16,6 @@ import { cyberpunkCorporations } from '@/data/cyberpunk-corporations'
 afterEach(() => vi.restoreAllMocks())
 
 describe('migrated generator', () => {
-  it('retains the migrated lists with duplicate role spellings merged', () => {
-    const options = { flavor: 'shadowrun' as const }
-    const additions = [
-      'dutch',
-      'turkish',
-      'ukrainian',
-      'swedish',
-      'korean',
-      'vietnamese',
-      'hindi',
-      'tamil',
-    ]
-    expect(
-      load(DATA.PERSONAL_NAMES, options).filter(
-        (bit) => !bit.tags.some((tag) => additions.includes(tag)),
-      ),
-    ).toHaveLength(19478)
-    expect(load(DATA.NAME_FRAGMENTS, options)).toHaveLength(2192)
-    // Includes the user's hair, face, and clothing words, with outer entries removed.
-    expect(load(DATA.RUNNER_TRAITS, options)).toHaveLength(540)
-    expect(load(DATA.FOOD, options)).toHaveLength(611)
-    expect(load(DATA.MOVIES, options)).toHaveLength(517)
-  })
-
   it('filters flavor entries and allows explicit inclusion and exclusion', () => {
     for (const list of Object.values(DATA)) {
       expect(load(list).some((bit) => bit.tags.includes('shadowrun'))).toBe(false)

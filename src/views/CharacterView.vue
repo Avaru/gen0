@@ -4,13 +4,19 @@ import { computed, inject } from 'vue'
 import { routeLocationKey } from 'vue-router'
 import { settingsFromRoute } from '@/generator/settings'
 import { useCharacterStore } from '@/stores/character'
+import { encodeCharacter } from '@/helper/characterLink'
 import { useCharacterUrl } from '@/composables/useCharacterUrl'
 import UiCharacterSheet from '@/components/ui/UiCharacterSheet.vue'
 
 const character = useCharacterStore()
 const { system, attributes, skills, sheet, hasContent } = storeToRefs(character)
 const route = inject(routeLocationKey, undefined)
-const linkError = useCharacterUrl()
+const linkError = useCharacterUrl({
+  path: '/chars/cbrpnk',
+  sheet: () => character.sheet,
+  encode: encodeCharacter,
+  load: character.loadCharacterToken,
+})
 const flavor = computed(() => (route ? settingsFromRoute(route).flavor : 'cyberpunk'))
 </script>
 

@@ -87,7 +87,7 @@ form {
   position: relative;
   display: grid;
   gap: var(--space-6);
-  padding: var(--space-6);
+  padding: var(--generator-panel-padding, var(--space-6));
   background: var(--theme-panel-fill);
   background-image: var(--theme-panel-texture);
   border-top: var(--theme-panel-rule-width) solid var(--color-hot);
@@ -105,7 +105,11 @@ form::after {
 }
 @media (max-width: 24rem) {
   form {
-    padding: var(--space-4);
+    padding: var(--generator-panel-padding, var(--space-4));
   }
+}
+form:where([data-theme='never-midnight'] *) {
+  border: 3px solid var(--color-border);
+  border-top-width: 8px;
 }
 </style>

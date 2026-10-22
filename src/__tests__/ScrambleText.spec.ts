@@ -2,9 +2,13 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { nextTick, ref } from 'vue'
+import { themeKey, type Theme } from '@/styles/themes'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
+import UiSymbolText from '@/components/ui/UiSymbolText.vue'
+import UiBrandTitle from '@/components/ui/UiBrandTitle.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import { createTestPinia } from './helpers/pinia'
 import GeneratorResults from '@/components/generator/GeneratorResults.vue'
 import GeneratorControls from '@/components/generator/GeneratorControls.vue'
@@ -309,5 +313,167 @@ describe('scrambled name reveal', () => {
     expect(names[2]!.find('.overlay').exists()).toBe(false)
     await advance(620)
     expect(wrapper.find('.overlay').exists()).toBe(false)
+  })
+})
+
+describe('Never Midnight typing reveal', () => {
+  it('types real letters without garbling, holds the cursor, and finishes', async () => {
+    const wrapper = mount(UiScrambleText, {
+      props: { text: 'Anna Wolf', duration: 320 },
+      global: { provide: { [themeKey as symbol]: ref<Theme>('never-midnight') } },
+    })
+    await nextTick()
+    expect(wrapper.get('.source').text()).toBe('Anna Wolf')
+    expect(wrapper.get('.overlay').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.get('.overlay').classes()).toContain('typing')
+    await advance(112)
+    expect(wrapper.get('.overlay').attributes('data-resolved')).toBe('Anna')
+    expect(wrapper.get('.overlay').attributes('data-garbled')).toBe('')
+    await advance(224)
+    expect(wrapper.get('.overlay').attributes('data-resolved')).toBe('Anna Wolf')
+    await advance(474)
+    expect(wrapper.find('.overlay').exists()).toBe(false)
+  })
+
+  it('updates the animation when the theme changes and stops for reduced motion', async () => {
+    const theme = ref<Theme>('cyberpunk')
+    const wrapper = mount(UiScrambleText, {
+      props: { text: 'Anna Wolf' },
+      global: { provide: { [themeKey as symbol]: theme } },
+    })
+    await nextTick()
+    expect(wrapper.get('.overlay').classes()).not.toContain('typing')
+    theme.value = 'never-midnight'
+    await nextTick()
+    expect(wrapper.get('.overlay').classes()).toContain('typing')
+    expect(wrapper.get('.overlay').attributes('data-garbled')).toBe('')
+    reduced = true
+    listeners.forEach((listener) => listener())
+    await nextTick()
+    expect(wrapper.find('.overlay').exists()).toBe(false)
+    expect(wrapper.get('.source').text()).toBe('Anna Wolf')
+    expect(frames.size).toBe(0)
+  })
+})
+
+describe('Never Midnight symbol animation', () => {
+  it('supports the shared button prop, updated labels, and disabled buttons', async () => {
+    const label = ref('Add spell')
+    const button = mount(UiButton, {
+      props: { garble: true },
+      slots: { default: () => label.value },
+    })
+    await button.trigger('mouseenter')
+    expect(button.get('.symbol-source').text()).toBe('Add spell')
+    expect(button.find('.symbol-overlay').exists()).toBe(true)
+    label.value = 'Add sacrifice'
+    await nextTick()
+    expect(button.get('.symbol-source').text()).toBe('Add sacrifice')
+    await button.setProps({ disabled: true })
+    await button.trigger('mouseenter')
+    expect(button.find('.symbol-overlay').exists()).toBe(false)
+    expect(button.text()).toBe('Add sacrifice')
+    await button.setProps({ disabled: false, garble: false })
+    await button.trigger('focus')
+    expect(button.findComponent(UiSymbolText).exists()).toBe(false)
+  })
+
+  it('preserves icon button content and allows opting out in Never Midnight', async () => {
+    const global = { provide: { [themeKey as symbol]: ref<Theme>('never-midnight') } }
+    const icon = mount(UiButton, {
+      global,
+      slots: { default: '<svg aria-hidden="true"><path d="M0 0h1" /></svg>' },
+    })
+    await icon.trigger('mouseenter')
+    expect(icon.find('svg path').exists()).toBe(true)
+    expect(icon.findComponent(UiSymbolText).exists()).toBe(false)
+    const plain = mount(UiButton, {
+      global,
+      props: { garble: false },
+      slots: { default: 'Banish' },
+    })
+    await plain.trigger('mouseenter')
+    expect(plain.text()).toBe('Banish')
+    expect(plain.findComponent(UiSymbolText).exists()).toBe(false)
+  })
+
+  it('keeps the accessible source, changes glyphs, finishes and replays', async () => {
+    const wrapper = mount(UiSymbolText, { props: { text: 'gen 0', autoplay: true } })
+    await nextTick()
+    expect(wrapper.get('.symbol-source').text()).toBe('gen 0')
+    expect(wrapper.get('.symbol-overlay').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.findAll('.glyph').map((glyph) => glyph.text())).toEqual(['Ж', 'e', 'n', '', '0'])
+    vi.mocked(Math.random).mockReturnValue(0.6)
+    await advance(100)
+    expect(wrapper.findAll('.glyph')[0]!.text()).not.toBe('Ж')
+    await advance(420)
+    expect(wrapper.find('.symbol-overlay').exists()).toBe(false)
+    await wrapper.setProps({ replayKey: 1 })
+    expect(wrapper.find('.symbol-overlay').exists()).toBe(true)
+  })
+
+  it.each([0, 0.5, 0.999])(
+    'replaces only two letters with Cyrillic for random value %s',
+    async (random) => {
+      vi.mocked(Math.random).mockReturnValue(random)
+      const text = 'Generate names'
+      const wrapper = mount(UiSymbolText, { props: { text, autoplay: true } })
+      await nextTick()
+      const selected = wrapper.findAll('.replaced')
+      expect(selected).toHaveLength(2)
+      for (const cell of selected) expect(cell.get('.glyph').text()).toMatch(/^[А-Я]$/u)
+      const initialPositions = wrapper
+        .findAll('.cell')
+        .map((cell) => cell.classes().includes('replaced'))
+      await advance(100)
+      expect(wrapper.findAll('.cell').map((cell) => cell.classes().includes('replaced'))).toEqual(
+        initialPositions,
+      )
+      const unchanged = wrapper
+        .findAll('.cell')
+        .filter((cell) => !cell.classes().includes('replaced'))
+      for (const cell of unchanged)
+        expect(cell.get('.glyph').text()).toBe(cell.get('.measure').text())
+      expect(wrapper.get('.symbol-source').text()).toBe(text)
+    },
+  )
+
+  it('animates the Never Midnight brand and button interactions only', async () => {
+    const theme = ref<Theme>('never-midnight')
+    const global = { provide: { [themeKey as symbol]: theme } }
+    const brand = mount(UiBrandTitle, { global })
+    const button = mount(UiButton, {
+      global,
+      slots: { default: 'Generate names' },
+    })
+    await nextTick()
+    expect(brand.find('.symbol-overlay').exists()).toBe(true)
+    expect(button.find('.symbol-overlay').exists()).toBe(false)
+    await button.trigger('mouseenter')
+    expect(button.find('.symbol-overlay').exists()).toBe(true)
+    await advance(420)
+    await button.trigger('focus')
+    expect(button.find('.symbol-overlay').exists()).toBe(true)
+    await advance(420)
+    await button.setProps({ activation: 1 })
+    expect(button.find('.symbol-overlay').exists()).toBe(true)
+    await advance(420)
+    await brand.trigger('pointerdown')
+    expect(brand.find('.symbol-overlay').exists()).toBe(true)
+    theme.value = 'cyberpunk'
+    await nextTick()
+    expect(brand.findComponent(UiSymbolText).exists()).toBe(false)
+    expect(button.findComponent(UiSymbolText).exists()).toBe(false)
+    expect(button.text()).toBe('Generate names')
+  })
+
+  it('skips symbol animation for reduced motion', async () => {
+    reduced = true
+    const wrapper = mount(UiSymbolText, { props: { text: 'gen 0', autoplay: true } })
+    await nextTick()
+    await wrapper.setProps({ replayKey: 1 })
+    expect(wrapper.find('.symbol-overlay').exists()).toBe(false)
+    expect(wrapper.text()).toBe('gen 0')
+    expect(requestFrame).not.toHaveBeenCalled()
   })
 })

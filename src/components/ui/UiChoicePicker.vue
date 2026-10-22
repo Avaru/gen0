@@ -121,6 +121,7 @@ function enter() {
       @close="closed"
     >
       <template #actions><slot name="actions" /></template>
+      <slot name="filters" />
       <div v-if="searchable" class="search">
         <label :for="`${id}-search`">Search {{ plural }}</label>
         <input
@@ -370,7 +371,7 @@ h3 {
     position: relative;
     z-index: 1;
   }
-  .choices button::before {
+  .choices button:where([data-theme='cyberpunk'] *)::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -389,10 +390,10 @@ h3 {
       19px 15px;
   }
   @media (hover: hover) {
-    .choices button:hover .choice-text {
+    .choices button:where([data-theme='cyberpunk'] *):hover .choice-text {
       animation: choice-text-glitch 200ms steps(1, end);
     }
-    .choices button:hover::before {
+    .choices button:where([data-theme='cyberpunk'] *):hover::before {
       animation: choice-noise-glitch 200ms steps(1, end);
     }
   }

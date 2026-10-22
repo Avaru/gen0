@@ -6,6 +6,11 @@ export const routes: RouteRecordRaw[] = [
   ...(neverMidnightEnabled
     ? [
         {
+          path: '/chars/never-midnight',
+          meta: { setting: 'never-midnight', characterSheet: true },
+          component: () => import('@/views/NeverMidnightCharacterView.vue'),
+        },
+        {
           path: '/never-midnight/:category/about',
           meta: { setting: 'never-midnight' },
           component: () => import('@/views/AboutView.vue'),
@@ -20,7 +25,7 @@ export const routes: RouteRecordRaw[] = [
   { path: '/about', component: () => import('@/views/AboutView.vue') },
   {
     path: '/chars/cbrpnk',
-    meta: { setting: 'cyberpunk', flavor: 'cyberpunk' },
+    meta: { setting: 'cyberpunk', flavor: 'cyberpunk', characterSheet: true },
     component: () => import('@/views/CharacterView.vue'),
   },
   {

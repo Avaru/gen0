@@ -100,7 +100,7 @@ h2 {
   min-width: 0;
   overflow-wrap: anywhere;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3rem);
+  font-size: var(--font-modal-heading-size, clamp(2rem, 6vw, 3rem));
   text-transform: uppercase;
   color: var(--color-signal);
   line-height: 1;

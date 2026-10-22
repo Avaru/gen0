@@ -7,6 +7,7 @@ withDefaults(
     label?: string
     multiline?: boolean
     rows?: number
+    autoGrow?: boolean
     variant?: 'boxed' | 'line' | 'runner'
     filled?: boolean
     printClass?: string
@@ -35,7 +36,7 @@ const value = defineModel<string>({ required: true })
     ref="field"
     v-model="value"
     class="sheet-field"
-    :class="[variant, { filled }]"
+    :class="[variant, { filled, 'auto-grow': autoGrow }]"
     :rows="rows"
   />
   <input
@@ -92,11 +93,16 @@ label {
   border-color: var(--color-rating-one);
   color: var(--color-on-accent);
 }
+textarea.auto-grow {
+  field-sizing: content;
+  line-height: 1.4;
+  padding-block: calc((var(--control-height) - 1lh - 2px) / 2);
+}
 textarea {
   resize: vertical;
 }
 @media screen {
-  .sheet-field:hover {
+  .sheet-field:not(:disabled):hover {
     background-image: repeating-linear-gradient(
       135deg,
       color-mix(in srgb, currentColor 10%, transparent) 0 8px,

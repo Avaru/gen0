@@ -134,12 +134,12 @@ label.hazard:hover {
   }
 }
 @media screen and (prefers-reduced-motion: no-preference) {
-  label.hazard .toggle-text {
+  label.hazard:where([data-theme='cyberpunk'] *) .toggle-text {
     position: relative;
     z-index: 1;
     transition: transform 60ms ease-out;
   }
-  label.hazard::before {
+  label.hazard:where([data-theme='cyberpunk'] *)::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -158,11 +158,11 @@ label.hazard:hover {
       17px 13px;
   }
   @media (hover: hover) {
-    label.hazard:hover .toggle-text {
+    label.hazard:where([data-theme='cyberpunk'] *):hover .toggle-text {
       transform: translateX(3px) scale(1.15, 0.9);
       animation: hover-text-glitch 240ms steps(1, end);
     }
-    label.hazard:hover::before {
+    label.hazard:where([data-theme='cyberpunk'] *):hover::before {
       animation: hover-noise-glitch 240ms steps(1, end);
     }
   }

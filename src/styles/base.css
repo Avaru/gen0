@@ -38,6 +38,11 @@
 * {
   box-sizing: border-box;
 }
+@media screen {
+  :root {
+    scrollbar-gutter: stable;
+  }
+}
 @media screen and (forced-colors: none) {
   * {
     scrollbar-width: thin;
@@ -45,6 +50,7 @@
   }
 }
 body {
+  font-size: var(--font-body-size, 1rem);
   margin: 0;
   min-width: min(20rem, 100%);
 }
@@ -64,7 +70,7 @@ a {
   touch-action: manipulation;
 }
 button:disabled {
-  cursor: wait;
+  cursor: default;
   opacity: 0.65;
 }
 :focus-visible {

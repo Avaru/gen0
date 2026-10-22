@@ -1,12 +1,14 @@
 import { inject, onScopeDispose, ref, watch, nextTick } from 'vue'
 import { routeLocationKey, routerKey } from 'vue-router'
-import { useCharacterStore } from '@/stores/character'
-import { encodeCharacter } from '@/helper/characterLink'
 
-export function useCharacterUrl() {
+export function useCharacterUrl<T>(options: {
+  path: string
+  sheet: () => T
+  encode: (sheet: T) => string
+  load: (token: string) => void
+}) {
   const route = inject(routeLocationKey, undefined)
   const router = inject(routerKey, undefined)
-  const character = useCharacterStore()
   const error = ref('')
   if (!route || !router) return error
 
@@ -14,9 +16,9 @@ export function useCharacterUrl() {
   const writtenTokens = new Set<string>()
 
   async function updateUrl() {
-    if (disposed || route!.path !== '/chars/cbrpnk') return
+    if (disposed || route!.path !== options.path) return
     try {
-      const token = encodeCharacter(character.sheet)
+      const token = options.encode(options.sheet())
       if (token === route!.query.char || writtenTokens.has(token)) return
       // Our own navigation must not reload an older sheet over newer typing.
       writtenTokens.add(token)
@@ -34,12 +36,12 @@ export function useCharacterUrl() {
       error.value = 'Could not update the character URL. Your current character has been kept.'
     }
   }
-  watch(() => character.sheet, updateUrl, { deep: true, flush: 'post' })
+  watch(options.sheet, updateUrl, { deep: true, flush: 'post' })
 
   watch(
     () => [route.path, route.query.char],
     () => {
-      if (route.path !== '/chars/cbrpnk') return
+      if (route.path !== options.path) return
       const token = route.query.char
       if (typeof token === 'string' && writtenTokens.has(token)) return
       error.value = ''
@@ -49,7 +51,7 @@ export function useCharacterUrl() {
       }
       try {
         if (typeof token !== 'string') throw new Error('Invalid character link')
-        character.loadCharacterToken(token)
+        options.load(token)
       } catch {
         error.value = 'Could not load this character URL. Your current character has been kept.'
       }

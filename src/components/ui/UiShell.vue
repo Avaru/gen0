@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Theme } from '@/styles/themes'
+import { themeKey } from '@/styles/themes'
 import { useRoute, useRouter, type NavigationFailure } from 'vue-router'
 import { computed, nextTick, provide, ref, useTemplateRef, watch } from 'vue'
 import {
@@ -13,7 +14,11 @@ import UiBrandTitle from '@/components/ui/UiBrandTitle.vue'
 import UiButton from './UiButton.vue'
 import UiSettingPicker from './UiSettingPicker.vue'
 import { getSetting, settings } from '@/generator/settingRegistry'
-defineProps<{ theme: Theme }>()
+const props = defineProps<{ theme: Theme }>()
+provide(
+  themeKey,
+  computed(() => props.theme),
+)
 const showCharacterGuide = ref(false)
 provide('showCharacterGuide', showCharacterGuide)
 const version = __APP_VERSION__
@@ -28,7 +33,9 @@ function selectSetting(id: string) {
 }
 const main = useTemplateRef<HTMLElement>('main')
 const isAbout = computed(() => route.matched.some((record) => record.path.endsWith('/about')))
-const isCharacter = computed(() => route.matched.some((record) => record.path === '/chars/cbrpnk'))
+const isCharacter = computed(() =>
+  route.matched.some((record) => record.meta.characterSheet || record.path === '/chars/cbrpnk'),
+)
 const page = computed(() => (isAbout.value ? 'about' : isCharacter.value ? 'char' : 'generator'))
 // Announce the new page without taking focus from controls on settings changes.
 watch(
@@ -37,7 +44,7 @@ watch(
     const pageKind = (records: typeof matched) =>
       records.some((record) => record.path.endsWith('/about'))
         ? 'about'
-        : records.some((record) => record.path === '/chars/cbrpnk')
+        : records.some((record) => record.meta.characterSheet || record.path === '/chars/cbrpnk')
           ? 'char'
           : 'generator'
     if (!previous.length || pageKind(matched) === pageKind(previous)) return
@@ -114,10 +121,13 @@ const aboutNavigation = computed(() => ({
       </nav>
       <UiBrandTitle />
       <h1 v-if="isCharacter" class="caption">
-        CBR+PNK <span class="caption-line">Runner sheet</span>
+        {{ setting.label === 'Cyberpunk' ? 'CBR+PNK' : setting.label }}
+        <span class="caption-line">{{
+          setting.id === 'cyberpunk' ? 'Runner sheet' : 'Student sheet'
+        }}</span>
       </h1>
       <span v-else class="caption">{{ setting.caption }}</span>
-      <div v-if="isCharacter" class="character-actions">
+      <div v-if="isCharacter && setting.id === 'cyberpunk'" class="character-actions">
         <UiButton
           :aria-expanded="showCharacterGuide"
           aria-controls="runner-guide"
@@ -272,5 +282,15 @@ header::before {
   .shell {
     padding: var(--space-8);
   }
+}
+.shell[data-theme='never-midnight'] .caption {
+  max-width: 18rem;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+.shell[data-theme='never-midnight'] header {
+  padding-bottom: var(--space-4);
+  border-bottom-width: 6px;
 }
 </style>

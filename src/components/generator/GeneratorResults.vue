@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, useTemplateRef } from 'vue'
+import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import type { Generated } from '@/patterns/types'
 import UiToggle from '@/components/ui/UiToggle.vue'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
@@ -16,6 +16,16 @@ const props = defineProps<{
   pendingPools?: readonly string[]
 }>()
 const emit = defineEmits<{ more: []; 'update:showDetails': [value: boolean] }>()
+const hasDetails = computed(() =>
+  props.results.some(
+    (result) =>
+      result.age ||
+      result.appearance ||
+      result.details ||
+      result.rating !== undefined ||
+      (props.category !== 'runners' && result.secondary),
+  ),
+)
 const list = useTemplateRef<HTMLOListElement>('list')
 let previousScrollY = 0
 function loadMoreOnScroll() {
@@ -47,7 +57,7 @@ defineExpose({
     <div class="heading">
       <h1 id="results-heading">{{ label }}</h1>
       <UiToggle
-        v-if="setting !== 'never-midnight'"
+        v-if="hasDetails"
         :model-value="showDetails"
         label="details"
         @update:model-value="$emit('update:showDetails', $event)"
@@ -124,7 +134,7 @@ section {
   position: relative;
   display: grid;
   gap: var(--space-4);
-  padding: var(--space-6);
+  padding: var(--generator-panel-padding, var(--space-6));
   border: var(--theme-panel-border-width) solid var(--color-border);
   border-top: var(--theme-panel-rule-width) solid var(--color-signal);
   box-shadow: var(--theme-panel-shadow);
@@ -158,12 +168,12 @@ section::after {
   justify-content: space-between;
   gap: var(--space-4);
 }
-.heading > :last-child {
+.heading > :last-child:not(:first-child) {
   flex-shrink: 0;
 }
 h1 {
   min-width: 0;
-  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-size: var(--font-result-heading-size, clamp(2rem, 6vw, 3.5rem));
   font-weight: var(--theme-heading-weight);
   text-transform: uppercase;
   letter-spacing: -0.02em;
@@ -186,7 +196,7 @@ li {
   position: relative;
   display: flex;
   gap: var(--space-4);
-  padding-block: var(--space-4);
+  padding-block: var(--generator-row-padding, var(--space-4));
   border-top: 1px solid var(--color-border);
 }
 li::after {
@@ -210,10 +220,10 @@ li::after {
   padding-right: calc(var(--space-8) * 2 + var(--space-2));
 }
 strong {
-  font-family: var(--font-display);
+  font-family: var(--font-result-name, var(--font-display));
   font-weight: var(--theme-name-weight);
   color: var(--theme-name-color);
-  font-size: 1.625rem;
+  font-size: var(--font-result-name-size, 1.625rem);
   line-height: 1.15;
 }
 .name div {
@@ -233,7 +243,12 @@ strong {
 }
 @media (max-width: 24rem) {
   section {
-    padding: var(--space-4);
+    padding: var(--generator-panel-padding, var(--space-4));
   }
+}
+h1:where([data-theme='never-midnight'] *) {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-text);
+  color: var(--color-on-accent);
 }
 </style>

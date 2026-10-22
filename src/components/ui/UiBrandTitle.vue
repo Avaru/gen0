@@ -1,16 +1,30 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, inject, ref } from 'vue'
+import { themeKey } from '@/styles/themes'
+import UiSymbolText from './UiSymbolText.vue'
 
 const animationRun = ref(0)
+const theme = inject(themeKey, ref('cyberpunk'))
+const symbols = computed(() => theme.value === 'never-midnight')
 </script>
 
 <template>
-  <span class="brand" :class="{ initial: animationRun === 0 }" @mouseenter="animationRun++">
+  <span
+    class="brand"
+    :class="{ initial: animationRun === 0 }"
+    @mouseenter="animationRun++"
+    @pointerdown="animationRun++"
+  >
     <span :key="`hot-${animationRun}`" class="layer layer--hot" aria-hidden="true">gen 0</span>
     <span :key="`signal-${animationRun}`" class="layer layer--signal" aria-hidden="true"
       >gen 0</span
     >
-    <span class="ink">gen 0</span>
+    <span class="ink"
+      ><UiSymbolText v-if="symbols" text="gen 0" :replay-key="animationRun" autoplay /><template
+        v-else
+        >gen 0</template
+      ></span
+    >
   </span>
 </template>
 
@@ -176,19 +190,18 @@ const animationRun = ref(0)
     animation: none;
   }
 }
-/* A slightly misregistered stamp in the Never Midnight setting. */
+/* Compact, plain wordmark for Never Midnight. */
 .brand:where([data-theme='never-midnight'] *) {
-  font-size: clamp(3.5rem, 13vw, 6rem);
+  font-size: clamp(2rem, 6vw, 3rem);
   letter-spacing: -0.04em;
-  color: var(--color-hot);
-  border: 3px double currentColor;
-  padding: 0.15em 0.15em 0.05em;
-  transform: rotate(-3deg);
+  color: var(--color-text);
+  line-height: 1;
+  transform: none;
 }
 .layer:where([data-theme='never-midnight'] *) {
   display: none;
 }
 .ink:where([data-theme='never-midnight'] *) {
-  text-shadow: 1px 1px var(--color-page);
+  text-shadow: none;
 }
 </style>
