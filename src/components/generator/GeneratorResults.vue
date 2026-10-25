@@ -23,7 +23,7 @@ const emit = defineEmits<{ more: []; 'update:showDetails': [value: boolean] }>()
 const showNeverMidnightPrompt = computed(
   () =>
     props.setting === 'never-midnight' &&
-    countries.some((country) => country === props.category) &&
+    (props.category === 'berliner' || countries.some((country) => country === props.category)) &&
     props.showDetails &&
     preferences.soullessCorpMode,
 )

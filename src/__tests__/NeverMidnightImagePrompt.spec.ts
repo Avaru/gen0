@@ -43,7 +43,7 @@ function setup(
 }
 
 describe('Never Midnight image prompts', () => {
-  it.each(['german', 'russian', 'polish'])(
+  it.each(['german', 'russian', 'polish', 'berliner'])(
     'copies the %s character with only the first given name as image text',
     async (category) => {
       const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined)

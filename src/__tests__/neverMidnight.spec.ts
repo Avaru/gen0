@@ -16,11 +16,13 @@ import { nationalName } from '@/patterns/cyberpunk/nationality/nameParts'
 const options = { setting: 'never-midnight' } as const
 
 describe.runIf(neverMidnightEnabled)('Never Midnight names', () => {
-  it('offers the three requested countries and spells and falls back to German', () => {
+  it('offers the three requested countries, addresses, and spells and falls back to German', () => {
     expect(availableCategories(options).map((category) => category.id)).toEqual([
       'german',
       'russian',
       'polish',
+      'berliner',
+      'address',
       'spells',
     ])
     expect(
@@ -35,12 +37,14 @@ describe.runIf(neverMidnightEnabled)('Never Midnight names', () => {
       vi.spyOn(Math, 'random').mockReturnValue(0.4)
       for (const gender of ['m', 'f'] as const) {
         const expected = nationalName(country, gender, undefined, options)
+        const addressDetails = expect.any(String)
         expect(generateNames(country, 1, { ...options, genders: [gender] })).toEqual([
           {
             primary: expected,
             age: '37 years',
             appearance: `White ${neverMidnightHairStyles[Math.floor(neverMidnightHairStyles.length * 0.4)]}, heart-shaped face`,
             secondary: neverMidnightJobs[Math.floor(neverMidnightJobs.length * 0.4)],
+            ...(country === 'german' ? { details: addressDetails } : {}),
           },
         ])
       }
