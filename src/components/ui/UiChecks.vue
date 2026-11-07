@@ -26,7 +26,7 @@ function change(value: Value, event: Event) {
 </script>
 
 <template>
-  <fieldset>
+  <fieldset class="checks">
     <legend :class="{ 'visually-hidden': hideLabel }">{{ label }}</legend>
     <div class="choices">
       <label v-for="option in options" :key="option.value" class="control-shimmer">

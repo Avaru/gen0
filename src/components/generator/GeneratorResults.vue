@@ -42,6 +42,11 @@ const hasDetails = computed(() =>
       (props.category !== 'runners' && result.secondary),
   ),
 )
+const detailFields = computed(() =>
+  props.setting === 'mothership'
+    ? (['details', 'appearance'] as const)
+    : (['appearance', 'details'] as const),
+)
 const list = useTemplateRef<HTMLOListElement>('list')
 let previousScrollY = 0
 function loadMoreOnScroll() {
@@ -113,7 +118,12 @@ defineExpose({
             />
           </div>
           <div
-            v-if="result.secondary && (category === 'runners' || showDetails)"
+            v-if="
+              result.secondary &&
+              (category === 'runners' ||
+                (setting === 'mothership' && category === 'ships') ||
+                showDetails)
+            "
             class="secondary"
             :class="{ 'runner-secondary': category === 'runners' }"
           >
@@ -131,20 +141,15 @@ defineExpose({
                 v-bind="revealTiming(index)"
               />
             </div>
-            <div v-if="result.appearance">
-              <UiScrambleText
-                :text="result.appearance"
-                :replay-key="result"
-                v-bind="revealTiming(index)"
-              />
-            </div>
-            <div v-if="result.details" class="details">
-              <UiScrambleText
-                :text="result.details"
-                :replay-key="result"
-                v-bind="revealTiming(index)"
-              />
-            </div>
+            <template v-for="field in detailFields" :key="field">
+              <div v-if="result[field]" :class="{ details: field === 'details' }">
+                <UiScrambleText
+                  :text="result[field]"
+                  :replay-key="result"
+                  v-bind="revealTiming(index)"
+                />
+              </div>
+            </template>
             <div v-if="result.rating !== undefined">
               <UiScrambleText
                 :text="`Rating: ${result.rating.toFixed(1)} / 5`"

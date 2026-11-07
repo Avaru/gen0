@@ -1,15 +1,19 @@
 import { getNamePools } from '@/builders/namePools'
 import { mothershipPatches } from '@/data/mothership-patches'
+import { mothershipShipNameCandidates } from '@/data/mothership-ship-name-candidates'
 import { mothershipTrinkets } from '@/data/mothership-trinkets'
 import { givenNameGenders, normalizeSelections, type GenerationOptions } from '@/generator/options'
+import { p } from '@/helper/prob'
+import { capitalize } from '@/helper/capitalize'
 import { randomFrom } from '@/helper/randomFrom'
 import { randomGenus } from '@/helper/randomGenus'
 import { canComposeName } from '@/patterns/cyberpunk/nationality/availability'
-import { nationalName } from '@/patterns/cyberpunk/nationality/nameParts'
+import { nationalName, nationalityGivenName } from '@/patterns/cyberpunk/nationality/nameParts'
 import { traditionIds } from '@/patterns/cyberpunk/nationality/traditions'
-import { givenName } from '@/patterns/cyberpunk/people/names'
+import { runnerLooks } from '@/patterns/cyberpunk/runners/looks'
 import type { Generated } from '@/patterns/types'
 import { rollMothershipCharacter } from './stats'
+import { formatMothershipShipClass, formatMothershipShipIssues, rollMothershipShip } from './ships'
 
 export function genericName(options: GenerationOptions): Generated {
   const gender = options.genders
@@ -20,10 +24,28 @@ export function genericName(options: GenerationOptions): Generated {
   return {
     primary: nationalName(tradition, gender, undefined, options),
     mothershipCharacter: rollMothershipCharacter(),
+    appearance: capitalize(runnerLooks({ ...options, flavor: 'cyberpunk' }).join(', ')),
     details: `Trinket: ${randomFrom(mothershipTrinkets)} · Patch: ${randomFrom(mothershipPatches)}`,
   }
 }
 
+function shipPrimaryName(options: GenerationOptions): string {
+  if (p()) return randomFrom(mothershipShipNameCandidates)
+
+  const pools = getNamePools(options)
+  const traditions = (['british', 'spanish', 'french', 'russian'] as const).filter(
+    (tradition) => pools.get(tradition, 'given', 'f').length > 0,
+  )
+  return nationalityGivenName(randomFrom(traditions), 'f', options)
+}
+
 export function shipName(options: GenerationOptions): Generated {
-  return { primary: givenName(options), details: 'ship' }
+  const primary = shipPrimaryName(options)
+  const mothershipShip = rollMothershipShip()
+  return {
+    primary,
+    secondary: formatMothershipShipClass(mothershipShip),
+    mothershipShip,
+    details: formatMothershipShipIssues(mothershipShip),
+  }
 }

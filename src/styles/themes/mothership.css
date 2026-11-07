@@ -58,6 +58,7 @@
   :is(
     .picker > .label,
     .picker button:not(.close),
+    nav > a,
     .setting-trigger,
     .settings button,
     select,
@@ -96,6 +97,24 @@
 }
 
 @media (forced-colors: none) {
+  .shell[data-theme='mothership'] .checks label {
+    border: 0;
+    background: transparent;
+  }
+
+  .shell[data-theme='mothership'] .checks input {
+    border: 0;
+    background: var(--color-subtle);
+  }
+
+  .shell[data-theme='mothership'] .checks input:checked {
+    background: var(--color-text);
+  }
+
+  .shell[data-theme='mothership'] .checks input::after {
+    display: none;
+  }
+
   :root:has([data-theme='mothership']) {
     --mothership-crt-green: #76ff54;
     --mothership-crt-screen: #102014;

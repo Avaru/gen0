@@ -1,4 +1,4 @@
-// Candidate data only; not connected to a generator.
+// Edited song titles used by the Mothership ship-name generator.
 // Source: Spotify Liked Songs, https://open.spotify.com/collection/tracks
 // Collected 2026-11-07: positions 1–956, newest liked first.
 // Import cleanup removed featured-artist credits, recording/version labels, and single-word plurals.

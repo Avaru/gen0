@@ -6,7 +6,12 @@ import UiNumberStepper from './UiNumberStepper.vue'
 import { mothershipTraumaResponses } from '@/data/mothership-classes'
 import { mothershipSkills } from '@/data/characters/mothership-skills'
 
-const props = defineProps<{ name: string; character: MothershipCharacter; details?: string }>()
+const props = defineProps<{
+  name: string
+  character: MothershipCharacter
+  details?: string
+  appearance?: string
+}>()
 const emit = defineEmits<{ 'update:character': [character: MothershipCharacter] }>()
 const resources = [
   ['stress', 'Stress'],
@@ -90,6 +95,10 @@ const groups = [
       <p>{{ mothershipTraumaResponses[character.characterClass] }}</p>
     </div>
     <p v-if="details" class="trinket-patch">{{ details }}</p>
+    <div v-if="appearance" class="appearance">
+      <h3 class="field-label">Appearance</h3>
+      <p>{{ appearance }}</p>
+    </div>
     <dl class="resource credits">
       <dt class="field-label">Credits</dt>
       <dd>
@@ -197,7 +206,8 @@ const groups = [
   font-weight: 700;
 }
 .skills,
-.trauma-response {
+.trauma-response,
+.appearance {
   margin-top: var(--space-4);
 }
 .skills ul {
@@ -221,13 +231,17 @@ const groups = [
   font-size: 0.75rem;
   text-transform: capitalize;
 }
-.trauma-response p {
+.trauma-response p,
+.appearance p {
   margin: var(--space-2) 0 0;
   font-size: 0.875rem;
 }
 .trinket-patch {
   margin: var(--space-4) 0 0;
   font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+.appearance {
   overflow-wrap: anywhere;
 }
 </style>

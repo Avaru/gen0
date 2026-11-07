@@ -124,6 +124,8 @@ describe('Reusable name pools', () => {
       }
       expect(genericName(options)).toEqual({
         primary: nationalName(tradition, GENUS.F, undefined, options),
+        appearance:
+          'Good-looking, blonde long hair, round face, high cheekbones, scarred, dark eyes, expensive punky clothes, suit',
         mothershipCharacter: {
           characterClass: 'Marine',
           scores: { Str: 27, Spd: 27, Int: 27, Cmb: 37, San: 12, Fea: 32, Bod: 22 },

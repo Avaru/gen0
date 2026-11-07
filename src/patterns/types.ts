@@ -1,5 +1,6 @@
 import type { Archetype } from '@/data/characters/types'
 import type { MothershipCharacter } from './mothership/stats'
+import type { MothershipShip } from './mothership/ships'
 
 export interface GeneratedAttributes {
   archetypeId?: Archetype['id']
@@ -13,4 +14,5 @@ export interface GeneratedAttributes {
 export interface Generated extends GeneratedAttributes {
   primary: string
   mothershipCharacter?: MothershipCharacter
+  mothershipShip?: MothershipShip
 }

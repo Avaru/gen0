@@ -98,6 +98,7 @@ async function openMothershipSheet(result: Generated) {
         :name="miniSheet.primary"
         :character="miniSheet.mothershipCharacter"
         :details="miniSheet.details"
+        :appearance="miniSheet.appearance"
         @update:character="miniSheet.mothershipCharacter = $event"
       />
     </div>

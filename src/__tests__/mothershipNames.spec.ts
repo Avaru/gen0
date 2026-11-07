@@ -1,0 +1,80 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { clearNamePools } from '@/builders/namePools'
+import { GENUS } from '@/builders/types'
+import { mothershipShipNameCandidates } from '@/data/mothership-ship-name-candidates'
+import { genericName, shipName } from '@/patterns/mothership/names'
+import * as looks from '@/patterns/cyberpunk/runners/looks'
+
+afterEach(() => {
+  clearNamePools()
+  vi.restoreAllMocks()
+})
+
+describe('Mothership character appearance', () => {
+  it.each(['cyberpunk', 'shadowrun', 'cyberpunk2020-2077'] as const)(
+    'uses generic Cyberpunk looks and preserves exclusions with %s options',
+    (flavor) => {
+      const runnerLooks = vi.spyOn(looks, 'runnerLooks')
+      const options = { setting: 'mothership' as const, flavor, excludeTags: ['british'] }
+      const result = genericName(options)
+
+      expect(runnerLooks).toHaveBeenCalledExactlyOnceWith({ ...options, flavor: 'cyberpunk' })
+      const fragments = runnerLooks.mock.results[0]!.value as string[]
+      expect(fragments.length).toBeGreaterThanOrEqual(3)
+      const appearance = fragments.join(', ')
+      expect(result.appearance).toBe(appearance[0]!.toUpperCase() + appearance.slice(1))
+      expect(result.mothershipCharacter).toBeDefined()
+      expect(result.details).toMatch(/^Trinket: .+ · Patch: .+$/)
+    },
+  )
+})
+
+describe('Mothership ship names', () => {
+  it.each([0, 0.499999])('uses the edited song list below the 50%% boundary (%s)', (draw) => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.999999).mockReturnValueOnce(draw)
+    expect(shipName({ setting: 'mothership' })).toMatchObject({
+      primary: mothershipShipNameCandidates[mothershipShipNameCandidates.length - 1],
+    })
+  })
+
+  it.each([
+    [0, 'Zoe'],
+    [0.249999, 'Zoe'],
+    [0.25, 'Zuriñe'],
+    [0.499999, 'Zuriñe'],
+    [0.5, 'Maina'],
+    [0.749999, 'Maina'],
+    [0.75, 'Zinoviya'],
+    [0.999999, 'Zinoviya'],
+  ])('gives each language one quarter of given-name draws (%s)', (languageDraw, expected) => {
+    vi.spyOn(Math, 'random')
+      .mockReturnValue(0.999999)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(languageDraw)
+    expect(shipName({ setting: 'mothership', genus: GENUS.M, genders: [GENUS.M] })).toMatchObject({
+      primary: expected,
+    })
+  })
+
+  it.each(['cyberpunk', 'shadowrun', 'cyberpunk2020-2077'] as const)(
+    'passes exclusions through to the female given-name pool in %s',
+    (flavor) => {
+      vi.spyOn(Math, 'random').mockReturnValue(0).mockReturnValueOnce(0.999999)
+      expect(
+        shipName({
+          setting: 'mothership',
+          flavor,
+          excludeTags: ['british', 'spanish', 'french'],
+          genus: GENUS.M,
+        }),
+      ).toMatchObject({ primary: 'Agafiia' })
+    },
+  )
+
+  it('reports an exhausted given-name pool without using another language or gender', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+    expect(() => shipName({ excludeTags: ['british', 'spanish', 'french', 'russian'] })).toThrow(
+      'No entries match these settings',
+    )
+  })
+})

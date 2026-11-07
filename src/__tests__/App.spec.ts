@@ -77,9 +77,11 @@ describe('name generator interface', () => {
     expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('mothership')
     expect(wrapper.get('#results-heading').text()).toBe('Characters')
     expect(wrapper.findAll('li strong')).toHaveLength(10)
-    expect(wrapper.find('li .name > .secondary').exists()).toBe(false)
+    expect(wrapper.find('li .name > .secondary:not(.mothership-class)').exists()).toBe(false)
+    expect(wrapper.findAll('li .name > div:not(.secondary):not(.details)')).toHaveLength(10)
     expect(wrapper.findAll('li .details')).toHaveLength(10)
     await wrapper.get('.details-toggle input').setValue(false)
+    expect(wrapper.find('li .name > div:not(.secondary):not(.details)').exists()).toBe(false)
     expect(wrapper.find('li .details').exists()).toBe(false)
     expect(wrapper.get('#category').text()).toBe('Characters')
     expect(wrapper.find('input[name="flavor"]').exists()).toBe(false)
@@ -98,12 +100,18 @@ describe('name generator interface', () => {
     expect(actions).toHaveLength(10)
     expect(wrapper.find('#mothership-mini-sheet').exists()).toBe(false)
 
+    const details = wrapper.get('li .details').text()
+    const appearance = wrapper.get('li .details + div').text()
+    expect(appearance).toMatch(/^[A-Z]/)
     await wrapper.get('.details-toggle input').setValue(false)
     await actions[0]!.trigger('click')
     const sheet = wrapper.get('#mothership-mini-sheet')
     expect(document.activeElement).toBe(sheet.element)
     expect(sheet.get('h2').text()).toBe(wrapper.get('li strong').text())
     expect(sheet.get('.character-class').text()).toMatch(/^(Marine|Android|Scientist|Teamster)$/)
+    expect(sheet.get('.trinket-patch').text()).toBe(details)
+    expect(sheet.get('.appearance h3').text()).toBe('Appearance')
+    expect(sheet.get('.trinket-patch + .appearance p').text()).toBe(appearance)
     expect(sheet.findAll('.scores dt').map((label) => label.text())).toEqual([
       'Str',
       'Speed',
@@ -188,15 +196,23 @@ describe('name generator interface', () => {
     )
   })
 
-  it('offers Ships in Mothership and shows the ship detail on every result', async () => {
+  it('shows ship class as secondary text and maintenance issues under Details', async () => {
     const { wrapper, router } = await setup('/mothership/generic')
     await chooseCategory(wrapper, 'ships')
     await flushPromises()
     expect(router.currentRoute.value.path).toBe('/mothership/ships')
     expect(wrapper.get('#results-heading').text()).toBe('Ships')
-    expect(wrapper.findAll('li .details').map((detail) => detail.text())).toEqual(
-      Array(10).fill('ship'),
-    )
+    const classes = wrapper.findAll('li .name > .secondary').map((line) => line.text())
+    expect(classes).toHaveLength(10)
+    for (const line of classes) expect(line).toMatch(/^J[1-3]C-(?:0|I|II|III|IV|V) .+/)
+    const issues = wrapper.findAll('li .details').map((detail) => detail.text())
+    expect(issues).toHaveLength(10)
+    for (const detail of issues) expect(detail).not.toBe('ship')
+    await wrapper.get('.details-toggle input').setValue(false)
+    expect(wrapper.find('li .details').exists()).toBe(false)
+    expect(wrapper.findAll('li .name > .secondary').map((line) => line.text())).toEqual(classes)
+    await wrapper.get('.details-toggle input').setValue(true)
+    expect(wrapper.findAll('li .details').map((detail) => detail.text())).toEqual(issues)
   })
 
   it.runIf(neverMidnightEnabled)(
