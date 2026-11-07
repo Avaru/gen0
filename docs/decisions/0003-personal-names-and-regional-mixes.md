@@ -1,4 +1,4 @@
-# 0006: Personal names and regional mixes
+# 0003: Personal names and regional mixes
 
 Model naming traditions explicitly so direct, mixed, regional, and nested generators follow the same composition rules rather than treating every name as interchangeable parts.
 

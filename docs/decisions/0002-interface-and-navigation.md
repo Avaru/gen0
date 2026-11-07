@@ -1,4 +1,4 @@
-# 0004: Interface and routes
+# 0002: Interface and navigation
 
 Use shared controls and setting themes so generators and character sheets stay consistent without duplicating presentation or state handling.
 
@@ -7,9 +7,14 @@ Use shared controls and setting themes so generators and character sheets stay c
 - Show setting, flavor, and category pickers when more than one option is available. Use the shared modal and category picker, preserving keyboard access and returning focus when closed.
 - Keep generator settings in routes such as `/cyberpunk/:flavor/:category`, `/mothership/:category`, and `/never-midnight/:category`, with applicable query options and About routes. Normalize legacy or invalid links with history replacement. User selections add history entries; reload and Back/Forward restore settings and generate fresh results.
 - Results are temporary. Details visibility stays in app state, survives navigation, and resets on reload. Manual generation may reveal results; automatic generation and route restoration do not scroll. Append more results without moving the viewport.
-- Full editable sheets use dedicated routes and Pinia stores. CBR+PNK fixes Cyberpunk/Generic; Never Midnight uses its own setting and feature gate. Share basic sheet components, URL compression, and synchronization while keeping each sheet's fields and rules separate. Mothership's mini sheet opens below the generator controls and shows scores and starting skills rolled with the selected result. Current Health, Wounds, and Stress can be adjusted and stay with that temporary result when switching characters. Skill definitions and class starting-skill rules live in shared data, with selection and prerequisite checks in Mothership patterns; the mini sheet only displays the assigned skills.
-- Save sheet edits locally and share them through versioned, compressed URLs. Valid URL data takes priority over local storage. Validate versions and size bounds; invalid links retain existing edits and show an error. Automatic URL updates replace history and must not overwrite newer edits. Generator and About links omit sheet data.
-- Sheet generation reuses existing generators and approved profiles. Targeted rerolls preserve unrelated edits. Portrait actions copy prompts without changing saved characters. Sheets remain editable aids rather than rules validators; see the [character data model](../character-data-model.md).
-- Keep CBR+PNK printing separate from screen layout: A4 portrait, wrapping entered text, no interactive chrome, and readable selections with backgrounds disabled. Preserve component state across responsive layouts. Long text may require extra pages; claim print fit only after browser/PDF verification.
+- Character-sheet state, generation, sharing, and printing follow [character sheets and sharing](0005-character-sheets-and-sharing.md).
+
+## Sheet navigation and portrait prompts
+
+The CBR+PNK navigation link opens `/chars/cbrpnk` using Generic, regardless of the selected Cyberpunk flavor. With Details shown, each runner result has an arrow that opens a fresh sheet with its profile stats and augmentation. Never Midnight's Student sheet link opens the feature-gated `/chars/never-midnight` route. Mothership's arrow opens a mini sheet below the category controls on the same page.
+
+Portrait buttons are opt-in through soulless corp mode in About and appear on supported results when Details is shown. They copy prompts without changing saved characters. The runner prompt requests a square portrait using the same name, description, archetype, and CBR+PNK angle, with several lettering styles and name positions. The sheet's description image button uses the same prompt and is hidden when the description is empty. Successful copying triggers a short glitch burst; hovering gives a lighter glitch. Neither shows a success message.
+
+Never Midnight name prompts request realistic, slightly blurry black-and-white 1986 East Berlin mugshot-style portraits, using the generated age, appearance, and occupation. Faces and poses may be expressive. Only the first given name appears, either on an incidental background sign or a visibly handwritten or typewritten name tag; characters never hold signs or boards. The placement stays the same when copying the same character again. Spells have no portrait button.
 
 Exact copy, field layouts, animation timings, and control dimensions belong in components, styles, and tests.
