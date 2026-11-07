@@ -1,10 +1,10 @@
 # gen0
 
-Local Vue/TypeScript generator with bundled data, setting-specific categories, and character sheets. Cyberpunk offers Generic, Shadowrun, and CP 2020/77 flavors; Mothership offers characters and ships. Never Midnight is an optional build-time setting. Generation runs in the browser without a backend or account.
+Local Vue/TypeScript generator with bundled data, setting-specific categories, and character sheets. Generation runs in the browser without a backend or account.
 
 ## Run
 
-Use Node 24.x locally and on Vercel.
+Use Node 24.x locally.
 
 ```sh
 npm ci
@@ -33,3 +33,4 @@ npm run preview
 - [Character data model](docs/character-data-model.md): sheet fields, profiles, and source mappings.
 
 I do not allow any of the data in this project to be used for training or developing AI models without my explicit permission.
+I build this to fun, not to show off. Don't judge my dev skills by this.
