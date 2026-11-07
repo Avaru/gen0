@@ -21,9 +21,12 @@ export function genericName(options: GenerationOptions): Generated {
     : (options.genus ?? randomGenus(true))
   const pools = getNamePools(options)
   const tradition = randomFrom(traditionIds.filter((id) => canComposeName(pools, id, gender)))
+  const primary = nationalName(tradition, gender, undefined, options)
+  const mothershipCharacter = rollMothershipCharacter()
   return {
-    primary: nationalName(tradition, gender, undefined, options),
-    mothershipCharacter: rollMothershipCharacter(),
+    primary,
+    secondary: mothershipCharacter.characterClass,
+    mothershipCharacter,
     appearance: capitalize(runnerLooks({ ...options, flavor: 'cyberpunk' }).join(', ')),
     details: `Trinket: ${randomFrom(mothershipTrinkets)} · Patch: ${randomFrom(mothershipPatches)}`,
   }

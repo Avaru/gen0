@@ -3,6 +3,8 @@ import { rng } from '@/helper/rng'
 import { mothershipClasses, type MothershipClass } from '@/data/mothership-classes'
 import type { MothershipSkillId } from '@/data/characters/mothership-skills'
 import { rollMothershipSkills } from './skills'
+import type { MothershipGearEntry } from '@/data/characters/mothership-gear'
+import { rollMothershipGear } from './gear'
 
 const stats = ['Str', 'Spd', 'Int', 'Cmb'] as const
 const saves = ['San', 'Fea', 'Bod'] as const
@@ -16,6 +18,7 @@ export interface MothershipCharacter {
   stress: { current: number; min: number }
   credits: number
   skills: MothershipSkillId[]
+  gear: MothershipGearEntry[]
 }
 
 function rollD10(): number {
@@ -76,5 +79,6 @@ export function rollMothershipCharacter(): MothershipCharacter {
     stress: { current: 2, min: 2 },
     credits: (rollD10() + rollD10()) * 10,
     skills: rollMothershipSkills(characterClass),
+    gear: rollMothershipGear(characterClass),
   }
 }

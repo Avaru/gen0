@@ -134,13 +134,19 @@ describe('scrambled name reveal', () => {
     await advance(300)
     expect(wrapper.find('.overlay').exists()).toBe(false)
     await wrapper.setProps({ showDetails: false })
-    expect(wrapper.findAllComponents(UiScrambleText)).toHaveLength(2)
+    expect(wrapper.findAllComponents(UiScrambleText)).toHaveLength(4)
     await wrapper.setProps({ showDetails: true })
     expect(wrapper.findAll('strong .overlay')).toHaveLength(0)
-    expect(wrapper.findAll('.name div .overlay')).toHaveLength(10)
+    expect(wrapper.findAll('.name div .overlay')).toHaveLength(8)
   })
 
-  it('keeps the runner archetype in the secondary row regardless of the details toggle', async () => {
+  it.each([
+    ['cyberpunk', 'runners'],
+    ['cyberpunk', 'corporations'],
+    ['mothership', 'generic'],
+    ['mothership', 'ships'],
+    ['never-midnight', 'address'],
+  ])('keeps secondary data visible for %s/%s regardless of Details', async (setting, category) => {
     reduced = true
     const router = createRouter({
       history: createMemoryHistory(),
@@ -159,9 +165,10 @@ describe('scrambled name reveal', () => {
             details: 'Works alone',
           },
         ],
-        category: 'runners',
+        setting,
+        category,
         busy: false,
-        label: 'Runners',
+        label: 'Results',
         error: '',
         showDetails: true,
       },
@@ -176,9 +183,13 @@ describe('scrambled name reveal', () => {
     expect(wrapper.findAll('.source').map((source) => source.text())).toEqual([
       'Neon Fox',
       'Martial Artist',
-      'Chrome eyes',
-      'Works alone',
+      ...(setting === 'mothership'
+        ? ['Works alone', 'Chrome eyes']
+        : ['Chrome eyes', 'Works alone']),
     ])
+    expect(wrapper.get('.secondary').text()).toBe('Martial Artist')
+    await wrapper.setProps({ results: [{ primary: 'Neon Fox', secondary: 'Martial Artist' }] })
+    expect(wrapper.find('.details-toggle').exists()).toBe(false)
     expect(wrapper.get('.secondary').text()).toBe('Martial Artist')
   })
 

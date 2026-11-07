@@ -34,12 +34,7 @@ const showNeverMidnightPrompt = computed(
 )
 const hasDetails = computed(() =>
   props.results.some(
-    (result) =>
-      result.age ||
-      result.appearance ||
-      result.details ||
-      result.rating !== undefined ||
-      (props.category !== 'runners' && result.secondary),
+    (result) => result.age || result.appearance || result.details || result.rating !== undefined,
   ),
 )
 const detailFields = computed(() =>
@@ -107,26 +102,7 @@ defineExpose({
               :replay-key="result"
               v-bind="revealTiming(index)"
           /></strong>
-          <div
-            v-if="setting === 'mothership' && category === 'generic' && result.mothershipCharacter"
-            class="secondary mothership-class"
-          >
-            <UiScrambleText
-              :text="result.mothershipCharacter.characterClass"
-              :replay-key="result"
-              v-bind="revealTiming(index)"
-            />
-          </div>
-          <div
-            v-if="
-              result.secondary &&
-              (category === 'runners' ||
-                (setting === 'mothership' && category === 'ships') ||
-                showDetails)
-            "
-            class="secondary"
-            :class="{ 'runner-secondary': category === 'runners' }"
-          >
+          <div v-if="result.secondary" class="secondary">
             <UiScrambleText
               :text="result.secondary"
               :replay-key="result"
@@ -280,7 +256,7 @@ li:has(> .mothership-sheet-action.compact) {
   transform: translateY(-50%);
 }
 .runner-name > strong,
-.runner-name > .runner-secondary {
+.runner-name > .secondary {
   display: block;
   padding-right: calc(var(--space-8) * 2 + var(--space-2));
 }
@@ -299,18 +275,13 @@ strong {
   margin-top: var(--space-1);
   font-size: 0.9375rem;
 }
-.name .runner-secondary {
-  font-family: var(--font-runner-secondary);
-  font-size: 1.25rem;
+.name .secondary {
+  font-family: var(--font-result-secondary, var(--font-body));
+  font-size: var(--font-result-secondary-size, 0.9375rem);
   font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: 0.025em;
-  color: var(--color-signal);
-}
-.name .mothership-class {
-  font-family: var(--font-body);
-  font-weight: 700;
-  line-height: 1.5;
+  line-height: var(--line-height-result-secondary, 1.5);
+  letter-spacing: var(--letter-spacing-result-secondary, normal);
+  color: var(--color-result-secondary, var(--color-muted));
 }
 .error {
   color: var(--color-error);

@@ -32,6 +32,6 @@ Summon applies three occupation discipline bonuses and one matching subdomain, a
 
 ## Mothership mini sheet
 
-Each generic name can open a mini character sheet below the generator controls, showing class, stats, saves, and randomly assigned starting skills rolled with that result. Current Health, Wounds, and Stress can be adjusted and stay with the temporary result when switching characters.
+Each generic name can open a mini character sheet below the generator controls, showing class, stats, saves, and randomly assigned starting skills rolled with that result. Starting gear is chosen equally from the ten supplied loadouts for that class and shown as a list above Trauma Response. Shared item definitions and loadout references, including quantities and ammunition, live in `src/data/characters/mothership-gear.ts`. Current Health, Wounds, and Stress can be adjusted and stay with the temporary result when switching characters, as does the chosen gear.
 
 Shared skill definitions and class starting-skill rules live in `src/data/characters/mothership-skills.ts` and `mothership-rules.ts`. Every prerequisite list means any one is sufficient. Selection and prerequisite checks live in Mothership patterns; the mini sheet displays the assigned skills. These temporary characters are not saved to local storage.

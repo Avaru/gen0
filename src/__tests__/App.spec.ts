@@ -77,7 +77,7 @@ describe('name generator interface', () => {
     expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('mothership')
     expect(wrapper.get('#results-heading').text()).toBe('Characters')
     expect(wrapper.findAll('li strong')).toHaveLength(10)
-    expect(wrapper.find('li .name > .secondary:not(.mothership-class)').exists()).toBe(false)
+    expect(wrapper.findAll('li .name > .secondary')).toHaveLength(10)
     expect(wrapper.findAll('li .name > div:not(.secondary):not(.details)')).toHaveLength(10)
     expect(wrapper.findAll('li .details')).toHaveLength(10)
     await wrapper.get('.details-toggle input').setValue(false)
@@ -194,6 +194,11 @@ describe('name generator interface', () => {
     expect(sheet.get('.trauma-response p').text()).toBe(
       trauma[characterClass as keyof typeof trauma],
     )
+    const gear = sheet.get('.starting-gear')
+    expect(gear.get('h3').text()).toBe('Starting Gear')
+    expect(gear.findAll('li').length).toBeGreaterThanOrEqual(2)
+    expect(gear.findAll('li').every((item) => item.text().length > 0)).toBe(true)
+    expect(gear.element.nextElementSibling).toBe(sheet.get('.trauma-response').element)
   })
 
   it('shows ship class as secondary text and maintenance issues under Details', async () => {
@@ -898,12 +903,12 @@ describe('name generator interface', () => {
     expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
     await wrapper.get('input[type="checkbox"]:not([name])').setValue(false)
     await flushPromises()
-    expect(wrapper.findAll('.name div')).toHaveLength(0)
+    expect(wrapper.findAll('.name div:not(.secondary)')).toHaveLength(0)
     expect(wrapper.findAll('strong').map((item) => item.text())).toEqual(names)
     expect(router.currentRoute.value.query).toEqual(query)
     await chooseCategory(wrapper, 'corporations')
     await flushPromises()
-    expect(wrapper.findAll('.name div')).toHaveLength(0)
+    expect(wrapper.findAll('.name div:not(.secondary)')).toHaveLength(0)
     expect(
       (wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked,
     ).toBe(false)

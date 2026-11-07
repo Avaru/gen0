@@ -5,6 +5,17 @@ import UiSheetCard from './UiSheetCard.vue'
 import UiNumberStepper from './UiNumberStepper.vue'
 import { mothershipTraumaResponses } from '@/data/mothership-classes'
 import { mothershipSkills } from '@/data/characters/mothership-skills'
+import { mothershipGear, type MothershipGearEntry } from '@/data/characters/mothership-gear'
+
+function gearLabel(entry: MothershipGearEntry): string {
+  const item = mothershipGear[entry.item]
+  const details = [
+    'armorPoints' in item ? `AP ${item.armorPoints}` : undefined,
+    entry.detail,
+    entry.quantity ? `x${entry.quantity}` : undefined,
+  ].filter(Boolean)
+  return `${item.name}${details.length ? ` (${details.join(', ')})` : ''}`
+}
 
 const props = defineProps<{
   name: string
@@ -88,6 +99,12 @@ const groups = [
           <span>{{ mothershipSkills[id].name }}</span>
           <span class="skill-tier">{{ mothershipSkills[id].tier }}</span>
         </li>
+      </ul>
+    </div>
+    <div class="starting-gear">
+      <h3 class="field-label">Starting Gear</h3>
+      <ul>
+        <li v-for="(entry, index) in character.gear" :key="index">{{ gearLabel(entry) }}</li>
       </ul>
     </div>
     <div class="trauma-response">
@@ -206,6 +223,7 @@ const groups = [
   font-weight: 700;
 }
 .skills,
+.starting-gear,
 .trauma-response,
 .appearance {
   margin-top: var(--space-4);
@@ -230,6 +248,15 @@ const groups = [
   color: var(--color-muted);
   font-size: 0.75rem;
   text-transform: capitalize;
+}
+.starting-gear ul {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+.starting-gear li + li {
+  margin-top: var(--space-1);
 }
 .trauma-response p,
 .appearance p {

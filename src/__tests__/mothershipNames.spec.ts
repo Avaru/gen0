@@ -24,6 +24,7 @@ describe('Mothership character appearance', () => {
       const appearance = fragments.join(', ')
       expect(result.appearance).toBe(appearance[0]!.toUpperCase() + appearance.slice(1))
       expect(result.mothershipCharacter).toBeDefined()
+      expect(result.secondary).toBe(result.mothershipCharacter?.characterClass)
       expect(result.details).toMatch(/^Trinket: .+ · Patch: .+$/)
     },
   )

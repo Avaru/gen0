@@ -1,5 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { rollMothershipCharacter } from '@/patterns/mothership/stats'
+import { mothershipLoadouts } from '@/data/characters/mothership-gear'
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -27,6 +28,7 @@ it.each([
       stress: { current: 2, min: 2 },
       credits: 110,
       skills: expect.arrayContaining([expect.any(String)]),
+      gear: mothershipLoadouts[characterClass][0],
     })
   },
 )

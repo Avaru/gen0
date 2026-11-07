@@ -64,3 +64,11 @@
   );
   --theme-button-detail: repeating-linear-gradient(135deg, currentColor 0 1px, transparent 1px 4px);
 }
+
+.generator-panel:where([data-theme='cyberpunk'] *) {
+  --font-result-secondary: 'Rajdhani', 'Arial Narrow', sans-serif;
+  --font-result-secondary-size: 1.25rem;
+  --line-height-result-secondary: 1.25;
+  --letter-spacing-result-secondary: 0.025em;
+  --color-result-secondary: var(--color-signal);
+}

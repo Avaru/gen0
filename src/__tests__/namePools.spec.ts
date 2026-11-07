@@ -124,6 +124,7 @@ describe('Reusable name pools', () => {
       }
       expect(genericName(options)).toEqual({
         primary: nationalName(tradition, GENUS.F, undefined, options),
+        secondary: 'Marine',
         appearance:
           'Good-looking, blonde long hair, round face, high cheekbones, scarred, dark eyes, expensive punky clothes, suit',
         mothershipCharacter: {
@@ -134,6 +135,11 @@ describe('Reusable name pools', () => {
           stress: { current: 2, min: 2 },
           credits: 20,
           skills: ['military-training', 'athletics', 'explosives'],
+          gear: [
+            { item: 'tank-top-and-camo-pants' },
+            { item: 'combat-knife', detail: 'as Scalpel DMG [+]' },
+            { item: 'stimpak', quantity: 5 },
+          ],
         },
         details: 'Trinket: Preserved Insectile Aberration · Patch: “#1 Worker”',
       })
