@@ -153,7 +153,7 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
     close-label="Close character sheet"
   >
     <template #actions>
-      <UiButton variant="secondary" @click="printSheet">Print</UiButton>
+      <UiButton class="print-button" variant="secondary" @click="printSheet">Print</UiButton>
     </template>
     <div class="sheet-scroll">
       <div class="profile-sheet">
@@ -691,6 +691,12 @@ select:focus-visible {
   }
   .notes-card :deep(textarea) {
     margin-bottom: 0;
+  }
+}
+@media screen and (max-width: 49.999rem) {
+  .profile-card :deep(.card-heading),
+  .print-button {
+    display: none;
   }
 }
 @media (max-width: 49.999rem) {
