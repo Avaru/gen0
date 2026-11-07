@@ -141,7 +141,7 @@ defineExpose({
         />
         <UiNeverMidnightResultActions v-if="showNeverMidnightPrompt" :result="result" />
         <UiButton
-          v-if="setting === 'mothership' && category === 'generic' && result.mothershipCharacter"
+          v-if="setting === 'mothership' && category === 'generic' && result.mothershipClass"
           appearance="icon"
           icon="arrow-right"
           class="mothership-sheet-action"

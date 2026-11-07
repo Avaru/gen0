@@ -6,6 +6,9 @@ import { useGeneratorSettings } from '@/composables/useGeneratorSettings'
 import GeneratorControls from '@/components/generator/GeneratorControls.vue'
 import GeneratorResults from '@/components/generator/GeneratorResults.vue'
 import UiWorkspace from '@/components/ui/UiWorkspace.vue'
+import { rollMothershipCharacter } from '@/patterns/mothership/stats'
+import type { MothershipSheet } from '@/helper/mothershipCharacterLink'
+import { useMothershipCharacterUrl } from '@/composables/useMothershipCharacterUrl'
 import UiMothershipMiniSheet from '@/components/ui/UiMothershipMiniSheet.vue'
 
 const { settings, update } = useGeneratorSettings()
@@ -18,7 +21,7 @@ const category = computed(() =>
 )
 const results = ref<Generated[]>([])
 const sidebar = useTemplateRef<HTMLElement>('sidebar')
-const miniSheet = ref<Generated>()
+const miniSheet = ref<MothershipSheet>()
 const error = ref('')
 const busy = ref(false)
 let request = 0
@@ -41,10 +44,13 @@ watch(
     busy.value = false
     void generate()
   },
-  { immediate: true },
+  { immediate: true, flush: 'sync' },
 )
+const characterUrlError = useMothershipCharacterUrl(miniSheet)
+
 async function generate(append = false, revealFirstName = false) {
   if (busy.value) return
+  if (!append) miniSheet.value = undefined
   const current = ++request
   busy.value = true
   error.value = ''
@@ -60,7 +66,6 @@ async function generate(append = false, revealFirstName = false) {
       corporationSizes: selection.size,
     })
     if (current === request) {
-      if (!append) miniSheet.value = undefined
       results.value = append ? [...results.value, ...generated] : generated
       if (revealFirstName && generated.length) {
         await nextTick()
@@ -78,8 +83,13 @@ async function generate(append = false, revealFirstName = false) {
 }
 
 async function openMothershipSheet(result: Generated) {
-  if (!result.mothershipCharacter) return
-  miniSheet.value = result
+  if (!result.mothershipClass) return
+  miniSheet.value = {
+    primary: result.primary,
+    appearance: result.appearance,
+    details: result.details,
+    mothershipCharacter: rollMothershipCharacter(result.mothershipClass),
+  }
   await nextTick()
   sidebar.value?.querySelector<HTMLElement>('#mothership-mini-sheet')?.focus()
 }
@@ -93,6 +103,7 @@ async function openMothershipSheet(result: Generated) {
         @update="update"
         @generate="generate(false, true)"
       />
+      <p v-if="characterUrlError" role="alert">{{ characterUrlError }}</p>
       <UiMothershipMiniSheet
         v-if="miniSheet?.mothershipCharacter"
         :name="miniSheet.primary"

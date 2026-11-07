@@ -3,6 +3,7 @@ import { clearNamePools } from '@/builders/namePools'
 import { GENUS } from '@/builders/types'
 import { mothershipShipNameCandidates } from '@/data/mothership-ship-name-candidates'
 import { genericName, shipName } from '@/patterns/mothership/names'
+import * as stats from '@/patterns/mothership/stats'
 import * as looks from '@/patterns/cyberpunk/runners/looks'
 
 afterEach(() => {
@@ -14,6 +15,7 @@ describe('Mothership character appearance', () => {
   it.each(['cyberpunk', 'shadowrun', 'cyberpunk2020-2077'] as const)(
     'uses generic Cyberpunk looks and preserves exclusions with %s options',
     (flavor) => {
+      const rollCharacter = vi.spyOn(stats, 'rollMothershipCharacter')
       const runnerLooks = vi.spyOn(looks, 'runnerLooks')
       const options = { setting: 'mothership' as const, flavor, excludeTags: ['british'] }
       const result = genericName(options)
@@ -23,8 +25,9 @@ describe('Mothership character appearance', () => {
       expect(fragments.length).toBeGreaterThanOrEqual(3)
       const appearance = fragments.join(', ')
       expect(result.appearance).toBe(appearance[0]!.toUpperCase() + appearance.slice(1))
-      expect(result.mothershipCharacter).toBeDefined()
-      expect(result.secondary).toBe(result.mothershipCharacter?.characterClass)
+      expect(result).not.toHaveProperty('mothershipCharacter')
+      expect(rollCharacter).not.toHaveBeenCalled()
+      expect(result.secondary).toBe(result.mothershipClass)
       expect(result.details).toMatch(/^Trinket: .+ · Patch: .+$/)
     },
   )

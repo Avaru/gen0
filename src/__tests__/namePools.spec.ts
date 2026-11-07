@@ -127,20 +127,7 @@ describe('Reusable name pools', () => {
         secondary: 'Marine',
         appearance:
           'Good-looking, blonde long hair, round face, high cheekbones, scarred, dark eyes, expensive punky clothes, suit',
-        mothershipCharacter: {
-          characterClass: 'Marine',
-          scores: { Str: 27, Spd: 27, Int: 27, Cmb: 37, San: 12, Fea: 32, Bod: 22 },
-          health: { current: 11, max: 11 },
-          wounds: { current: 0, max: 3 },
-          stress: { current: 2, min: 2 },
-          credits: 20,
-          skills: ['military-training', 'athletics', 'explosives'],
-          gear: [
-            { item: 'tank-top-and-camo-pants' },
-            { item: 'combat-knife', detail: 'as Scalpel DMG [+]' },
-            { item: 'stimpak', quantity: 5 },
-          ],
-        },
+        mothershipClass: 'Marine',
         details: 'Trinket: Preserved Insectile Aberration · Patch: “#1 Worker”',
       })
     },

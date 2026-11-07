@@ -65,8 +65,9 @@ function applyClassModifiers(scores: Scores, characterClass: MothershipClass): v
   }
 }
 
-export function rollMothershipCharacter(): MothershipCharacter {
-  const characterClass = randomFrom(mothershipClasses)
+export function rollMothershipCharacter(
+  characterClass: MothershipClass = randomFrom(mothershipClasses),
+): MothershipCharacter {
   const scores = rollScores()
   applyClassModifiers(scores, characterClass)
   const maxHealth = rollD10() + 10

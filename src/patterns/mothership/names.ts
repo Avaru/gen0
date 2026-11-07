@@ -12,7 +12,7 @@ import { nationalName, nationalityGivenName } from '@/patterns/cyberpunk/nationa
 import { traditionIds } from '@/patterns/cyberpunk/nationality/traditions'
 import { runnerLooks } from '@/patterns/cyberpunk/runners/looks'
 import type { Generated } from '@/patterns/types'
-import { rollMothershipCharacter } from './stats'
+import { mothershipClasses } from '@/data/mothership-classes'
 import { formatMothershipShipClass, formatMothershipShipIssues, rollMothershipShip } from './ships'
 
 export function genericName(options: GenerationOptions): Generated {
@@ -22,11 +22,11 @@ export function genericName(options: GenerationOptions): Generated {
   const pools = getNamePools(options)
   const tradition = randomFrom(traditionIds.filter((id) => canComposeName(pools, id, gender)))
   const primary = nationalName(tradition, gender, undefined, options)
-  const mothershipCharacter = rollMothershipCharacter()
+  const mothershipClass = randomFrom(mothershipClasses)
   return {
     primary,
-    secondary: mothershipCharacter.characterClass,
-    mothershipCharacter,
+    secondary: mothershipClass,
+    mothershipClass,
     appearance: capitalize(runnerLooks({ ...options, flavor: 'cyberpunk' }).join(', ')),
     details: `Trinket: ${randomFrom(mothershipTrinkets)} · Patch: ${randomFrom(mothershipPatches)}`,
   }

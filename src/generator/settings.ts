@@ -80,7 +80,7 @@ export function settingsPath(settings: GeneratorSettings): string {
 /** Compare query contents; their property order has no meaning. */
 export function matchesSettingsQuery(
   query: Record<string, unknown>,
-  canonical: Record<string, string>,
+  canonical: Record<string, unknown>,
 ): boolean {
   return (
     Object.keys(query).length === Object.keys(canonical).length &&

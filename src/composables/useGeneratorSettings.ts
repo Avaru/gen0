@@ -23,7 +23,14 @@ export function useGeneratorSettings() {
         route.matched.some((record) => record.path.endsWith('/about'))
       )
         return
-      const query = settingsQuery(settings.value)
+      const query = {
+        ...settingsQuery(settings.value),
+        ...(settings.value.setting === 'mothership' &&
+        settings.value.category === 'generic' &&
+        route.query.char !== undefined
+          ? { char: route.query.char }
+          : {}),
+      }
       const path = settingsPath(settings.value)
       if (route.path !== path || !matchesSettingsQuery(route.query, query))
         void router.replace({ path, query })
