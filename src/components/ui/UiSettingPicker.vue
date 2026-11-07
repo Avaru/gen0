@@ -68,15 +68,17 @@ function closed() {
   border: 0;
   background: none;
   color: inherit;
-  font: inherit;
-  font-weight: 600;
+  font-family: var(--font-choice, inherit);
+  font-size: var(--font-choice-size, inherit);
+  font-weight: var(--font-choice-weight, 600);
+  line-height: var(--line-height-choice, normal);
 }
 .setting-trigger:focus-visible {
   outline-color: var(--color-on-page);
 }
 .setting-trigger:hover .link-label,
 .setting-trigger:focus-visible .link-label {
-  color: var(--color-accent);
+  color: var(--color-link-hover, var(--color-accent));
   background-size: 100% 100%;
 }
 .settings {
@@ -96,13 +98,27 @@ function closed() {
   background: var(--color-surface);
   color: var(--color-text);
   text-align: left;
+  font-family: var(--font-choice, var(--font-display));
+  font-size: var(--font-choice-size, inherit);
+  font-weight: var(--font-choice-weight, 700);
+  line-height: var(--line-height-choice, normal);
   overflow-wrap: anywhere;
 }
 .settings button[aria-current],
-.settings button:hover,
-.settings button:active {
+.settings button:is(:hover, :focus-visible) {
   border-color: var(--color-signal);
   background: var(--color-subtle);
+}
+.settings button:is(:hover, :focus-visible) {
+  background: var(--control-hover-fill, var(--color-subtle));
+  color: var(--control-hover-ink, var(--color-text));
+}
+.settings button:active {
+  background: var(--control-active-texture, none) var(--control-active-fill, var(--color-subtle));
+  color: var(--control-active-ink, var(--color-text));
+}
+.settings button:is(:hover, :focus-visible, :active) .selected {
+  color: inherit;
 }
 .selected {
   color: var(--color-signal);

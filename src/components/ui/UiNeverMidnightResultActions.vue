@@ -3,6 +3,7 @@ import { watch } from 'vue'
 import type { Generated } from '@/patterns/types'
 import { neverMidnightImagePrompt } from '@/helper/neverMidnightImagePrompt'
 import UiButton from './UiButton.vue'
+import UiResultActions from './UiResultActions.vue'
 import { useClipboard } from '@/composables/useClipboard'
 
 const props = defineProps<{ result: Generated }>()
@@ -20,11 +21,10 @@ function copyPrompt() {
 </script>
 
 <template>
-  <div class="portrait-actions">
+  <UiResultActions :error="error">
     <UiButton
       appearance="icon"
       icon="portrait"
-      class="icon-button"
       variant="secondary"
       feedback="icon"
       :activation="copyActivation"
@@ -32,27 +32,5 @@ function copyPrompt() {
       title="Copy image prompt"
       @click="copyPrompt"
     />
-    <span v-if="error" class="error" role="alert">{{ error }}</span>
-  </div>
+  </UiResultActions>
 </template>
-
-<style scoped>
-.portrait-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  max-width: 100%;
-}
-.icon-button {
-  --button-icon-rest-color: var(--color-muted);
-  --button-icon-size: var(--space-8);
-  --button-icon-align: end;
-}
-.error {
-  font-size: var(--font-sheet-rule-size);
-  color: var(--color-error);
-}
-</style>

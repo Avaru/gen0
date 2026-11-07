@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearNamePools } from '@/builders/namePools'
+import * as nameData from '@/builders/load'
+import { DATA } from '@/builders/load'
+import type { NameEntry } from '@/data/nameTypes'
 import { GENUS } from '@/builders/types'
 import { mothershipShipNameCandidates } from '@/data/mothership-ship-name-candidates'
 import { genericName, shipName } from '@/patterns/mothership/names'
@@ -42,6 +45,23 @@ describe('Mothership character appearance', () => {
   )
 })
 
+const shipTraditions = ['british', 'spanish', 'french', 'russian'] as const
+
+function useShipNameFixture() {
+  const entries: NameEntry[] = shipTraditions.flatMap((tradition) => [
+    { value: `${tradition}-female`, type: 'given', genus: 'f', tags: [tradition] },
+    { value: `${tradition}-male`, type: 'given', genus: 'm', tags: [tradition] },
+  ])
+  // Unequal list lengths must not change the chance of choosing a tradition.
+  entries.push({ value: 'spanish-second-female', type: 'given', genus: 'f', tags: ['spanish'] })
+  const originalLoad = nameData.load
+  vi.spyOn(nameData, 'load').mockImplementation((list, options = {}) =>
+    list === DATA.PERSONAL_NAMES
+      ? entries.filter((entry) => !options.excludeTags?.some((tag) => entry.tags.includes(tag)))
+      : originalLoad(list, options),
+  )
+}
+
 describe('Mothership ship names', () => {
   it.each([0, 0.499999])('uses the edited song list below the 50%% boundary (%s)', (draw) => {
     vi.spyOn(Math, 'random').mockReturnValue(0.999999).mockReturnValueOnce(draw)
@@ -51,15 +71,16 @@ describe('Mothership ship names', () => {
   })
 
   it.each([
-    [0, 'Zoe'],
-    [0.249999, 'Zoe'],
-    [0.25, 'Zuriñe'],
-    [0.499999, 'Zuriñe'],
-    [0.5, 'Maina'],
-    [0.749999, 'Maina'],
-    [0.75, 'Zinoviya'],
-    [0.999999, 'Zinoviya'],
+    [0, 'british-female'],
+    [0.249999, 'british-female'],
+    [0.25, 'spanish-second-female'],
+    [0.499999, 'spanish-second-female'],
+    [0.5, 'french-female'],
+    [0.749999, 'french-female'],
+    [0.75, 'russian-female'],
+    [0.999999, 'russian-female'],
   ])('gives each language one quarter of given-name draws (%s)', (languageDraw, expected) => {
+    useShipNameFixture()
     vi.spyOn(Math, 'random')
       .mockReturnValue(0.999999)
       .mockReturnValueOnce(0.5)
@@ -72,6 +93,7 @@ describe('Mothership ship names', () => {
   it.each(['cyberpunk', 'shadowrun', 'cyberpunk2020-2077'] as const)(
     'passes exclusions through to the female given-name pool in %s',
     (flavor) => {
+      useShipNameFixture()
       vi.spyOn(Math, 'random').mockReturnValue(0).mockReturnValueOnce(0.999999)
       expect(
         shipName({
@@ -80,11 +102,12 @@ describe('Mothership ship names', () => {
           excludeTags: ['british', 'spanish', 'french'],
           genus: GENUS.M,
         }),
-      ).toMatchObject({ primary: 'Agafiia' })
+      ).toMatchObject({ primary: 'russian-female' })
     },
   )
 
   it('reports an exhausted given-name pool without using another language or gender', () => {
+    useShipNameFixture()
     vi.spyOn(Math, 'random').mockReturnValue(0.5)
     expect(() => shipName({ excludeTags: ['british', 'spanish', 'french', 'russian'] })).toThrow(
       'No entries match these settings',

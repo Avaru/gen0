@@ -122,7 +122,7 @@ describe('Names without unused descriptions', () => {
     expect(runnerName(options)).toBeTruthy()
     expect(genericName(options)).toEqual(expect.any(String))
     expect(corporationName(options)).toEqual(expect.any(String))
-    expect(generateNames('corporations', 1)).toHaveLength(1)
+    expect(generateNames('corporations', 1, options)[0]?.primary).toBeTruthy()
   })
 
   it('allows the ordinary surname Decker in a generic corporation name', () => {

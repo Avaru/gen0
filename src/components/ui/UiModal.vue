@@ -114,7 +114,9 @@ h2 {
 .close {
   flex-shrink: 0;
   width: var(--control-height);
+  font-family: var(--font-display);
   font-size: 1.25rem;
+  font-weight: var(--button-font-weight, 400);
   transition: var(--control-color-transition);
   border: 1px solid var(--color-control-border);
   border-radius: var(--radius-sm);
@@ -123,12 +125,15 @@ h2 {
   padding: var(--space-2) var(--space-3);
   min-height: var(--control-height);
 }
-.close:hover {
+.close:is(:hover, :focus-visible) {
   border-color: var(--color-signal);
-  background: var(--color-subtle);
+  background: var(--control-hover-fill, var(--color-subtle));
+  color: var(--control-hover-ink, var(--color-text));
 }
 .close:active {
-  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
+  background: var(--control-active-texture, none)
+    var(--control-active-fill, color-mix(in srgb, var(--color-signal) 16%, var(--color-surface)));
+  color: var(--control-active-ink, var(--color-text));
 }
 @media (min-width: 40rem) {
   dialog {

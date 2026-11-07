@@ -62,6 +62,21 @@ async function setup(category = 'runners', showDetails = true, flavor: Flavor = 
   return { wrapper, router, pinia }
 }
 
+async function setupAbout(pinia = createTestPinia()) {
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      {
+        path: '/cyberpunk/generic/runners/about',
+        meta: { setting: 'cyberpunk' },
+        component: AboutView,
+      },
+    ],
+  })
+  await router.push('/cyberpunk/generic/runners/about')
+  return mount(AboutView, { global: { plugins: [pinia, router] } })
+}
+
 describe('runner result actions', () => {
   it('keeps prompt buttons hidden until the mode is enabled, on results and the sheet', async () => {
     const { wrapper, router, pinia } = await setup()
@@ -83,7 +98,7 @@ describe('runner result actions', () => {
 
   it('enables after three toggles within five seconds, saves it and disables immediately', async () => {
     const pinia = createTestPinia()
-    const wrapper = mount(AboutView, { global: { plugins: [pinia] } })
+    const wrapper = await setupAbout(pinia)
     const toggle = wrapper.get('input[aria-label="soulless corp mode"]')
     expect(toggle.element).toHaveProperty('checked', false)
     const now = vi.spyOn(performance, 'now').mockReturnValue(0)
@@ -97,7 +112,7 @@ describe('runner result actions', () => {
     await toggle.setValue(true)
     expect(localStorage.getItem('gen0.soullessCorpMode')).toBe('true')
     wrapper.unmount()
-    const restored = mount(AboutView, { global: { plugins: [createTestPinia()] } })
+    const restored = await setupAbout()
     expect(restored.get('input').element).toHaveProperty('checked', true)
     await restored.get('input').setValue(false)
     expect(localStorage.getItem('gen0.soullessCorpMode')).toBe('false')
@@ -109,7 +124,7 @@ describe('runner result actions', () => {
     const now = vi.spyOn(performance, 'now').mockReturnValue(0)
     const pinia = createTestPinia()
     const preferences = usePreferencesStore(pinia)
-    const wrapper = mount(AboutView, { global: { plugins: [pinia] } })
+    const wrapper = await setupAbout(pinia)
     const toggle = wrapper.get('input[aria-label="soulless corp mode"]')
     await toggle.setValue(true)
     now.mockReturnValue(2500)
@@ -189,7 +204,7 @@ describe('runner result actions', () => {
     ['people', true],
   ])('omits runner actions for category %s with details %s', async (category, showDetails) => {
     const { wrapper } = await setup(category, showDetails)
-    expect(wrapper.find('.runner-actions').exists()).toBe(false)
+    expect(wrapper.find('li button').exists()).toBe(false)
     wrapper.unmount()
   })
 })

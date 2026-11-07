@@ -202,10 +202,12 @@ function enter() {
 .label,
 .search label {
   color: var(--color-muted);
-  font-size: 0.8125rem;
+  font-family: var(--font-choice, inherit);
+  font-size: var(--font-choice-size, 0.8125rem);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-weight: 600;
+  font-weight: var(--font-choice-weight, 600);
+  line-height: var(--line-height-choice, normal);
 }
 .label::before {
   content: '';
@@ -214,6 +216,12 @@ function enter() {
   height: 7px;
   margin-right: var(--space-2);
   background: var(--theme-label-mark);
+}
+button:not(.primary) {
+  font-family: var(--font-choice, var(--font-body));
+  font-size: var(--font-choice-size, inherit);
+  font-weight: var(--font-choice-weight, inherit);
+  line-height: var(--line-height-choice, normal);
 }
 button:not(.primary),
 input {
@@ -237,12 +245,19 @@ input {
   flex-shrink: 0;
   color: var(--color-signal);
 }
-button:not(.primary):hover {
+button:not(.primary):is(:hover, :focus-visible):not(:active) {
   border-color: var(--color-signal);
-  background: var(--color-subtle);
+  background: var(--control-hover-fill, var(--color-subtle));
+  color: var(--control-hover-ink, var(--color-text));
 }
-button:not(.primary):active {
-  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
+button:not(.primary):is(:hover, :focus-visible) .arrow {
+  color: inherit;
+}
+button:not(.primary):active,
+.choices button[aria-current]:active {
+  background: var(--control-active-texture, none)
+    var(--control-active-fill, color-mix(in srgb, var(--color-signal) 16%, var(--color-surface)));
+  color: var(--control-active-ink, var(--color-text));
 }
 .search {
   display: grid;
@@ -358,11 +373,11 @@ h3 {
   .choice-text {
     pointer-events: none;
   }
-  .choices button:not(.primary):hover {
-    background: var(--color-primary-hover, #fff);
-    color: var(--color-on-accent);
+  .choices button:not(.primary):is(:hover, :focus-visible):not(:active) {
+    background: var(--control-hover-fill, var(--color-primary-hover, #fff));
+    color: var(--control-hover-ink, var(--color-on-accent));
   }
-  .choices button:hover .current {
+  .choices button:is(:hover, :focus-visible, :active) .current {
     color: inherit;
   }
 }

@@ -78,11 +78,11 @@ describe('name generator interface', () => {
     expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('mothership')
     expect(wrapper.get('#results-heading').text()).toBe('Characters')
     expect(wrapper.findAll('li strong')).toHaveLength(10)
-    expect(wrapper.findAll('li .name > .secondary')).toHaveLength(10)
-    expect(wrapper.findAll('li .name > div:not(.secondary):not(.details)')).toHaveLength(10)
+    expect(wrapper.findAll('li div.secondary')).toHaveLength(10)
+    expect(wrapper.findAll('li .appearance')).toHaveLength(10)
     expect(wrapper.findAll('li .details')).toHaveLength(10)
     await wrapper.get('.details-toggle input').setValue(false)
-    expect(wrapper.find('li .name > div:not(.secondary):not(.details)').exists()).toBe(false)
+    expect(wrapper.find('li .appearance').exists()).toBe(false)
     expect(wrapper.find('li .details').exists()).toBe(false)
     expect(wrapper.get('#category').text()).toBe('Characters')
     expect(wrapper.find('input[name="flavor"]').exists()).toBe(false)
@@ -460,7 +460,7 @@ describe('name generator interface', () => {
     await flushPromises()
     expect(router.currentRoute.value.path).toBe('/mothership/ships')
     expect(wrapper.get('#results-heading').text()).toBe('Ships')
-    const classes = wrapper.findAll('li .name > .secondary').map((line) => line.text())
+    const classes = wrapper.findAll('li div.secondary').map((line) => line.text())
     expect(classes).toHaveLength(10)
     for (const line of classes) expect(line).toMatch(/^J[1-3]C-(?:0|I|II|III|IV|V) .+/)
     const issues = wrapper.findAll('li .details').map((detail) => detail.text())
@@ -468,7 +468,7 @@ describe('name generator interface', () => {
     for (const detail of issues) expect(detail).not.toBe('ship')
     await wrapper.get('.details-toggle input').setValue(false)
     expect(wrapper.find('li .details').exists()).toBe(false)
-    expect(wrapper.findAll('li .name > .secondary').map((line) => line.text())).toEqual(classes)
+    expect(wrapper.findAll('li div.secondary').map((line) => line.text())).toEqual(classes)
     await wrapper.get('.details-toggle input').setValue(true)
     expect(wrapper.findAll('li .details').map((detail) => detail.text())).toEqual(issues)
   })
@@ -1153,27 +1153,33 @@ describe('name generator interface', () => {
     const { wrapper, router } = await setup('/?category=german')
     const query = { ...router.currentRoute.value.query }
     const names = wrapper.findAll('strong').map((item) => item.text())
-    expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
+    expect(
+      wrapper.findAll('.name > :is(.age, .appearance, .details, .rating)').length,
+    ).toBeGreaterThan(0)
     await wrapper.get('input[type="checkbox"]:not([name])').setValue(false)
     await flushPromises()
-    expect(wrapper.findAll('.name div:not(.secondary)')).toHaveLength(0)
+    expect(wrapper.findAll('.name > :is(.age, .appearance, .details, .rating)')).toHaveLength(0)
     expect(wrapper.findAll('strong').map((item) => item.text())).toEqual(names)
     expect(router.currentRoute.value.query).toEqual(query)
     await chooseCategory(wrapper, 'corporations')
     await flushPromises()
-    expect(wrapper.findAll('.name div:not(.secondary)')).toHaveLength(0)
+    expect(wrapper.findAll('.name > :is(.age, .appearance, .details, .rating)')).toHaveLength(0)
     expect(
       (wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked,
     ).toBe(false)
     const corporationNames = wrapper.findAll('strong').map((item) => item.text())
     await wrapper.get('input[type="checkbox"]:not([name])').setValue(true)
     await flushPromises()
-    expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
+    expect(
+      wrapper.findAll('.name > :is(.age, .appearance, .details, .rating)').length,
+    ).toBeGreaterThan(0)
     expect(wrapper.findAll('strong').map((item) => item.text())).toEqual(corporationNames)
     router.back()
     await flushPromises()
     expect(router.currentRoute.value.params.category).toBe('german')
-    expect(wrapper.findAll('.name div').length).toBeGreaterThan(0)
+    expect(
+      wrapper.findAll('.name > :is(.age, .appearance, .details, .rating)').length,
+    ).toBeGreaterThan(0)
     expect(
       (wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked,
     ).toBe(true)

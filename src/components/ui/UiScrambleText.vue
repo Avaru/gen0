@@ -134,6 +134,10 @@ onBeforeUnmount(() => {
   content: attr(data-garbled);
   color: var(--scramble-color, var(--color-signal));
 }
+.overlay[data-garbled]:not([data-garbled=''])::after {
+  background: var(--scramble-fill, transparent);
+  text-shadow: var(--scramble-shadow, none);
+}
 .overlay.typing::after {
   content: '░';
   display: inline-block;

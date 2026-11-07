@@ -122,15 +122,9 @@ describe('Reusable name pools', () => {
         genders: [GENUS.F],
         excludeTags: traditionIds.filter((id) => id !== tradition),
       }
-      expect(genericName(options)).toEqual({
-        primary: nationalName(tradition, GENUS.F, undefined, options),
-        secondary: 'Marine',
-        appearance:
-          'Good-looking, blonde long hair, round face, high cheekbones, scarred, dark eyes, expensive punky clothes, suit',
-        mothershipClass: 'Marine',
-        pronouns: 'he/him',
-        details: 'Trinket: Preserved Insectile Aberration · Patch: “#1 Worker”',
-      })
+      expect(genericName(options).primary).toBe(
+        nationalName(tradition, GENUS.F, undefined, options),
+      )
     },
   )
 

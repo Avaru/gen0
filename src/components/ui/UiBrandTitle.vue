@@ -16,20 +16,12 @@ const mothership = computed(() => theme.value === 'mothership')
     @mouseenter="animationRun++"
     @pointerdown="animationRun++"
   >
-    <span
-      v-if="!symbols && !mothership"
-      :key="`hot-${animationRun}`"
-      class="layer layer--hot"
-      aria-hidden="true"
-      >gen 0</span
-    >
-    <span
-      v-if="!symbols && !mothership"
-      :key="`signal-${animationRun}`"
-      class="layer layer--signal"
-      aria-hidden="true"
-      >gen 0</span
-    >
+    <span v-if="!symbols && !mothership" class="glitch-layers" aria-hidden="true">
+      <span :key="`hot-${animationRun}`" class="layer layer--hot" aria-hidden="true">gen 0</span>
+      <span :key="`signal-${animationRun}`" class="layer layer--signal" aria-hidden="true"
+        >gen 0</span
+      >
+    </span>
     <span class="ink"
       ><template v-if="symbols"
         ><UiSymbolText
@@ -61,9 +53,15 @@ const mothership = computed(() => theme.value === 'mothership')
   position: relative;
   text-shadow: 2px 0 var(--color-page);
 }
+.glitch-layers {
+  position: absolute;
+  inset: -0.1em;
+  overflow: clip;
+  pointer-events: none;
+}
 .layer {
   position: absolute;
-  inset: 0;
+  inset: 0.1em;
   pointer-events: none;
 }
 .layer--hot {

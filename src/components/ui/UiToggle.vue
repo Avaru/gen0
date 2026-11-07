@@ -28,8 +28,10 @@ label {
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  font-size: 0.8125rem;
-  font-weight: 650;
+  font-family: var(--font-choice, inherit);
+  font-size: var(--font-choice-size, 0.8125rem);
+  font-weight: var(--font-choice-weight, 650);
+  line-height: var(--line-height-choice, normal);
 }
 .toggle-text {
   pointer-events: none;
@@ -73,13 +75,19 @@ label:hover {
   color: var(--color-signal);
 }
 label:hover .track {
-  border-color: var(--color-signal);
+  border-color: var(--toggle-hover-border, var(--color-signal));
 }
 label:hover input:not(:checked) + .track {
-  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
+  background: var(
+    --toggle-hover-fill,
+    color-mix(in srgb, var(--color-signal) 16%, var(--color-surface))
+  );
 }
 label:hover input:checked + .track {
-  background: var(--color-accent-hover);
+  background: var(--toggle-checked-hover-fill, var(--color-accent-hover));
+}
+label:not(.hazard):not(:active):is(:hover, :has(input:focus-visible)) .track {
+  filter: var(--control-indicator-hover-filter, none);
 }
 input:focus-visible + .track {
   outline: var(--control-focus-width) solid var(--control-focus-color, var(--color-focus));

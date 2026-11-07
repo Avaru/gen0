@@ -6,6 +6,7 @@ import { getSetting } from '@/generator/settingRegistry'
 import { CORPORATION_SIZE } from '@/patterns/cyberpunk/corporations/helpers'
 import type { GeneratorSettings } from '@/generator/settings'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiGeneratorPanel from '@/components/ui/UiGeneratorPanel.vue'
 import UiCategoryPicker from '@/components/ui/UiCategoryPicker.vue'
 import UiSegments from '@/components/ui/UiSegments.vue'
 import UiChecks from '@/components/ui/UiChecks.vue'
@@ -43,7 +44,7 @@ const sizeOptions = [
 </script>
 
 <template>
-  <form class="generator-panel" aria-label="Generator settings" @submit.prevent="generate">
+  <UiGeneratorPanel as="form" aria-label="Generator settings" @submit.prevent="generate">
     <UiSegments
       v-if="settings.flavor && flavorOptions.length > 1"
       :model-value="settings.flavor"
@@ -80,65 +81,5 @@ const sizeOptions = [
     <UiButton type="submit" :disabled="busy" :aria-busy="busy" :activation="generationClicks">
       Generate names
     </UiButton>
-  </form>
+  </UiGeneratorPanel>
 </template>
-
-<style scoped>
-form {
-  position: relative;
-  display: grid;
-  gap: var(--space-6);
-  padding: var(--generator-panel-padding, var(--space-6));
-  background: var(--theme-panel-fill);
-  background-image: var(--theme-panel-texture);
-  border-top: var(--theme-panel-rule-width) solid var(--color-hot);
-  box-shadow: var(--theme-panel-shadow);
-}
-form::after {
-  content: '';
-  position: absolute;
-  top: 7px;
-  right: var(--space-3);
-  width: 3rem;
-  height: 5px;
-  background: var(--theme-panel-edge);
-  pointer-events: none;
-}
-@media (max-width: 24rem) {
-  form {
-    padding: var(--generator-panel-padding, var(--space-4));
-  }
-}
-form:where([data-theme='never-midnight'] *) {
-  border: 1px solid #8b80604d;
-  padding-left: 2.5rem;
-  rotate: -0.35deg;
-}
-form:where([data-theme='never-midnight'] *)::after {
-  top: auto;
-  bottom: -0.8rem;
-  right: -0.6rem;
-  width: 4rem;
-  height: 4rem;
-  background: var(--color-ritual);
-  mask-image: var(--theme-arcane-seal);
-  mask-size: contain;
-  rotate: 17deg;
-  opacity: 0.75;
-}
-form:where([data-theme='never-midnight'] *)::before {
-  content: '';
-  position: absolute;
-  top: 1rem;
-  bottom: 1rem;
-  left: 1.75rem;
-  width: 1px;
-  background: var(--theme-paper-guide);
-  pointer-events: none;
-}
-@media (forced-colors: active) {
-  form:where([data-theme='never-midnight'] *)::after {
-    display: none;
-  }
-}
-</style>

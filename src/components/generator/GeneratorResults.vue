@@ -2,8 +2,10 @@
 import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import type { Generated } from '@/patterns/types'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiGeneratorPanel from '@/components/ui/UiGeneratorPanel.vue'
 import UiToggle from '@/components/ui/UiToggle.vue'
-import UiScrambleText from '@/components/ui/UiScrambleText.vue'
+import UiResultRow from '@/components/ui/UiResultRow.vue'
+import UiResultActions from '@/components/ui/UiResultActions.vue'
 import UiRunnerResultActions from '@/components/ui/UiRunnerResultActions.vue'
 import UiNeverMidnightResultActions from '@/components/ui/UiNeverMidnightResultActions.vue'
 import { usePreferencesStore } from '@/stores/preferences'
@@ -32,6 +34,15 @@ const showNeverMidnightPrompt = computed(
     (props.category === 'berliner' || countries.some((country) => country === props.category)) &&
     props.showDetails &&
     preferences.soullessCorpMode,
+)
+const showRunnerActions = computed(
+  () =>
+    (!props.setting || props.setting === 'cyberpunk') &&
+    props.category === 'runners' &&
+    props.showDetails,
+)
+const showMothershipActions = computed(
+  () => props.setting === 'mothership' && props.category === 'generic',
 )
 const hasDetails = computed(() =>
   props.results.some(
@@ -70,9 +81,9 @@ defineExpose({
 })
 </script>
 <template>
-  <section class="generator-panel" aria-labelledby="results-heading" :aria-busy="busy">
+  <UiGeneratorPanel aria-labelledby="results-heading" :aria-busy="busy">
     <div class="heading">
-      <h1 id="results-heading">{{ label }}</h1>
+      <h1 id="results-heading" class="generator-heading">{{ label }}</h1>
       <UiToggle
         v-if="hasDetails"
         class="details-toggle"
@@ -89,107 +100,48 @@ defineExpose({
     </p>
     <p v-if="error" class="error" role="alert">{{ error }}</p>
     <ol v-if="results.length" ref="list" role="list">
-      <li v-for="(result, index) in results" :key="index">
-        <div
-          class="name"
-          :class="{
-            'runner-name': category === 'runners' && showDetails,
-            'portrait-name': showNeverMidnightPrompt,
-          }"
+      <UiResultRow
+        v-for="(result, index) in results"
+        :key="index"
+        :result="result"
+        :show-details="showDetails"
+        :detail-fields="detailFields"
+        v-bind="revealTiming(index)"
+      >
+        <template
+          v-if="
+            showRunnerActions ||
+            showNeverMidnightPrompt ||
+            (showMothershipActions && result.mothershipClass)
+          "
+          #actions
         >
-          <strong
-            ><UiScrambleText
-              :text="result.primary"
-              :replay-key="result"
-              v-bind="revealTiming(index)"
-          /></strong>
-          <div v-if="result.secondary" class="secondary">
-            <UiScrambleText
-              :text="result.secondary"
-              :replay-key="result"
-              v-bind="revealTiming(index)"
+          <UiRunnerResultActions v-if="showRunnerActions" :result="result" />
+          <UiNeverMidnightResultActions v-if="showNeverMidnightPrompt" :result="result" />
+          <UiResultActions v-if="showMothershipActions && result.mothershipClass">
+            <UiButton
+              appearance="icon"
+              icon="arrow-right"
+              variant="secondary"
+              :aria-label="`Open character sheet for ${result.primary}`"
+              title="Open character sheet"
+              @click="emit('open-mothership-sheet', result)"
             />
-          </div>
-          <template v-if="showDetails">
-            <div v-if="result.age">
-              <UiScrambleText
-                :text="result.age"
-                :replay-key="result"
-                v-bind="revealTiming(index)"
-              />
-            </div>
-            <template v-for="field in detailFields" :key="field">
-              <div v-if="result[field]" :class="{ details: field === 'details' }">
-                <UiScrambleText
-                  :text="result[field]"
-                  :replay-key="result"
-                  v-bind="revealTiming(index)"
-                />
-              </div>
-            </template>
-            <div v-if="result.rating !== undefined">
-              <UiScrambleText
-                :text="`Rating: ${result.rating.toFixed(1)} / 5`"
-                :replay-key="result"
-                v-bind="revealTiming(index)"
-              />
-            </div>
-          </template>
-        </div>
-        <UiRunnerResultActions
-          v-if="(!setting || setting === 'cyberpunk') && category === 'runners' && showDetails"
-          :result="result"
-        />
-        <UiNeverMidnightResultActions v-if="showNeverMidnightPrompt" :result="result" />
-        <div
-          v-if="setting === 'mothership' && category === 'generic' && result.mothershipClass"
-          class="mothership-actions"
-          :class="{ compact: !showDetails }"
-        >
-          <UiButton
-            appearance="icon"
-            icon="arrow-right"
-            variant="secondary"
-            :aria-label="`Open character sheet for ${result.primary}`"
-            title="Open character sheet"
-            @click="emit('open-mothership-sheet', result)"
-          />
-          <UiButton
-            appearance="icon"
-            icon="document"
-            variant="secondary"
-            :aria-label="`Open detailed character sheet for ${result.primary}`"
-            title="Open detailed character sheet"
-            @click="emit('open-mothership-details', result)"
-          />
-        </div>
-      </li>
+            <UiButton
+              appearance="icon"
+              icon="document"
+              variant="secondary"
+              :aria-label="`Open detailed character sheet for ${result.primary}`"
+              title="Open detailed character sheet"
+              @click="emit('open-mothership-details', result)"
+            />
+          </UiResultActions>
+        </template>
+      </UiResultRow>
     </ol>
-  </section>
+  </UiGeneratorPanel>
 </template>
 <style scoped>
-section {
-  position: relative;
-  display: grid;
-  gap: var(--space-4);
-  padding: var(--generator-panel-padding, var(--space-6));
-  border: var(--theme-panel-border-width) solid var(--color-border);
-  border-top: var(--theme-panel-rule-width) solid var(--color-signal);
-  box-shadow: var(--theme-panel-shadow);
-  border-radius: var(--radius-lg);
-  background: var(--theme-panel-fill);
-  background-image: var(--theme-panel-texture);
-}
-section::after {
-  content: '';
-  position: absolute;
-  top: 7px;
-  right: var(--space-3);
-  width: 3rem;
-  height: 5px;
-  background: var(--theme-panel-edge);
-  pointer-events: none;
-}
 .status {
   position: absolute;
   width: 1px;
@@ -219,194 +171,12 @@ h1 {
   overflow-wrap: anywhere;
   text-shadow: var(--theme-heading-shadow);
 }
-.details {
-  white-space: pre-line;
-}
-.name div {
-  color: var(--color-muted);
-}
 ol {
   margin: 0;
   padding: 0;
   list-style: none;
 }
-li {
-  position: relative;
-  display: flex;
-  gap: var(--space-4);
-  padding-block: var(--generator-row-padding, var(--space-4));
-  border-top: 1px solid var(--color-border);
-}
-li::after {
-  content: '';
-  position: absolute;
-  top: -1px;
-  right: 0;
-  width: 1.75rem;
-  height: 3px;
-  background: var(--theme-row-mark);
-  opacity: 0.55;
-  pointer-events: none;
-}
-.name {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.mothership-actions {
-  display: flex;
-  flex: none;
-  align-self: flex-start;
-  margin-inline-start: auto;
-  --button-icon-rest-color: var(--color-muted);
-}
-li:has(> .mothership-actions.compact) {
-  padding-inline-end: calc(var(--control-height) * 2 + var(--space-4));
-}
-.mothership-actions.compact {
-  position: absolute;
-  inset-block-start: 50%;
-  inset-inline-end: 0;
-  transform: translateY(-50%);
-}
-.runner-name > strong,
-.runner-name > .secondary {
-  display: block;
-  padding-right: calc(var(--space-8) * 2 + var(--space-2));
-}
-.portrait-name > strong {
-  display: block;
-  padding-right: calc(var(--space-8) + var(--space-2));
-}
-strong {
-  font-family: var(--font-result-name, var(--font-display));
-  font-weight: var(--theme-name-weight);
-  color: var(--theme-name-color);
-  font-size: var(--font-result-name-size, 1.625rem);
-  line-height: 1.15;
-}
-.name div {
-  margin-top: var(--space-1);
-  font-size: 0.9375rem;
-}
-.name .secondary {
-  font-family: var(--font-result-secondary, var(--font-body));
-  font-size: var(--font-result-secondary-size, 0.9375rem);
-  font-weight: 700;
-  line-height: var(--line-height-result-secondary, 1.5);
-  letter-spacing: var(--letter-spacing-result-secondary, normal);
-  color: var(--color-result-secondary, var(--color-muted));
-}
 .error {
   color: var(--color-error);
-}
-@media (max-width: 24rem) {
-  section {
-    padding: var(--generator-panel-padding, var(--space-4));
-  }
-}
-h1:where([data-theme='never-midnight'] *) {
-  font-family: var(--font-brutal);
-  font-weight: 400;
-  font-size: clamp(1.5rem, 4vw, 2.75rem);
-  text-transform: uppercase;
-  letter-spacing: -0.04em;
-  background-image: var(--theme-heading-fill);
-  background-clip: text;
-  color: transparent;
-  text-shadow: none;
-  transform: rotate(-1deg);
-}
-@media (forced-colors: active) {
-  h1:where([data-theme='never-midnight'] *) {
-    background-image: none;
-    color: CanvasText;
-  }
-}
-section:where([data-theme='never-midnight'] *) {
-  border: 1px solid #8b80604d;
-  padding-left: 2.5rem;
-  rotate: 0.2deg;
-  transform-origin: top left;
-}
-section:where([data-theme='never-midnight'] *)::before {
-  content: '';
-  position: absolute;
-  top: -1.75rem;
-  right: 1rem;
-  width: 7rem;
-  aspect-ratio: 1;
-  background: var(--color-ritual);
-  border: 0;
-  border-radius: 0;
-  mask-image: var(--theme-arcane-seal);
-  mask-size: contain;
-  opacity: 0.65;
-  mix-blend-mode: multiply;
-  rotate: -13deg;
-  pointer-events: none;
-}
-@media (prefers-reduced-motion: no-preference) {
-  section:where([data-theme='never-midnight'] *):has(
-      .details-toggle :focus-visible,
-      .details-toggle:active
-    )::before {
-    animation: seal-glitch 240ms steps(1, end);
-  }
-  @media (hover: hover) {
-    section:where([data-theme='never-midnight'] *):has(.details-toggle:hover)::before {
-      animation: seal-glitch 240ms steps(1, end);
-    }
-  }
-}
-@keyframes seal-glitch {
-  0%,
-  100% {
-    transform: none;
-    clip-path: none;
-  }
-  18% {
-    transform: translate(-7px, 2px) skewX(-18deg) scale(1.15, 0.85);
-    clip-path: inset(8% 0 35%);
-  }
-  36% {
-    transform: translate(9px, -3px) skewX(24deg);
-    clip-path: inset(40% 0 12%);
-    background: var(--color-neon);
-  }
-  54% {
-    transform: translate(-4px, 2px) scale(0.85, 1.2);
-    clip-path: inset(0 0 45%);
-  }
-  72% {
-    transform: translate(3px, -1px) skewX(-12deg);
-    clip-path: inset(22% 0 18%);
-  }
-}
-section:where([data-theme='never-midnight'] *)::after {
-  top: auto;
-  bottom: -0.5rem;
-  right: -0.5rem;
-  width: 3.5rem;
-  height: 3.5rem;
-  background: var(--color-ritual);
-  mask-image: var(--theme-arcane-seal);
-  mask-size: contain;
-  rotate: 37deg;
-  opacity: 0.55;
-}
-li:where([data-theme='never-midnight'] *) {
-  border-top-style: dashed;
-}
-li:where([data-theme='never-midnight'] *):nth-child(3n + 2)::after {
-  width: 4rem;
-  height: 7px;
-  transform: rotate(-8deg);
-  opacity: 1;
-}
-@media (forced-colors: active) {
-  section:where([data-theme='never-midnight'] *)::before,
-  section:where([data-theme='never-midnight'] *)::after {
-    display: none;
-  }
 }
 </style>

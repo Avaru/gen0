@@ -50,6 +50,7 @@
     1;
   --generator-panel-padding: 1.5rem;
   --generator-row-padding: 0.75rem;
+  --generator-row-border-style: dashed;
   --button-font-size: 0.875rem;
   --font-control-size: 0.8125rem;
   --font-small-control-size: 0.75rem;
@@ -208,4 +209,30 @@
     opacity: 0;
     animation: nm-border-shimmer 9s ease-in-out infinite alternate;
   }
+}
+
+[data-theme='never-midnight'] .generator-heading {
+  font-family: var(--font-brutal);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 4vw, 2.75rem);
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  background-image: var(--theme-heading-fill);
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  transform: rotate(-1deg);
+}
+@media (forced-colors: active) {
+  [data-theme='never-midnight'] .generator-heading {
+    background-image: none;
+    color: CanvasText;
+  }
+}
+
+[data-theme='never-midnight'] .result-row:nth-child(3n + 2)::after {
+  width: 4rem;
+  height: 7px;
+  transform: rotate(-8deg);
+  opacity: 1;
 }

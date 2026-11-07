@@ -85,14 +85,11 @@ button {
   font-size: var(--button-font-size, 1.375rem);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-weight: 700;
-  border-bottom: 4px solid var(--color-on-accent);
+  font-weight: var(--button-font-weight, 700);
+  border-bottom: var(--button-border-bottom-width, 4px) solid var(--color-on-accent);
   overflow-wrap: anywhere;
   white-space: var(--button-white-space, normal);
   flex: var(--button-flex, 0 1 auto);
-}
-button:where([data-theme='mothership'] *) {
-  border-width: 1px;
 }
 .button-text {
   display: inline-block;
@@ -111,81 +108,85 @@ button::after {
   pointer-events: none;
 }
 .primary {
-  --button-feedback-color: var(--color-signal);
+  --button-feedback-color: var(--primary-feedback-color, var(--color-signal));
   --button-rest-color: var(--color-accent);
+  --button-hover-fill: var(--primary-hover-fill, var(--color-primary-hover, #fff));
+  --button-hover-ink: var(--primary-hover-ink, var(--color-on-accent));
+  --button-active-fill: color-mix(in srgb, var(--color-accent-hover) 85%, var(--color-on-accent));
+  --button-active-ink: var(--color-on-accent);
   background: var(--color-accent);
   color: var(--color-on-accent);
 }
-.primary:where([data-theme='mothership'] *) {
-  --button-feedback-color: var(--mothership-crt-pulse, var(--color-accent-hover));
-}
-.primary:hover:enabled {
-  --button-rest-color: var(--color-primary-hover, #fff);
-  background: var(--color-primary-hover, #fff);
-  color: var(--color-on-accent);
-}
-.primary:active:enabled {
-  background: color-mix(in srgb, var(--color-accent-hover) 85%, var(--color-on-accent));
+.primary:enabled:is(:hover, :focus-visible) {
+  --button-rest-color: var(--button-hover-fill);
+  --button-feedback-color: var(
+    --primary-hover-feedback,
+    var(--primary-feedback-color, var(--color-signal))
+  );
 }
 .on-background {
   --control-focus-color: var(--color-on-page);
 }
 .primary.on-background {
   --button-rest-color: var(--color-on-page);
+  --button-active-fill: color-mix(in srgb, var(--color-on-page) 75%, var(--color-page));
   background: var(--color-on-page);
   color: var(--color-page);
   border-bottom-color: color-mix(in srgb, var(--color-on-page) 65%, var(--color-page));
 }
-.primary.on-background:hover:enabled {
-  --button-rest-color: var(--color-primary-hover, #fff);
-  background: var(--button-rest-color);
-  color: var(--color-on-accent);
-}
-.primary.on-background:active:enabled {
-  background: color-mix(in srgb, var(--color-on-page) 75%, var(--color-page));
+.primary.on-background:enabled:is(:hover, :focus-visible) {
+  --button-rest-color: var(--button-hover-fill);
 }
 .secondary {
   border-color: var(--color-signal);
   background: var(--color-surface);
   color: var(--color-signal);
 }
-.secondary:hover:enabled {
-  background: var(--color-subtle);
-}
-.secondary:active:enabled {
-  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
-}
 .destructive {
   --button-feedback-color: var(--color-signal);
   --button-rest-color: var(--color-destructive, var(--color-hot));
-  background: var(--color-destructive, var(--color-hot));
-  color: var(--color-on-destructive, var(--color-on-accent));
-}
-.destructive:hover:enabled {
-  --button-rest-color: color-mix(in srgb, var(--color-destructive, var(--color-hot)) 85%, white);
-  background: var(--button-rest-color);
-}
-.destructive:active:enabled {
-  background: color-mix(
+  --button-hover-fill: color-mix(in srgb, var(--color-destructive, var(--color-hot)) 85%, white);
+  --button-hover-ink: var(--color-on-destructive, var(--color-on-accent));
+  --button-active-fill: color-mix(
     in srgb,
     var(--color-destructive, var(--color-hot)) 85%,
     var(--color-on-destructive, var(--color-on-accent))
   );
+  --button-active-ink: var(--color-on-destructive, var(--color-on-accent));
+  background: var(--color-destructive, var(--color-hot));
+  color: var(--color-on-destructive, var(--color-on-accent));
+}
+.destructive:enabled:is(:hover, :focus-visible) {
+  --button-rest-color: var(--button-hover-fill);
 }
 .destructive-secondary {
-  border-color: var(--color-destructive, var(--color-hot));
-  background: var(--color-surface);
-  color: var(--color-destructive, var(--color-hot));
-}
-.destructive-secondary:hover:enabled {
-  background: var(--color-subtle);
-}
-.destructive-secondary:active:enabled {
-  background: color-mix(
+  --button-hover-ink: var(--color-destructive, var(--color-hot));
+  --button-active-ink: var(--color-destructive, var(--color-hot));
+  --button-active-fill: color-mix(
     in srgb,
     var(--color-destructive, var(--color-hot)) 16%,
     var(--color-surface)
   );
+  border-color: var(--color-destructive, var(--color-hot));
+  background: var(--color-surface);
+  color: var(--color-destructive, var(--color-hot));
+}
+/* Components own interaction states; themes supply their colors and textures. */
+button:enabled:is(:hover, :focus-visible) {
+  background: var(--control-hover-fill, var(--button-hover-fill, var(--color-subtle)));
+  color: var(--control-hover-ink, var(--button-hover-ink, var(--color-signal)));
+}
+button.primary:enabled:is(:hover, :focus-visible):not(:active) {
+  background: var(--button-hover-fill);
+  color: var(--button-hover-ink);
+}
+button:enabled:active {
+  background: var(--control-active-texture, none)
+    var(
+      --control-active-fill,
+      var(--button-active-fill, color-mix(in srgb, var(--color-signal) 16%, var(--color-surface)))
+    );
+  color: var(--control-active-ink, var(--button-active-ink, var(--color-signal)));
 }
 .pulse-a,
 .pulse-b {
@@ -218,6 +219,10 @@ button::after {
 }
 /* Icon actions share their shape; parents only position them. */
 button.appearance-icon {
+  --button-hover-fill: transparent;
+  --button-hover-ink: var(--color-accent);
+  --button-active-fill: transparent;
+  --button-active-ink: var(--color-accent);
   display: grid;
   place-items: center;
   justify-items: var(--button-icon-align, center);
@@ -235,11 +240,6 @@ button.appearance-icon {
 .appearance-icon::before,
 .appearance-icon::after {
   display: none;
-}
-button.appearance-icon:hover:enabled,
-button.appearance-icon:active:enabled {
-  background: transparent;
-  color: var(--color-accent);
 }
 @media print {
   .appearance-icon {

@@ -54,10 +54,12 @@ legend {
   padding: 0;
   margin-bottom: var(--space-2);
   color: var(--color-muted);
-  font-size: 0.8125rem;
+  font-family: var(--font-choice, inherit);
+  font-size: var(--font-choice-size, 0.8125rem);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-weight: 600;
+  font-weight: var(--font-choice-weight, 600);
+  line-height: var(--line-height-choice, normal);
 }
 .choices {
   display: flex;
@@ -81,27 +83,39 @@ label {
   gap: var(--space-2);
   min-height: var(--control-height);
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-control-border);
+  border: var(--checks-label-border-width, 1px) solid var(--color-control-border);
   border-radius: var(--radius-sm);
-  background: var(--color-subtle);
+  background: var(--checks-label-fill, var(--color-subtle));
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
-  font-size: var(--font-control-size);
-  font-weight: 600;
+  font-family: var(--font-choice, inherit);
+  font-size: var(--font-choice-size, var(--font-control-size));
+  font-weight: var(--font-choice-weight, 600);
+  line-height: var(--line-height-choice, normal);
 }
 label:has(input:checked) {
   border-color: var(--color-signal);
-  background: var(--color-surface);
+  background: var(--checks-label-checked-fill, var(--color-surface));
 }
-label:hover {
-  color: var(--color-signal);
+label:is(:hover, :has(input:focus-visible)):not(:active) {
+  color: var(--control-hover-ink, var(--color-signal));
   border-color: var(--color-signal);
-  background: color-mix(in srgb, var(--color-signal) 16%, var(--color-surface));
+  background: var(
+    --control-hover-fill,
+    color-mix(in srgb, var(--color-signal) 16%, var(--color-surface))
+  );
 }
 label:has(input:focus-visible) {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
+}
+label:has(input):active {
+  color: var(--control-active-ink, var(--color-signal));
+  background: var(--control-active-texture, none) var(--control-active-fill, var(--color-surface));
+}
+label:not(:active):is(:hover, :has(input:focus-visible)) input {
+  filter: var(--control-indicator-hover-filter, none);
 }
 input {
   transition: var(--control-color-transition);
@@ -113,13 +127,14 @@ input {
   height: 1.125rem;
   min-height: 0;
   margin: 0;
-  border: 1px solid var(--color-control-border);
+  border: var(--checks-input-border-width, 1px) solid var(--color-control-border);
   border-radius: 0;
-  background: var(--color-surface);
+  background: var(--checks-input-fill, var(--color-surface));
   clip-path: var(--theme-check-shape);
   cursor: inherit;
 }
 input::after {
+  display: var(--checks-mark-display, block);
   transition: var(--control-color-transition);
   content: '';
   width: 0.3rem;
@@ -132,7 +147,7 @@ input::after {
 }
 input:checked {
   border-color: var(--color-signal);
-  background: var(--color-signal);
+  background: var(--checks-input-checked-fill, var(--color-signal));
 }
 input:checked::after {
   visibility: visible;

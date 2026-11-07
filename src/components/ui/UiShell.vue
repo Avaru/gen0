@@ -168,7 +168,7 @@ const aboutNavigation = computed(() => ({
 }
 .shell :deep(a:hover .link-label),
 .shell :deep(a:focus-visible .link-label) {
-  color: var(--color-accent);
+  color: var(--color-link-hover, var(--color-accent));
   background-size: 100% 100%;
   border-bottom-color: var(--color-signal);
 }
@@ -202,7 +202,10 @@ nav a {
   align-items: center;
   min-height: var(--control-height);
   padding-inline: 1px;
-  font-weight: 600;
+  font-family: var(--font-choice, inherit);
+  font-size: var(--font-choice-size, inherit);
+  font-weight: var(--font-choice-weight, 600);
+  line-height: var(--line-height-choice, normal);
 }
 main:focus {
   outline: none;
@@ -343,6 +346,7 @@ header::before {
 .shell[data-theme='never-midnight'] {
   position: relative;
   isolation: isolate;
+  overflow-x: clip;
 }
 .shell[data-theme='never-midnight']::before {
   content: '';

@@ -11,6 +11,18 @@
   --font-result-heading-size: clamp(1rem, 2.5vw, 1.625rem);
   --font-modal-heading-size: clamp(1.75rem, 4vw, 2.5rem);
   --button-font-size: 0.875rem;
+  --button-font-weight: 400;
+  --button-border-bottom-width: 1px;
+  --font-choice: var(--font-result-name);
+  --font-choice-size: 0.6875rem;
+  --font-choice-weight: 400;
+  --line-height-choice: 1.5;
+  --font-result-name-adjust: from-font;
+  --line-height-result-name: 1.5;
+  --generator-controls-border-width: 3px;
+  --generator-panel-border-color: var(--color-text);
+  --button-padding-inline: var(--space-2);
+  --button-line-height: 1.25;
   --button-min-height: var(--control-height);
   --color-page: #fff;
   --color-text: #141414;
@@ -34,7 +46,7 @@
   --theme-name-weight: 700;
   --theme-heading-slant: 0deg;
   --theme-heading-shadow: none;
-  --theme-panel-fill: transparent;
+  --theme-panel-fill: var(--color-surface);
   --theme-panel-shadow: none;
   --theme-panel-border-width: 3px;
   --theme-panel-rule-width: 3px;
@@ -49,42 +61,8 @@
   --mothership-stripes: repeating-linear-gradient(135deg, currentColor 0 3px, transparent 3px 7px);
 }
 
-.shell[data-theme='mothership'] button {
-  font-family: var(--font-display);
-  font-weight: 400;
-}
-
-.shell[data-theme='mothership']
-  :is(
-    .picker > .label,
-    .picker button:not(.close),
-    nav > a,
-    .setting-trigger,
-    .settings button,
-    select,
-    label:has(input[type='checkbox']),
-    fieldset:has(input[type='checkbox']) legend
-  ) {
-  font-family: var(--font-result-name);
-  font-size: 0.6875rem;
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-[data-theme='mothership'] .generator-panel .name strong {
-  font-size-adjust: from-font;
-  line-height: 1.5;
-}
-
-[data-theme='mothership'] .generator-panel {
-  --button-padding-inline: var(--space-2);
-  --button-line-height: 1.25;
-  --theme-panel-fill: var(--color-surface);
-  border: var(--theme-panel-border-width) solid var(--color-text);
-  border-radius: var(--radius-lg);
-}
-
-[data-theme='mothership'] :is(#results-heading, .about-page h1) {
+/* Heading decoration uses the public heading role, not result internals. */
+[data-theme='mothership'] :is(.generator-heading, .about-page h1) {
   width: fit-content;
   padding: var(--space-1) var(--space-3);
   background: var(--color-text);
@@ -97,24 +75,6 @@
 }
 
 @media (forced-colors: none) {
-  .shell[data-theme='mothership'] .checks label {
-    border: 0;
-    background: transparent;
-  }
-
-  .shell[data-theme='mothership'] .checks input {
-    border: 0;
-    background: var(--color-subtle);
-  }
-
-  .shell[data-theme='mothership'] .checks input:checked {
-    background: var(--color-text);
-  }
-
-  .shell[data-theme='mothership'] .checks input::after {
-    display: none;
-  }
-
   :root:has([data-theme='mothership']) {
     --mothership-crt-green: #76ff54;
     --mothership-crt-screen: #102014;
@@ -123,76 +83,39 @@
       transparent 0 2px,
       rgb(0 0 0 / 12%) 2px 3px
     );
+    --control-hover-ink: var(--color-on-accent);
+    --control-hover-fill: var(--color-text);
+    --control-active-ink: var(--color-text);
+    --control-active-fill: var(--mothership-crt-green);
+    --control-active-texture: var(--mothership-crt-scanlines);
+    --primary-feedback-color: var(--mothership-crt-pulse);
+    --primary-hover-fill: var(--color-surface);
+    --primary-hover-ink: var(--color-text);
+    --primary-hover-feedback: var(--mothership-crt-green);
+    --control-indicator-hover-filter: invert(1);
+    --toggle-hover-fill: var(--color-subtle);
+    --toggle-checked-hover-fill: var(--color-accent);
+    --toggle-hover-border: var(--color-control-border);
+    --checks-label-border-width: 0px;
+    --checks-label-fill: transparent;
+    --checks-label-checked-fill: transparent;
+    --checks-input-border-width: 0px;
+    --checks-input-fill: var(--color-subtle);
+    --checks-input-checked-fill: var(--color-text);
+    --checks-mark-display: none;
+    --scramble-color: var(--mothership-crt-green);
+    --scramble-fill: var(--mothership-crt-screen);
+    --scramble-shadow: 0 0 4px var(--mothership-crt-green);
     --color-link-background: var(--color-text);
+    --color-link-hover: var(--color-on-accent);
     --theme-page-texture: url('./assets/mothership-ink.svg');
     --theme-page-texture-size: clamp(40rem, 84vw, 66rem) auto;
-    background-position: center top;
-  }
-
-  .shell[data-theme='mothership']
-    :is(
-      button:enabled:not(.setting-trigger),
-      select,
-      label:has(input[type='checkbox']):not(.details-toggle)
-    ):is(:hover, :active, :focus-visible, :has(input:focus-visible)) {
-    color: var(--mothership-control-ink, var(--color-on-accent));
-    background: var(--mothership-control-lines, none)
-      var(--mothership-control-fill, var(--color-text));
-  }
-
-  .shell[data-theme='mothership'] button.primary:enabled:is(:hover, :focus-visible):not(:active) {
-    --button-rest-color: var(--color-surface);
-    --button-feedback-color: var(--mothership-crt-green);
-    --mothership-control-ink: var(--color-text);
-    --mothership-control-fill: var(--button-rest-color);
-    border-color: var(--color-text);
-  }
-
-  .shell[data-theme='mothership']
-    :is(button:enabled:not(.setting-trigger), select, label:has(input[type='checkbox'])):active {
-    --mothership-control-ink: var(--color-text);
-    --mothership-control-fill: var(--mothership-crt-green);
-    --mothership-control-lines: var(--mothership-crt-scanlines);
-  }
-
-  .shell[data-theme='mothership'] :is(a, .setting-trigger):is(:hover, :focus-visible) .link-label {
-    color: var(--color-on-accent);
-  }
-
-  .shell[data-theme='mothership']
-    button:is(:hover, :focus-visible):not(:active)
-    :is(.arrow, .selected) {
-    color: inherit;
-  }
-
-  .shell[data-theme='mothership']
-    label:has(input[type='checkbox']):not(:active):is(:hover, :has(input:focus-visible))
-    :is(input, .track) {
-    filter: invert(1);
-  }
-
-  .shell[data-theme='mothership'] .details-toggle:hover .track {
-    background: var(--color-subtle);
-    border-color: var(--color-control-border);
-  }
-
-  .shell[data-theme='mothership'] .details-toggle:hover input:checked + .track {
-    background: var(--color-accent);
-    border-color: var(--color-accent);
-  }
-
-  [data-theme='mothership'] .scramble .overlay[data-garbled]:not([data-garbled=''])::after {
-    color: var(--mothership-crt-green);
-    background-color: var(--mothership-crt-screen);
-    text-shadow: 0 0 4px var(--mothership-crt-green);
-  }
-
-  [data-theme='mothership'] .generator-panel::after {
-    inset: -0.625rem;
-    width: auto;
-    height: auto;
-    background:
+    --generator-panel-edge-inset: -0.625rem;
+    --generator-panel-edge-width: auto;
+    --generator-panel-edge-height: auto;
+    --generator-panel-edge-fill:
       url('./assets/mothership-border-ink.svg') right 0.25rem top -0.375rem / 7rem auto no-repeat,
       url('./assets/mothership-border-ink.svg') left -0.25rem bottom 0.5rem / 6rem auto no-repeat;
+    background-position: center top;
   }
 }

@@ -514,7 +514,18 @@ select {
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-text);
-  font: inherit;
+  font-family: var(--font-choice, inherit);
+  font-size: var(--font-choice-size, inherit);
+  font-weight: var(--font-choice-weight, inherit);
+  line-height: var(--line-height-choice, normal);
+}
+select:is(:hover, :focus-visible) {
+  background: var(--control-hover-fill, var(--color-subtle));
+  color: var(--control-hover-ink, var(--color-text));
+}
+select:active {
+  background: var(--control-active-texture, none) var(--control-active-fill, var(--color-subtle));
+  color: var(--control-active-ink, var(--color-text));
 }
 .profile-sheet .score-card {
   background: var(--color-subtle);

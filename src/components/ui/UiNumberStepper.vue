@@ -106,9 +106,6 @@ function step(amount: number) {
 }
 @media (forced-colors: none) {
   .stepper .current-value button:enabled:is(:hover, :focus-visible, :active) {
-    --mothership-control-ink: var(--mothership-crt-green);
-    --mothership-control-fill: transparent;
-    --mothership-control-lines: none;
     color: var(--mothership-crt-green);
     background: transparent;
     box-shadow: none;
