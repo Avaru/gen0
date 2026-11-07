@@ -12,6 +12,15 @@ afterEach(() => {
 })
 
 describe('Mothership character appearance', () => {
+  it.each([
+    [0, 'he/him'],
+    [0.4, 'she/her'],
+    [0.8, 'they/them'],
+  ] as const)('generates the supplied pronoun choices at draw %s', (draw, pronouns) => {
+    vi.spyOn(Math, 'random').mockReturnValue(draw)
+    expect(genericName({ setting: 'mothership' }).pronouns).toBe(pronouns)
+  })
+
   it.each(['cyberpunk', 'shadowrun', 'cyberpunk2020-2077'] as const)(
     'uses generic Cyberpunk looks and preserves exclusions with %s options',
     (flavor) => {

@@ -13,6 +13,7 @@ export interface GeneratedAttributes {
 }
 export interface Generated extends GeneratedAttributes {
   primary: string
+  pronouns?: string
   mothershipClass?: MothershipClass
   mothershipShip?: MothershipShip
 }

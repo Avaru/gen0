@@ -7,3 +7,5 @@ export const mothershipTraumaResponses: Record<MothershipClass, string> = {
   Scientist: 'Whenever you fail a Sanity save, all close friendly players gain 1 Stress.',
   Teamster: 'Once per session, you may take advantage on a Panic Check.',
 }
+
+export const mothershipPronouns = ['he/him', 'she/her', 'they/them'] as const

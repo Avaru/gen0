@@ -18,9 +18,7 @@ const shades = ['░', '▒', '▓']
         :value="level"
         :aria-label="`${label}: ${level}`"
       />
-      <span aria-hidden="true"
-        ><span class="shade">{{ shades[level - 1] }}</span> {{ level }}</span
-      >
+      <span aria-hidden="true"><span class="shade">{{ shades[level - 1] }}</span> {{ level }}</span>
     </label>
   </fieldset>
 </template>

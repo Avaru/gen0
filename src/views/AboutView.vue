@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { neverMidnightEnabled } from '@/generator/settingRegistry'
+import { useRoute } from 'vue-router'
 import { usePreferencesStore } from '@/stores/preferences'
 import UiToggle from '@/components/ui/UiToggle.vue'
 import UiArticle from '@/components/ui/UiArticle.vue'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
 
+const route = useRoute()
 const preferences = usePreferencesStore()
 const corpModeSwitch = ref(preferences.soullessCorpMode)
 let corpModeToggles: number[] = []
@@ -24,21 +25,11 @@ function toggleCorpMode(enabled: boolean) {
     corpModeToggles = []
   }
 }
-
-const dataUseNotice =
-  'I do not allow any of the data in this project to be used for training ' +
-  'or developing AI models without my explicit permission.'
-const paragraphs = [
-  'Created by Anton Katzer, gen 0 is the successor of the name generators from RPGenerator and itemcards.com. ' +
-    'All fragments used to build the lists are hand-crafted, sourced from census data, or inspired ' +
-    'by cyberpunk/scifi/rpg universes, providing names and ideas for tabletop roleplaying sessions.',
-  'The name lists have grown over the years from census data, freely available name lists and ideas developed at the gaming table. The generator is always in development. Imagine a 90s “under construction” GIF here and ' +
-    'pretend it fits the retro cyberpunk aesthetic.',
-]
 </script>
 <template>
   <div class="about-page">
     <UiToggle
+      v-if="route.meta.setting !== 'mothership'"
       :model-value="corpModeSwitch"
       @update:model-value="toggleCorpMode"
       class="corp-mode"
@@ -46,8 +37,15 @@ const paragraphs = [
     />
     <UiArticle>
       <h1><UiScrambleText text="About gen 0" /></h1>
-      <p v-for="paragraph in paragraphs" :key="paragraph">
-        <UiScrambleText :text="paragraph" />
+      <p>
+        <UiScrambleText
+          text="Created by Anton Katzer, gen 0 is the successor of the name generators from RPGenerator and itemcards.com. All fragments used to build the lists are hand-crafted, sourced from census data, or inspired by cyberpunk/scifi/rpg universes, providing names and ideas for tabletop roleplaying sessions."
+        />
+      </p>
+      <p>
+        <UiScrambleText
+          text="The name lists have grown over the years from census data, freely available name lists and ideas developed at the gaming table. The generator is always in development. Imagine a 90s “under construction” GIF here and pretend it fits the retro cyberpunk aesthetic."
+        />
       </p>
       <p>
         <UiScrambleText text="Everything here is available on" />
@@ -60,7 +58,22 @@ const paragraphs = [
           ><UiScrambleText class="link-label" text="GitHub" /></a
         >.
       </p>
-      <p><UiScrambleText :text="dataUseNotice" /></p>
+      <p>
+        <UiScrambleText text="Mothership character portraits by" />
+        {{ ' '
+        }}<a
+          href="https://ashen-victor.itch.io/sci-fi-character-portraits-poject"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="View Ashen Victor’s character portraits (opens in a new tab)"
+          ><UiScrambleText class="link-label" text="Ashen Victor" /></a
+        >.
+      </p>
+      <p>
+        <UiScrambleText
+          text="I do not allow any of the data in this project to be used for training or developing AI models without my explicit permission."
+        />
+      </p>
     </UiArticle>
   </div>
 </template>
@@ -81,8 +94,7 @@ const paragraphs = [
   opacity: 0.3;
 }
 .corp-mode:hover,
-.corp-mode:focus-within,
-.corp-mode:where([data-theme='mothership'] *) {
+.corp-mode:focus-within {
   opacity: 1;
 }
 .corp-mode :deep(.track) {

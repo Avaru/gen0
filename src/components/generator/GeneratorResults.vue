@@ -24,6 +24,7 @@ const emit = defineEmits<{
   more: []
   'update:showDetails': [value: boolean]
   'open-mothership-sheet': [result: Generated]
+  'open-mothership-details': [result: Generated]
 }>()
 const showNeverMidnightPrompt = computed(
   () =>
@@ -140,17 +141,28 @@ defineExpose({
           :result="result"
         />
         <UiNeverMidnightResultActions v-if="showNeverMidnightPrompt" :result="result" />
-        <UiButton
+        <div
           v-if="setting === 'mothership' && category === 'generic' && result.mothershipClass"
-          appearance="icon"
-          icon="arrow-right"
-          class="mothership-sheet-action"
+          class="mothership-actions"
           :class="{ compact: !showDetails }"
-          variant="secondary"
-          :aria-label="`Open character sheet for ${result.primary}`"
-          title="Open character sheet"
-          @click="emit('open-mothership-sheet', result)"
-        />
+        >
+          <UiButton
+            appearance="icon"
+            icon="arrow-right"
+            variant="secondary"
+            :aria-label="`Open character sheet for ${result.primary}`"
+            title="Open character sheet"
+            @click="emit('open-mothership-sheet', result)"
+          />
+          <UiButton
+            appearance="icon"
+            icon="document"
+            variant="secondary"
+            :aria-label="`Open detailed character sheet for ${result.primary}`"
+            title="Open detailed character sheet"
+            @click="emit('open-mothership-details', result)"
+          />
+        </div>
       </li>
     </ol>
   </section>
@@ -240,16 +252,17 @@ li::after {
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.mothership-sheet-action {
+.mothership-actions {
+  display: flex;
   flex: none;
   align-self: flex-start;
   margin-inline-start: auto;
   --button-icon-rest-color: var(--color-muted);
 }
-li:has(> .mothership-sheet-action.compact) {
-  padding-inline-end: calc(var(--control-height) + var(--space-4));
+li:has(> .mothership-actions.compact) {
+  padding-inline-end: calc(var(--control-height) * 2 + var(--space-4));
 }
-.mothership-sheet-action.compact {
+.mothership-actions.compact {
   position: absolute;
   inset-block-start: 50%;
   inset-inline-end: 0;

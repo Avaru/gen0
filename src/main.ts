@@ -8,6 +8,7 @@ import { neverMidnightEnabled } from './generator/settingRegistry'
 
 import './styles/base.css'
 import './styles/character-print.css'
+import './styles/mothership-print.css'
 
 const app = createApp(App).use(createPinia()).use(router)
 

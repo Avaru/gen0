@@ -8,6 +8,7 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import App from '../App.vue'
 import { routes as appRoutes } from '../router'
 import GeneratorView from '../views/GeneratorView.vue'
+import { decodeMothershipCharacter } from '@/helper/mothershipCharacterLink'
 import AboutView from '../views/AboutView.vue'
 import CharacterView from '../views/CharacterView.vue'
 import { neverMidnightEnabled } from '@/generator/settingRegistry'
@@ -109,9 +110,10 @@ describe('name generator interface', () => {
     expect(document.activeElement).toBe(sheet.element)
     expect(sheet.get('h2').text()).toBe(wrapper.get('li strong').text())
     expect(sheet.get('.character-class').text()).toMatch(/^(Marine|Android|Scientist|Teamster)$/)
-    expect(sheet.get('.trinket-patch').text()).toBe(details)
+    for (const item of details.split(' · '))
+      expect(sheet.get('.starting-gear').text()).toContain(item)
     expect(sheet.get('.appearance h3').text()).toBe('Appearance')
-    expect(sheet.get('.trinket-patch + .appearance p').text()).toBe(appearance)
+    expect(sheet.get('.appearance p').text()).toBe(appearance)
     expect(sheet.findAll('.scores dt').map((label) => label.text())).toEqual([
       'Str',
       'Speed',
@@ -148,6 +150,215 @@ describe('name generator interface', () => {
     await flushPromises()
     expect(wrapper.find('#mothership-mini-sheet').exists()).toBe(false)
     expect(wrapper.find('li button[title="Open character sheet"]').exists()).toBe(false)
+  })
+
+  it('shares minimum Stress with the mini card and keeps it fixed when stepping current Stress', async () => {
+    const { wrapper, router } = await setup('/mothership/generic')
+    await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
+    await flushPromises()
+    const modal = wrapper.get('#mothership-character-modal')
+    expect(modal.find('input[aria-label="Maximum Stress"]').exists()).toBe(false)
+    await modal.get('input[aria-label="Minimum Stress"]').setValue('3')
+    await modal.get('button[aria-label="Close character sheet"]').trigger('click')
+    const mini = wrapper.get('#mothership-mini-sheet')
+    await mini.get('button[aria-label="Increase Stress"]').trigger('click')
+    await flushPromises()
+    expect(
+      decodeMothershipCharacter(router.currentRoute.value.query.char as string).mothershipCharacter
+        .stress,
+    ).toEqual({ current: 4, min: 3 })
+    await mini.get('button[aria-label="Decrease Stress"]').trigger('click')
+    await flushPromises()
+    expect(
+      decodeMothershipCharacter(router.currentRoute.value.query.char as string).mothershipCharacter
+        .stress,
+    ).toEqual({ current: 3, min: 3 })
+    expect(mini.get('[aria-label="Minimum Stress"]').text()).toBe('3')
+    expect(mini.find('button[aria-label="Decrease Stress"]').exists()).toBe(false)
+  })
+
+  it('edits the full Mothership sheet, keeps edits on reopening and restores them from its URL', async () => {
+    const { wrapper, router } = await setup('/mothership/generic', document.body)
+    await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
+    await flushPromises()
+    const modal = wrapper.get('#mothership-character-modal')
+    expect(modal.attributes()).toHaveProperty('open')
+    expect((modal.get('#ms-high-score').element as HTMLInputElement).value).toBe('')
+    expect((modal.get('#ms-pronouns').element as HTMLInputElement).value).toMatch(
+      /^(he\/him|she\/her|they\/them)$/,
+    )
+    expect(modal.find('input[aria-label="Minimum Stress"]').exists()).toBe(true)
+    for (const label of ['Health', 'Wounds', 'Stress']) {
+      expect(
+        (modal.get(`input[aria-label="Current ${label}"]`).element as HTMLInputElement).value,
+      ).toBe('')
+    }
+    expect(modal.find('#ms-details').exists()).toBe(false)
+    expect(
+      (modal.get('textarea[aria-label="Equipment"]').element as HTMLTextAreaElement).value,
+    ).toMatch(/Trinket: .+\nPatch: .+/)
+    expect(wrapper.find('#mothership-mini-sheet .open-sheet').exists()).toBe(false)
+    expect(modal.findAll('h2').map((heading) => heading.text())).not.toContain('Trauma Response')
+    expect(modal.get('#ms-pronouns').attributes('list')).toBeUndefined()
+    expect(modal.get('.conditions-heading').text()).toBe('Conditions')
+    expect(
+      (
+        modal.get('textarea[aria-labelledby="ms-conditions-heading"]')
+          .element as HTMLTextAreaElement
+      ).value,
+    ).toBe('')
+    expect((modal.get('textarea[aria-label="Notes"]').element as HTMLTextAreaElement).value).toBe(
+      '',
+    )
+
+    await modal.get('#ms-player').setValue('Pat')
+    await modal.get('#ms-name').setValue('Edited name')
+    await modal.get('#ms-pronouns').setValue('they/them')
+    await modal.get('#ms-class').setValue('Marine')
+    await modal.get('#ms-high-score').setValue('42')
+    await modal.get('#ms-appearance').setValue('Edited appearance')
+    await modal.get('input[aria-label="Strength"]').setValue('55')
+    await modal.get('input[aria-label="Sanity"]').setValue('66')
+    await modal.get('input[aria-label="Maximum Health"]').setValue('25')
+    await modal.get('input[aria-label="Current Health"]').setValue('19')
+    await modal.get('input[aria-label="Minimum Stress"]').setValue('3')
+    await modal.get('input[aria-label="Current Stress"]').setValue('5')
+    await modal.get('textarea[aria-label="Skills"]').setValue('Edited skill')
+    await modal.get('textarea[aria-label="Equipment"]').setValue('Edited equipment')
+    await modal.get('input[aria-label="Armor Points"]').setValue('8')
+    await modal.get('input[aria-label="Credits"]').setValue('123')
+    expect(modal.find('#ms-trauma').exists()).toBe(false)
+    expect(modal.get('.status-card .trauma-response').text()).toBe(
+      'Whenever you panic, every close friendly player must make a Fear save.',
+    )
+    await modal
+      .get('textarea[aria-labelledby="ms-conditions-heading"]')
+      .setValue('Edited condition')
+    await modal.get('textarea[aria-label="Notes"]').setValue('Edited notes')
+    await flushPromises()
+    const savedLink = router.currentRoute.value.fullPath
+    const saved = decodeMothershipCharacter(router.currentRoute.value.query.char as string)
+    expect(saved).toMatchObject({
+      primary: 'Edited name',
+      playerName: 'Pat',
+      pronouns: 'they/them',
+      highScore: '42',
+      appearance: 'Edited appearance',
+      skillsText: 'Edited skill',
+      equipmentText: 'Edited equipment',
+      armorPoints: 8,
+      conditions: 'Edited condition',
+      notes: 'Edited notes',
+      mothershipCharacter: {
+        characterClass: 'Marine',
+        scores: { Str: 55, San: 66 },
+        health: { current: 19, max: 25 },
+        stress: { current: 5, min: 3 },
+        credits: 123,
+      },
+    })
+    await modal.get('button[aria-label="Close character sheet"]').trigger('click')
+    expect(modal.attributes()).not.toHaveProperty('open')
+    const mini = wrapper.get('#mothership-mini-sheet')
+    expect(mini.get('h2').text()).toBe('Edited name')
+    expect(mini.get('[aria-label="Minimum Stress"]').text()).toBe('3')
+    expect(mini.get('.skills').text()).toContain('Edited skill')
+    expect(mini.get('.starting-gear').text()).toContain('Edited equipment')
+    expect(mini.get('.appearance').text()).toContain('Edited appearance')
+    await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
+    await flushPromises()
+    expect((modal.get('#ms-high-score').element as HTMLInputElement).value).toBe('42')
+    expect(router.currentRoute.value.fullPath).toBe(savedLink)
+
+    const restored = await setup(savedLink)
+    await restored.wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
+    await flushPromises()
+    expect((restored.wrapper.get('#ms-name').element as HTMLInputElement).value).toBe('Edited name')
+    expect((restored.wrapper.get('#ms-high-score').element as HTMLInputElement).value).toBe('42')
+    expect(
+      (restored.wrapper.get('input[aria-label="Current Health"]').element as HTMLInputElement)
+        .value,
+    ).toBe('19')
+    expect(
+      (restored.wrapper.get('input[aria-label="Current Stress"]').element as HTMLInputElement)
+        .value,
+    ).toBe('5')
+    expect(
+      (restored.wrapper.get('input[aria-label="Current Wounds"]').element as HTMLInputElement)
+        .value,
+    ).toBe('')
+    await modal.get('input[aria-label="Current Health"]').setValue('')
+    await modal.get('input[aria-label="Current Stress"]').setValue('')
+    await flushPromises()
+    expect(
+      decodeMothershipCharacter(router.currentRoute.value.query.char as string).filledResources,
+    ).toEqual([])
+    expect(
+      decodeMothershipCharacter(restored.router.currentRoute.value.query.char as string),
+    ).toEqual(saved)
+  })
+
+  it('shows, rerolls and restores a portrait without losing the appearance text', async () => {
+    const { wrapper, router } = await setup('/mothership/generic', document.body)
+    await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
+    await flushPromises()
+    const modal = wrapper.get('#mothership-character-modal')
+    await modal.get('#ms-appearance').setValue('Keep this appearance')
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0)
+    try {
+      const imageButton = modal.get('button[aria-label="Image"]')
+      expect(imageButton.text()).toBe('')
+      expect(imageButton.find('svg').exists()).toBe(true)
+      await imageButton.trigger('click')
+      await flushPromises()
+      expect(modal.find('#ms-appearance').exists()).toBe(false)
+      expect(modal.get('.appearance-portrait img').attributes('src')).toMatch(/\/01\.jpg/)
+      expect(
+        decodeMothershipCharacter(router.currentRoute.value.query.char as string),
+      ).toMatchObject({
+        appearance: 'Keep this appearance',
+        portrait: 1,
+      })
+
+      await modal.get('button[aria-label="Reroll image"]').trigger('click')
+      await flushPromises()
+      expect(modal.get('.appearance-portrait img').attributes('src')).toMatch(/\/02\.jpg/)
+      random.mockReturnValue(0.999999)
+      await modal.get('button[aria-label="Reroll image"]').trigger('click')
+      await flushPromises()
+      expect(modal.get('.appearance-portrait img').attributes('src')).toMatch(/\/122\.jpg/)
+      await modal.get('button[aria-label="Reroll image"]').trigger('click')
+      await flushPromises()
+      expect(modal.get('.appearance-portrait img').attributes('src')).toMatch(/\/121\.jpg/)
+
+      const savedLink = router.currentRoute.value.fullPath
+      await modal.get('button[aria-label="Close character sheet"]').trigger('click')
+      await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
+      expect(modal.get('.appearance-portrait img').attributes('src')).toMatch(/\/121\.jpg/)
+      const restored = await setup(savedLink)
+      await restored.wrapper
+        .get('li button[title="Open detailed character sheet"]')
+        .trigger('click')
+      await flushPromises()
+      const restoredModal = restored.wrapper.get('#mothership-character-modal')
+      expect(restoredModal.get('.appearance-portrait img').attributes('src')).toMatch(/\/121\.jpg/)
+      const remove = restoredModal.get('button[aria-label="Remove image"]')
+      expect(remove.text()).toBe('')
+      expect(remove.find('svg').exists()).toBe(true)
+      await remove.trigger('click')
+      await flushPromises()
+      expect(restoredModal.find('.appearance-portrait').exists()).toBe(false)
+      expect((restoredModal.get('#ms-appearance').element as HTMLTextAreaElement).value).toBe(
+        'Keep this appearance',
+      )
+      const saved = decodeMothershipCharacter(
+        restored.router.currentRoute.value.query.char as string,
+      )
+      expect(saved.portrait).toBeUndefined()
+      expect(saved.appearance).toBe('Keep this appearance')
+    } finally {
+      random.mockRestore()
+    }
   })
 
   it('keeps a Mothership card when a link is invalid and clears it when leaving the generator', async () => {
@@ -237,7 +448,7 @@ describe('name generator interface', () => {
       trauma[characterClass as keyof typeof trauma],
     )
     const gear = sheet.get('.starting-gear')
-    expect(gear.get('h3').text()).toBe('Starting Gear')
+    expect(gear.get('h3').text()).toBe('Equipment')
     expect(gear.findAll('li').length).toBeGreaterThanOrEqual(2)
     expect(gear.findAll('li').every((item) => item.text().length > 0)).toBe(true)
     expect(gear.element.nextElementSibling).toBe(sheet.get('.trauma-response').element)

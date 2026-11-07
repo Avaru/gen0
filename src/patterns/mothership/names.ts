@@ -12,7 +12,7 @@ import { nationalName, nationalityGivenName } from '@/patterns/cyberpunk/nationa
 import { traditionIds } from '@/patterns/cyberpunk/nationality/traditions'
 import { runnerLooks } from '@/patterns/cyberpunk/runners/looks'
 import type { Generated } from '@/patterns/types'
-import { mothershipClasses } from '@/data/mothership-classes'
+import { mothershipClasses, mothershipPronouns } from '@/data/mothership-classes'
 import { formatMothershipShipClass, formatMothershipShipIssues, rollMothershipShip } from './ships'
 
 export function genericName(options: GenerationOptions): Generated {
@@ -27,6 +27,7 @@ export function genericName(options: GenerationOptions): Generated {
     primary,
     secondary: mothershipClass,
     mothershipClass,
+    pronouns: randomFrom(mothershipPronouns),
     appearance: capitalize(runnerLooks({ ...options, flavor: 'cyberpunk' }).join(', ')),
     details: `Trinket: ${randomFrom(mothershipTrinkets)} · Patch: ${randomFrom(mothershipPatches)}`,
   }

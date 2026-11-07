@@ -103,7 +103,7 @@ textarea {
   resize: vertical;
 }
 @media screen {
-  .sheet-field:not(:disabled):hover {
+  .sheet-field:not(:disabled):hover:where([data-sheet='cbrpnk'] *) {
     background-image: repeating-linear-gradient(
       135deg,
       color-mix(in srgb, currentColor 10%, transparent) 0 8px,

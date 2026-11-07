@@ -128,6 +128,7 @@ describe('Reusable name pools', () => {
         appearance:
           'Good-looking, blonde long hair, round face, high cheekbones, scarred, dark eyes, expensive punky clothes, suit',
         mothershipClass: 'Marine',
+        pronouns: 'he/him',
         details: 'Trinket: Preserved Insectile Aberration · Patch: “#1 Worker”',
       })
     },

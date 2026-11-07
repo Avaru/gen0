@@ -1,0 +1,280 @@
+/* A 134 × 196 mm sheet leaves room when placing two A5 pages on A4. */
+@page mothership-character {
+  size: A5 portrait;
+  margin: 7mm;
+}
+
+@media print {
+  :root:has(#mothership-character-modal[open]) {
+    color-scheme: light;
+    background: white;
+    overflow: visible;
+  }
+
+  body:has(#mothership-character-modal[open]) {
+    page: mothership-character;
+    min-width: 0;
+    margin: 0;
+    background: white;
+
+    > :not(#app),
+    .skip,
+    .shell > header,
+    main > :not(#mothership-character-modal),
+    #mothership-character-modal .panel > header {
+      display: none !important;
+    }
+
+    .shell,
+    main {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  #mothership-character-modal[open] {
+    display: block !important;
+    position: static;
+    inset: auto;
+    width: 134mm;
+    max-width: 100%;
+    height: auto;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: white;
+    color: black;
+    --color-text: #000;
+    --color-surface: #fff;
+    --color-border: #999;
+    --space-1: 0.5mm;
+    --space-2: 1mm;
+    --space-3: 1.5mm;
+    --space-4: 2mm;
+    --space-5: 2mm;
+    --space-6: 2mm;
+    --control-height: 4mm;
+    --theme-panel-border-width: 0.3mm;
+    --theme-panel-rule-width: 0.3mm;
+    font-size: 7.5pt;
+    line-height: 1.3;
+
+    &::backdrop {
+      display: none;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-shadow: none !important;
+      text-shadow: none !important;
+      background-image: none !important;
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .panel,
+    .sheet-scroll {
+      display: block;
+      height: auto;
+      overflow: visible;
+      padding: 0;
+    }
+
+    .profile-sheet {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      height: 196mm;
+      max-width: none;
+      overflow: hidden;
+      gap: 2mm;
+      --font-sheet-heading-size: 7pt;
+      --card-heading-gap: 1.5mm;
+      --sheet-card-padding: 2mm;
+    }
+
+    .sheet-column {
+      min-height: 0;
+      gap: 2mm;
+    }
+
+    .status-card,
+    .notes-card {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .status-card > .print-value,
+    .notes-card > .print-value {
+      flex: 1 1 0;
+      overflow: hidden;
+    }
+
+    .sheet-card {
+      break-inside: avoid;
+      border: 0.3mm solid black;
+      border-radius: 2mm;
+      background: white;
+      color: black;
+      --card-title: #000;
+    }
+
+    .personal-card {
+      background: var(--color-text);
+      color: var(--color-surface);
+      --card-title: var(--color-surface);
+    }
+
+    .personal-card .print-value {
+      padding-inline: 1mm;
+      border: 0.2mm solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+    }
+
+    .score-card {
+      background: var(--color-subtle);
+      border-color: transparent;
+    }
+
+    .sheet-card::before,
+    .sheet-card::after,
+    .scramble .overlay,
+    button,
+    input,
+    textarea,
+    select {
+      display: none !important;
+    }
+
+    .scramble .source {
+      opacity: 1;
+    }
+
+    .print-value {
+      display: block;
+      min-width: 0;
+      min-height: 4mm;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      border-bottom: 0.2mm solid #999;
+      font: inherit;
+    }
+
+    .print-value:has(+ textarea) {
+      line-height: 4mm;
+      border: 0;
+      background-image: linear-gradient(
+        to bottom,
+        transparent calc(100% - 0.2mm),
+        #aaa 0
+      ) !important;
+      background-size: 100% 4mm;
+      background-repeat: repeat-y;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    .field-label,
+    .trauma-response {
+      font-size: 7pt;
+    }
+
+    .profile-card h2 {
+      font-size: 7.5pt;
+    }
+
+    .personal-grid {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+      gap: 2mm;
+    }
+
+    .appearance-field .print-value {
+      flex: 1;
+      min-height: 30mm;
+      overflow: hidden;
+    }
+
+    .appearance-portrait {
+      min-height: 30mm;
+    }
+
+    .appearance-actions {
+      display: none;
+    }
+
+    .score .print-value {
+      display: grid;
+      place-items: center;
+      width: 9mm;
+      height: 9mm;
+      border: 0.3mm solid black;
+      border-radius: 50%;
+      background: var(--color-surface);
+      font: 700 13pt var(--font-body);
+    }
+
+    .score span:not(.print-value) {
+      font-size: 4.5pt;
+    }
+
+    .resources {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1mm;
+    }
+
+    .resource-pair {
+      width: auto;
+      margin: 0 0 4mm;
+    }
+
+    .resource-pair label .print-value {
+      position: static;
+      border: 0;
+      font-size: 10pt;
+    }
+
+    .resource-pair label span:not(.print-value) {
+      font-size: 4.5pt;
+    }
+
+    .divider {
+      font-size: 11pt;
+    }
+
+    .conditions-heading {
+      font-size: 7pt;
+    }
+
+    .status-card > .print-value {
+      min-height: 14mm;
+    }
+
+    .skills-card > .print-value {
+      height: 32mm;
+      min-height: 32mm;
+      overflow: hidden;
+    }
+
+    .equipment-card > .print-value {
+      height: 40mm;
+      min-height: 40mm;
+      overflow: hidden;
+    }
+
+    .amounts .print-value {
+      font-size: 11pt;
+    }
+
+    .notes-card > .print-value {
+      min-height: 30mm;
+    }
+  }
+}

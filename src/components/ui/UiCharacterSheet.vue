@@ -108,7 +108,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <form ref="sheet-element" class="sheet" aria-label="CBR+PNK character sheet" @submit.prevent>
+  <form
+    ref="sheet-element"
+    class="sheet"
+    data-sheet="cbrpnk"
+    aria-label="CBR+PNK character sheet"
+    @submit.prevent
+  >
     <UiWorkspace>
       <div ref="first-column" class="sheet-column" :class="{ active: columns }" />
       <div ref="second-column" class="sheet-column" :class="{ active: columns }" />

@@ -11,7 +11,7 @@ const props = withDefaults(
   defineProps<{
     type?: 'button' | 'submit'
     appearance?: 'button' | 'icon'
-    icon?: 'reroll' | 'portrait' | 'arrow-right'
+    icon?: 'reroll' | 'portrait' | 'arrow-right' | 'document' | 'close'
     variant?: 'primary' | 'secondary' | 'destructive' | 'destructive-secondary'
     onBackground?: boolean
     activation?: number

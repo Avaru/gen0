@@ -1,29 +1,18 @@
 <script setup lang="ts">
-import type { MothershipCharacter } from '@/patterns/mothership/stats'
 import UiScrambleText from './UiScrambleText.vue'
 import UiSheetCard from './UiSheetCard.vue'
 import UiNumberStepper from './UiNumberStepper.vue'
-import { mothershipTraumaResponses } from '@/data/mothership-classes'
+import { computed } from 'vue'
+import type { MothershipSheet } from '@/helper/mothershipCharacterLink'
+import {
+  mothershipSheetEquipment,
+  mothershipSheetSkills,
+  mothershipSheetTrauma,
+} from '@/helper/mothershipSheetFields'
 import { mothershipSkills } from '@/data/characters/mothership-skills'
-import { mothershipGear, type MothershipGearEntry } from '@/data/characters/mothership-gear'
 
-function gearLabel(entry: MothershipGearEntry): string {
-  const item = mothershipGear[entry.item]
-  const details = [
-    'armorPoints' in item ? `AP ${item.armorPoints}` : undefined,
-    entry.detail,
-    entry.quantity ? `x${entry.quantity}` : undefined,
-  ].filter(Boolean)
-  return `${item.name}${details.length ? ` (${details.join(', ')})` : ''}`
-}
-
-const props = defineProps<{
-  name: string
-  character: MothershipCharacter
-  details?: string
-  appearance?: string
-}>()
-const emit = defineEmits<{ 'update:character': [character: MothershipCharacter] }>()
+const sheet = defineModel<MothershipSheet>({ required: true })
+const character = computed(() => sheet.value.mothershipCharacter)
 const resources = [
   ['stress', 'Stress'],
   ['health', 'Health'],
@@ -31,10 +20,8 @@ const resources = [
 ] as const
 
 function updateCurrent(key: 'health' | 'wounds' | 'stress', current: number) {
-  emit('update:character', {
-    ...props.character,
-    [key]: { ...props.character[key], current },
-  })
+  character.value[key].current = current
+  sheet.value.filledResources = [...new Set([...(sheet.value.filledResources ?? []), key])]
 }
 
 const groups = [
@@ -56,12 +43,15 @@ const groups = [
   <UiSheetCard
     id="mothership-mini-sheet"
     class="mini-sheet"
-    :title="name"
+    :title="sheet.primary"
     heading-id="mothership-mini-sheet-heading"
     heading-class="mini-sheet-heading"
     tabindex="-1"
   >
-    <p class="character-class">{{ character.characterClass }}</p>
+    <p class="character-identity">
+      <span class="character-class">{{ character.characterClass }}</span
+      ><span v-if="sheet.pronouns"> · {{ sheet.pronouns }}</span>
+    </p>
     <dl v-for="(group, index) in groups" :key="index" class="scores">
       <div v-for="[key, label] in group" :key="key" class="score">
         <dt>{{ label }}</dt>
@@ -94,7 +84,15 @@ const groups = [
     </dl>
     <div class="skills">
       <h3 class="field-label">Skills</h3>
-      <ul>
+      <ul v-if="sheet.skillsText !== undefined">
+        <li
+          v-for="(skill, index) in mothershipSheetSkills(sheet).split('\n').filter(Boolean)"
+          :key="index"
+        >
+          <span>{{ skill }}</span>
+        </li>
+      </ul>
+      <ul v-else>
         <li v-for="id in character.skills" :key="id">
           <span>{{ mothershipSkills[id].name }}</span>
           <span class="skill-tier">{{ mothershipSkills[id].tier }}</span>
@@ -102,19 +100,23 @@ const groups = [
       </ul>
     </div>
     <div class="starting-gear">
-      <h3 class="field-label">Starting Gear</h3>
+      <h3 class="field-label">Equipment</h3>
       <ul>
-        <li v-for="(entry, index) in character.gear" :key="index">{{ gearLabel(entry) }}</li>
+        <li
+          v-for="(entry, index) in mothershipSheetEquipment(sheet).split('\n').filter(Boolean)"
+          :key="index"
+        >
+          {{ entry }}
+        </li>
       </ul>
     </div>
     <div class="trauma-response">
       <h3 class="field-label">Trauma Response</h3>
-      <p>{{ mothershipTraumaResponses[character.characterClass] }}</p>
+      <p>{{ mothershipSheetTrauma(sheet) }}</p>
     </div>
-    <p v-if="details" class="trinket-patch">{{ details }}</p>
-    <div v-if="appearance" class="appearance">
+    <div v-if="sheet.appearance" class="appearance">
       <h3 class="field-label">Appearance</h3>
-      <p>{{ appearance }}</p>
+      <p>{{ sheet.appearance }}</p>
     </div>
     <dl class="resource credits">
       <dt class="field-label">Credits</dt>
@@ -144,7 +146,7 @@ const groups = [
   color: var(--theme-name-color);
   text-box-trim: none;
 }
-.character-class {
+.character-identity {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 400;
@@ -262,11 +264,6 @@ const groups = [
 .appearance p {
   margin: var(--space-2) 0 0;
   font-size: 0.875rem;
-}
-.trinket-patch {
-  margin: var(--space-4) 0 0;
-  font-size: 0.875rem;
-  overflow-wrap: anywhere;
 }
 .appearance {
   overflow-wrap: anywhere;
