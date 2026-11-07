@@ -43,7 +43,7 @@ const sizeOptions = [
 </script>
 
 <template>
-  <form aria-label="Generator settings" @submit.prevent="generate">
+  <form class="generator-panel" aria-label="Generator settings" @submit.prevent="generate">
     <UiSegments
       v-if="settings.flavor && flavorOptions.length > 1"
       :model-value="settings.flavor"
@@ -53,6 +53,7 @@ const sizeOptions = [
       @update:model-value="emit('update', { flavor: $event })"
     />
     <UiCategoryPicker
+      v-if="available.length > 1"
       :model-value="settings.category"
       :options="available"
       @update:model-value="emit('update', { category: $event })"

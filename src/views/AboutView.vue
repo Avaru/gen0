@@ -32,9 +32,9 @@ const paragraphs = [
   'Created by Anton Katzer, gen 0 continues the name generators from RPGenerator and itemcards.com. ' +
     'All fragments used to build the lists are hand-crafted, sourced from census data, or inspired ' +
     'by cyberpunk universes, providing names and ideas for your tabletop roleplaying sessions.',
-  'This version focuses on cyberpunk, with Generic, Shadowrun and Cyberpunk 2020/2077 flavors. ' +
+  'Cyberpunk comes in Generic, Shadowrun and Cyberpunk 2020/2077 flavors. ' +
     'Alongside personal names, you’ll find runner handles, corporations, weapons, entertainment ' +
-    'and things to discover on hacked devices. ' +
+    'and things to discover on hacked devices. Mothership reuses the Russian personal-name lists. ' +
     (neverMidnightEnabled
       ? 'Never Midnight reuses German, Russian and Polish personal names. '
       : '') +
@@ -89,7 +89,8 @@ const paragraphs = [
   opacity: 0.3;
 }
 .corp-mode:hover,
-.corp-mode:focus-within {
+.corp-mode:focus-within,
+.corp-mode:where([data-theme='mothership'] *) {
   opacity: 1;
 }
 .corp-mode :deep(.track) {

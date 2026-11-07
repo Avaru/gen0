@@ -11,14 +11,14 @@ const props = withDefaults(
     replayKey?: unknown
     duration?: number
     delay?: number
+    symbols?: string
   }>(),
-  { duration: 550, delay: 0 },
+  { duration: 550, delay: 0, symbols: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&?' },
 )
 
 const resolvedText = ref('')
 const garbledText = ref('')
 const animating = ref(false)
-const symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&?'
 let media: MediaQueryList | undefined
 let frame: number | undefined
 
@@ -35,6 +35,7 @@ function reveal() {
   // Only start after checking the user's current motion preference.
   if (!media || media.matches || !props.text || props.duration <= 0) return
   const letters = Array.from(props.text)
+  const { symbols } = props
   const duration = typing.value
     ? Math.max(props.duration * 0.7, Math.min(1100, letters.length * 22))
     : props.duration

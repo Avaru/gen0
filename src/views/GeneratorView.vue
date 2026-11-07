@@ -6,6 +6,7 @@ import { useGeneratorSettings } from '@/composables/useGeneratorSettings'
 import GeneratorControls from '@/components/generator/GeneratorControls.vue'
 import GeneratorResults from '@/components/generator/GeneratorResults.vue'
 import UiWorkspace from '@/components/ui/UiWorkspace.vue'
+import UiMothershipMiniSheet from '@/components/ui/UiMothershipMiniSheet.vue'
 
 const { settings, update } = useGeneratorSettings()
 const showDetails = inject('showDetails', ref(true))
@@ -16,6 +17,8 @@ const category = computed(() =>
   ),
 )
 const results = ref<Generated[]>([])
+const sidebar = useTemplateRef<HTMLElement>('sidebar')
+const miniSheet = ref<Generated>()
 const error = ref('')
 const busy = ref(false)
 let request = 0
@@ -33,6 +36,7 @@ watch(
   () => {
     request++
     results.value = []
+    miniSheet.value = undefined
     error.value = ''
     busy.value = false
     void generate()
@@ -56,6 +60,7 @@ async function generate(append = false, revealFirstName = false) {
       corporationSizes: selection.size,
     })
     if (current === request) {
+      if (!append) miniSheet.value = undefined
       results.value = append ? [...results.value, ...generated] : generated
       if (revealFirstName && generated.length) {
         await nextTick()
@@ -71,15 +76,31 @@ async function generate(append = false, revealFirstName = false) {
     if (current === request) busy.value = false
   }
 }
+
+async function openMothershipSheet(result: Generated) {
+  if (!result.mothershipCharacter) return
+  miniSheet.value = result
+  await nextTick()
+  sidebar.value?.querySelector<HTMLElement>('#mothership-mini-sheet')?.focus()
+}
 </script>
 <template>
   <UiWorkspace>
-    <GeneratorControls
-      :settings="settings"
-      :busy="busy"
-      @update="update"
-      @generate="generate(false, true)"
-    />
+    <div ref="sidebar" class="sidebar">
+      <GeneratorControls
+        :settings="settings"
+        :busy="busy"
+        @update="update"
+        @generate="generate(false, true)"
+      />
+      <UiMothershipMiniSheet
+        v-if="miniSheet?.mothershipCharacter"
+        :name="miniSheet.primary"
+        :character="miniSheet.mothershipCharacter"
+        :details="miniSheet.details"
+        @update:character="miniSheet.mothershipCharacter = $event"
+      />
+    </div>
     <GeneratorResults
       ref="resultList"
       :results="results"
@@ -91,7 +112,20 @@ async function generate(append = false, revealFirstName = false) {
       :error="error"
       :show-details="showDetails"
       @update:show-details="showDetails = $event"
+      @open-mothership-sheet="openMothershipSheet"
       @more="generate(true)"
     />
   </UiWorkspace>
 </template>
+<style scoped>
+.sidebar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+}
+@media (min-width: 56rem) {
+  .sidebar {
+    gap: var(--space-8);
+  }
+}
+</style>

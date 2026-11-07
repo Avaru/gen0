@@ -11,7 +11,7 @@ const props = withDefaults(
   defineProps<{
     type?: 'button' | 'submit'
     appearance?: 'button' | 'icon'
-    icon?: 'reroll' | 'portrait'
+    icon?: 'reroll' | 'portrait' | 'arrow-right'
     variant?: 'primary' | 'secondary' | 'destructive' | 'destructive-secondary'
     onBackground?: boolean
     activation?: number
@@ -91,6 +91,9 @@ button {
   white-space: var(--button-white-space, normal);
   flex: var(--button-flex, 0 1 auto);
 }
+button:where([data-theme='mothership'] *) {
+  border-width: 1px;
+}
 .button-text {
   display: inline-block;
   pointer-events: none;
@@ -112,6 +115,9 @@ button::after {
   --button-rest-color: var(--color-accent);
   background: var(--color-accent);
   color: var(--color-on-accent);
+}
+.primary:where([data-theme='mothership'] *) {
+  --button-feedback-color: var(--mothership-crt-pulse, var(--color-accent-hover));
 }
 .primary:hover:enabled {
   --button-rest-color: var(--color-primary-hover, #fff);

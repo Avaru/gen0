@@ -283,6 +283,63 @@ header::before {
     padding: var(--space-8);
   }
 }
+.shell[data-theme='mothership'] header {
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  background: var(--color-page);
+  color: var(--color-text);
+}
+.shell[data-theme='mothership'] nav {
+  padding-right: 0;
+  background: var(--color-page);
+  color: var(--color-text);
+}
+.shell[data-theme='mothership'] header::before,
+.shell[data-theme='mothership'] header::after {
+  display: none;
+}
+.shell[data-theme='mothership'] .version {
+  right: var(--space-2);
+  bottom: var(--space-1);
+}
+.shell[data-theme='mothership'] .version:focus-visible {
+  outline-color: currentColor;
+}
+.shell[data-theme='mothership'] .caption {
+  border-left: 1px solid currentColor;
+  padding-left: var(--space-3);
+  white-space: pre-line;
+  font-size: clamp(0.6875rem, 2vw, 0.875rem);
+}
+.shell[data-theme='mothership'] .caption::first-line {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: var(--theme-heading-weight);
+  letter-spacing: 0.03em;
+}
+@media (max-width: 24rem) {
+  .shell[data-theme='mothership'] .caption {
+    flex-basis: 100%;
+    border-left: 0;
+  }
+}
+@media (min-width: 38rem) and (forced-colors: none) {
+  .shell[data-theme='mothership'] header::after {
+    display: block;
+    right: var(--space-4);
+    bottom: var(--space-6);
+    width: clamp(4rem, 15vw, 9rem);
+    height: 0.625rem;
+    background: var(--mothership-stripes);
+    pointer-events: none;
+  }
+}
+@media (forced-colors: active) {
+  .shell[data-theme='mothership'] header {
+    border-bottom: 2px solid CanvasText;
+  }
+}
 .shell[data-theme='never-midnight'] {
   position: relative;
   isolation: isolate;

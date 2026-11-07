@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import type { Generated } from '@/patterns/types'
+import UiButton from '@/components/ui/UiButton.vue'
 import UiToggle from '@/components/ui/UiToggle.vue'
 import UiScrambleText from '@/components/ui/UiScrambleText.vue'
 import UiRunnerResultActions from '@/components/ui/UiRunnerResultActions.vue'
@@ -19,7 +20,11 @@ const props = defineProps<{
   showDetails: boolean
   pendingPools?: readonly string[]
 }>()
-const emit = defineEmits<{ more: []; 'update:showDetails': [value: boolean] }>()
+const emit = defineEmits<{
+  more: []
+  'update:showDetails': [value: boolean]
+  'open-mothership-sheet': [result: Generated]
+}>()
 const showNeverMidnightPrompt = computed(
   () =>
     props.setting === 'never-midnight' &&
@@ -64,7 +69,7 @@ defineExpose({
 })
 </script>
 <template>
-  <section aria-labelledby="results-heading" :aria-busy="busy">
+  <section class="generator-panel" aria-labelledby="results-heading" :aria-busy="busy">
     <div class="heading">
       <h1 id="results-heading">{{ label }}</h1>
       <UiToggle
@@ -97,6 +102,16 @@ defineExpose({
               :replay-key="result"
               v-bind="revealTiming(index)"
           /></strong>
+          <div
+            v-if="setting === 'mothership' && category === 'generic' && result.mothershipCharacter"
+            class="secondary mothership-class"
+          >
+            <UiScrambleText
+              :text="result.mothershipCharacter.characterClass"
+              :replay-key="result"
+              v-bind="revealTiming(index)"
+            />
+          </div>
           <div
             v-if="result.secondary && (category === 'runners' || showDetails)"
             class="secondary"
@@ -144,6 +159,17 @@ defineExpose({
           :result="result"
         />
         <UiNeverMidnightResultActions v-if="showNeverMidnightPrompt" :result="result" />
+        <UiButton
+          v-if="setting === 'mothership' && category === 'generic' && result.mothershipCharacter"
+          appearance="icon"
+          icon="arrow-right"
+          class="mothership-sheet-action"
+          :class="{ compact: !showDetails }"
+          variant="secondary"
+          :aria-label="`Open character sheet for ${result.primary}`"
+          title="Open character sheet"
+          @click="emit('open-mothership-sheet', result)"
+        />
       </li>
     </ol>
   </section>
@@ -233,6 +259,21 @@ li::after {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+.mothership-sheet-action {
+  flex: none;
+  align-self: flex-start;
+  margin-inline-start: auto;
+  --button-icon-rest-color: var(--color-muted);
+}
+li:has(> .mothership-sheet-action.compact) {
+  padding-inline-end: calc(var(--control-height) + var(--space-4));
+}
+.mothership-sheet-action.compact {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 0;
+  transform: translateY(-50%);
+}
 .runner-name > strong,
 .runner-name > .runner-secondary {
   display: block;
@@ -260,6 +301,11 @@ strong {
   line-height: 1.25;
   letter-spacing: 0.025em;
   color: var(--color-signal);
+}
+.name .mothership-class {
+  font-family: var(--font-body);
+  font-weight: 700;
+  line-height: 1.5;
 }
 .error {
   color: var(--color-error);

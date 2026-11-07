@@ -68,16 +68,136 @@ async function setup(url = '/', attachTo?: HTMLElement) {
 }
 
 describe('name generator interface', () => {
-  it.skipIf(neverMidnightEnabled)(
-    'hides the setting picker when only Cyberpunk is registered',
-    async () => {
-      const { wrapper } = await setup('/cyberpunk/shadowrun/runners')
-      expect(wrapper.find('nav button[aria-haspopup="dialog"]').exists()).toBe(false)
-      expect(wrapper.find('nav dialog').exists()).toBe(false)
-      expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(true)
-      wrapper.unmount()
-    },
-  )
+  it('switches to Mothership and restores the Cyberpunk theme with browser Back', async () => {
+    const { wrapper, router } = await setup('/cyberpunk/shadowrun/runners')
+    await wrapper.get('nav button[aria-haspopup="dialog"]').trigger('click')
+    await wrapper.get('[data-setting="mothership"]').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/mothership/generic')
+    expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('mothership')
+    expect(wrapper.get('#results-heading').text()).toBe('Characters')
+    expect(wrapper.findAll('li strong')).toHaveLength(10)
+    expect(wrapper.find('li .name > .secondary').exists()).toBe(false)
+    expect(wrapper.findAll('li .details')).toHaveLength(10)
+    await wrapper.get('.details-toggle input').setValue(false)
+    expect(wrapper.find('li .details').exists()).toBe(false)
+    expect(wrapper.get('#category').text()).toBe('Characters')
+    expect(wrapper.find('input[name="flavor"]').exists()).toBe(false)
+    expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(false)
+    expect(wrapper.get('nav a').attributes('href')).toBe('/mothership/generic/about')
+    router.back()
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/cyberpunk/shadowrun/runners')
+    expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
+    expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(true)
+  })
+
+  it('opens the selected Mothership name and its existing scores in the same page', async () => {
+    const { wrapper, router } = await setup('/mothership/generic', document.body)
+    const actions = wrapper.findAll('li button[title="Open character sheet"]')
+    expect(actions).toHaveLength(10)
+    expect(wrapper.find('#mothership-mini-sheet').exists()).toBe(false)
+
+    await wrapper.get('.details-toggle input').setValue(false)
+    await actions[0]!.trigger('click')
+    const sheet = wrapper.get('#mothership-mini-sheet')
+    expect(document.activeElement).toBe(sheet.element)
+    expect(sheet.get('h2').text()).toBe(wrapper.get('li strong').text())
+    expect(sheet.get('.character-class').text()).toMatch(/^(Marine|Android|Scientist|Teamster)$/)
+    expect(sheet.findAll('.scores dt').map((label) => label.text())).toEqual([
+      'Str',
+      'Speed',
+      'Int',
+      'Combat',
+      'Sanity',
+      'Fear',
+      'Body',
+    ])
+    expect(sheet.findAll('.scores dd').map((value) => value.text())).toEqual(
+      Array(7).fill(expect.stringMatching(/^\d+$/)),
+    )
+    const firstSheet = sheet.text()
+    expect(sheet.findAll('.skills li').length).toBeGreaterThanOrEqual(3)
+    expect(
+      sheet.findAll('.skill-tier').every((tier) => /^(trained|expert|master)$/.test(tier.text())),
+    ).toBe(true)
+
+    await actions[1]!.trigger('click')
+    expect(sheet.get('h2').text()).toBe(wrapper.findAll('li strong')[1]!.text())
+    await actions[0]!.trigger('click')
+    expect(sheet.text()).toBe(firstSheet)
+    expect(router.currentRoute.value.fullPath).toBe('/mothership/generic')
+
+    await chooseCategory(wrapper, 'ships')
+    await flushPromises()
+    expect(wrapper.find('#mothership-mini-sheet').exists()).toBe(false)
+    expect(wrapper.find('li button[title="Open character sheet"]').exists()).toBe(false)
+  })
+
+  it('tracks Mothership health, wounds and stress separately for each generated character', async () => {
+    const { wrapper } = await setup('/mothership/generic')
+    const actions = wrapper.findAll('li button[title="Open character sheet"]')
+    await actions[0]!.trigger('click')
+    const sheet = wrapper.get('#mothership-mini-sheet')
+    const current = (label: string) =>
+      Number(sheet.get(`output[aria-label="Current ${label}"]`).text())
+    const button = (action: string) => sheet.get(`button[aria-label="${action}"]`)
+    const hasButton = (action: string) => sheet.find(`button[aria-label="${action}"]`).exists()
+    const health = current('Health')
+    expect(health).toBeGreaterThanOrEqual(11)
+    expect(health).toBeLessThanOrEqual(20)
+    expect(hasButton('Increase Health')).toBe(false)
+    expect(current('Wounds')).toBe(0)
+    expect(current('Stress')).toBe(2)
+    expect(hasButton('Decrease Wounds')).toBe(false)
+    expect(hasButton('Decrease Stress')).toBe(false)
+
+    await button('Decrease Health').trigger('click')
+    await button('Increase Wounds').trigger('click')
+    await button('Increase Stress').trigger('click')
+    expect(current('Health')).toBe(health - 1)
+    expect(current('Wounds')).toBe(1)
+    expect(current('Stress')).toBe(3)
+    expect(sheet.find('output .overlay').exists()).toBe(false)
+    const edited = sheet.text()
+    await actions[1]!.trigger('click')
+    expect(current('Wounds')).toBe(0)
+    expect(current('Stress')).toBe(2)
+    await actions[0]!.trigger('click')
+    expect(sheet.text()).toBe(edited)
+    for (let count = 1; count < health; count++) await button('Decrease Health').trigger('click')
+    expect(current('Health')).toBe(0)
+    expect(hasButton('Decrease Health')).toBe(false)
+    const characterClass = sheet.get('.character-class').text()
+    const maxWounds = ['Marine', 'Android'].includes(characterClass) ? 3 : 2
+    for (let count = 1; count < maxWounds; count++) await button('Increase Wounds').trigger('click')
+    expect(current('Wounds')).toBe(maxWounds)
+    expect(hasButton('Increase Wounds')).toBe(false)
+    await button('Decrease Stress').trigger('click')
+    expect(current('Stress')).toBe(2)
+    expect(hasButton('Decrease Stress')).toBe(false)
+    expect(Number(sheet.get('.credits dd').text()) % 10).toBe(0)
+    const trauma = {
+      Marine: 'Whenever you panic, every close friendly player must make a Fear save.',
+      Android: 'Fear saves made by close friendly players are at disadvantage.',
+      Scientist: 'Whenever you fail a Sanity save, all close friendly players gain 1 Stress.',
+      Teamster: 'Once per session, you may take advantage on a Panic Check.',
+    }
+    expect(sheet.get('.trauma-response p').text()).toBe(
+      trauma[characterClass as keyof typeof trauma],
+    )
+  })
+
+  it('offers Ships in Mothership and shows the ship detail on every result', async () => {
+    const { wrapper, router } = await setup('/mothership/generic')
+    await chooseCategory(wrapper, 'ships')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/mothership/ships')
+    expect(wrapper.get('#results-heading').text()).toBe('Ships')
+    expect(wrapper.findAll('li .details').map((detail) => detail.text())).toEqual(
+      Array(10).fill('ship'),
+    )
+  })
 
   it.runIf(neverMidnightEnabled)(
     'changes to Never Midnight and restores Cyberpunk with browser Back',

@@ -8,6 +8,8 @@ import * as nameData from '@/builders/load'
 import { DATA } from '@/builders/load'
 import { nationalName } from '@/patterns/cyberpunk/nationality/nameParts'
 import { mixedName } from '@/patterns/cyberpunk/nationality/mixed'
+import { traditionIds } from '@/patterns/cyberpunk/nationality/traditions'
+import { genericName } from '@/patterns/mothership/names'
 
 afterEach(() => {
   clearNamePools()
@@ -111,6 +113,30 @@ describe('Reusable name pools', () => {
     )
     expect(mixedName(GENUS.F, { excludeTags })).toBeTruthy()
   })
+
+  it.each(['arabic', 'japanese'] as const)(
+    'lets Mothership use %s names with the selected name form',
+    (tradition) => {
+      vi.spyOn(Math, 'random').mockReturnValue(0).mockReturnValueOnce(0.99)
+      const options: GenerationOptions = {
+        genders: [GENUS.F],
+        excludeTags: traditionIds.filter((id) => id !== tradition),
+      }
+      expect(genericName(options)).toEqual({
+        primary: nationalName(tradition, GENUS.F, undefined, options),
+        mothershipCharacter: {
+          characterClass: 'Marine',
+          scores: { Str: 27, Spd: 27, Int: 27, Cmb: 37, San: 12, Fea: 32, Bod: 22 },
+          health: { current: 11, max: 11 },
+          wounds: { current: 0, max: 3 },
+          stress: { current: 2, min: 2 },
+          credits: 20,
+          skills: ['military-training', 'athletics', 'explosives'],
+        },
+        details: 'Trinket: Preserved Insectile Aberration · Patch: “#1 Worker”',
+      })
+    },
+  )
 
   it('bounds cached settings and rebuilds discarded pools without changing their names', () => {
     const first = getNamePools({ excludeTags: ['russian'] })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ name: 'reroll' | 'portrait' }>()
+defineProps<{ name: 'reroll' | 'portrait' | 'arrow-right' }>()
 </script>
 <template>
   <svg
@@ -15,6 +15,7 @@ defineProps<{ name: 'reroll' | 'portrait' }>()
     focusable="false"
   >
     <path v-if="name === 'reroll'" d="M20 7v5h-5M20 12a8 8 0 1 0-2.3 5.7" />
+    <path v-else-if="name === 'arrow-right'" d="M5 12h14m-6-6 6 6-6 6" />
     <template v-else>
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="8.5" r="1.5" />

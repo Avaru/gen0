@@ -6,6 +6,7 @@ import UiSymbolText from './UiSymbolText.vue'
 const animationRun = ref(0)
 const theme = inject(themeKey, ref('cyberpunk'))
 const symbols = computed(() => theme.value === 'never-midnight')
+const mothership = computed(() => theme.value === 'mothership')
 </script>
 
 <template>
@@ -15,11 +16,15 @@ const symbols = computed(() => theme.value === 'never-midnight')
     @mouseenter="animationRun++"
     @pointerdown="animationRun++"
   >
-    <span v-if="!symbols" :key="`hot-${animationRun}`" class="layer layer--hot" aria-hidden="true"
+    <span
+      v-if="!symbols && !mothership"
+      :key="`hot-${animationRun}`"
+      class="layer layer--hot"
+      aria-hidden="true"
       >gen 0</span
     >
     <span
-      v-if="!symbols"
+      v-if="!symbols && !mothership"
       :key="`signal-${animationRun}`"
       class="layer layer--signal"
       aria-hidden="true"
@@ -33,6 +38,7 @@ const symbols = computed(() => theme.value === 'never-midnight')
           :replay-key="animationRun"
           fixed-layout
         />0</template
+      ><template v-else-if="mothership">{{ 'gen ' }}<span class="brand-zero">0</span></template
       ><template v-else>gen 0</template></span
     >
   </span>
@@ -199,6 +205,22 @@ const symbols = computed(() => theme.value === 'never-midnight')
   .layer {
     animation: none;
   }
+}
+.brand:where([data-theme='mothership'] *) {
+  padding: 0.14em var(--space-3) 0;
+  font-family: var(--font-result-name);
+  font-size: clamp(3rem, 7.5vw, 6rem);
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+.ink:where([data-theme='mothership'] *) {
+  text-shadow: none;
+  word-spacing: -0.95em;
+}
+.brand-zero {
+  position: relative;
+  top: -0.48em;
+  font-size: 0.72em;
 }
 /* Condensed archival wordmark for Never Midnight. */
 .brand:where([data-theme='never-midnight'] *) {
