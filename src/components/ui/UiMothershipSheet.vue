@@ -693,8 +693,12 @@ select:focus-visible {
     margin-bottom: 0;
   }
 }
-@media screen and (max-width: 49.999rem) {
-  .profile-card :deep(.card-heading),
+@media screen and (max-width: 74.999rem) {
+  .profile-card :deep(.card-heading) {
+    display: none;
+  }
+}
+@media screen and (max-width: 47.999rem) {
   .print-button {
     display: none;
   }

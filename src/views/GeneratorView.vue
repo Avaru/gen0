@@ -7,6 +7,7 @@ import GeneratorControls from '@/components/generator/GeneratorControls.vue'
 import GeneratorResults from '@/components/generator/GeneratorResults.vue'
 import UiWorkspace from '@/components/ui/UiWorkspace.vue'
 import { rollMothershipCharacter } from '@/patterns/mothership/stats'
+import { mothershipPortraitCount } from '@/data/mothership-portraits'
 import type { MothershipSheet } from '@/helper/mothershipCharacterLink'
 import { useMothershipCharacterUrl } from '@/composables/useMothershipCharacterUrl'
 import UiMothershipMiniSheet from '@/components/ui/UiMothershipMiniSheet.vue'
@@ -117,6 +118,7 @@ async function openMothershipSheet(result: Generated, focusCard = true) {
     appearance: result.appearance,
     details: result.details,
     mothershipCharacter: rollMothershipCharacter(result.mothershipClass),
+    portrait: Math.floor(Math.random() * mothershipPortraitCount) + 1,
   }
   sourceSheet.value = miniSheet.value
   await nextTick()

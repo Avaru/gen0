@@ -32,5 +32,8 @@ npm run preview
 - [Tooling and deployment](docs/decisions/0006-tooling-and-deployment.md): test/lint choices and Vercel setup.
 - [Character data model](docs/character-data-model.md): sheet fields, profiles, and source mappings.
 
-I do not allow any of the data in this project to be used for training or developing AI models without my explicit permission.
+## License
+
+gen0 uses a [custom license](LICENSE) with terms equivalent to CC BY-NC 4.0, with the added restriction that AI training or development requires Anton Katzer's explicit permission. Third-party material keeps its own terms. This is a custom license, not a standard Creative Commons license.
+
 I build this to fun, not to show off. Don't judge my dev skills by this.

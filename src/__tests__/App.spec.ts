@@ -216,6 +216,7 @@ describe('name generator interface', () => {
     await modal.get('#ms-pronouns').setValue('they/them')
     await modal.get('#ms-class').setValue('Marine')
     await modal.get('#ms-high-score').setValue('42')
+    await modal.get('button[aria-label="Remove image"]').trigger('click')
     await modal.get('#ms-appearance').setValue('Edited appearance')
     await modal.get('input[aria-label="Strength"]').setValue('55')
     await modal.get('input[aria-label="Sanity"]').setValue('66')
@@ -298,25 +299,23 @@ describe('name generator interface', () => {
     ).toEqual(saved)
   })
 
-  it('shows, rerolls and restores a portrait without losing the appearance text', async () => {
+  it('automatically picks, rerolls and restores a portrait without losing the appearance text', async () => {
     const { wrapper, router } = await setup('/mothership/generic', document.body)
-    await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
-    await flushPromises()
-    const modal = wrapper.get('#mothership-character-modal')
-    await modal.get('#ms-appearance').setValue('Keep this appearance')
     const random = vi.spyOn(Math, 'random').mockReturnValue(0)
     try {
-      const imageButton = modal.get('button[aria-label="Image"]')
-      expect(imageButton.text()).toBe('')
-      expect(imageButton.find('svg').exists()).toBe(true)
-      await imageButton.trigger('click')
+      await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
       await flushPromises()
+      const modal = wrapper.get('#mothership-character-modal')
+      const appearance = decodeMothershipCharacter(
+        router.currentRoute.value.query.char as string,
+      ).appearance
+      expect(appearance).toEqual(expect.any(String))
       expect(modal.find('#ms-appearance').exists()).toBe(false)
       expect(modal.get('.appearance-portrait img').attributes('src')).toMatch(/\/01\.jpg/)
       expect(
         decodeMothershipCharacter(router.currentRoute.value.query.char as string),
       ).toMatchObject({
-        appearance: 'Keep this appearance',
+        appearance,
         portrait: 1,
       })
 
@@ -349,13 +348,27 @@ describe('name generator interface', () => {
       await flushPromises()
       expect(restoredModal.find('.appearance-portrait').exists()).toBe(false)
       expect((restoredModal.get('#ms-appearance').element as HTMLTextAreaElement).value).toBe(
-        'Keep this appearance',
+        appearance,
       )
       const saved = decodeMothershipCharacter(
         restored.router.currentRoute.value.query.char as string,
       )
       expect(saved.portrait).toBeUndefined()
-      expect(saved.appearance).toBe('Keep this appearance')
+      expect(saved.appearance).toBe(appearance)
+      const withoutPortrait = await setup(restored.router.currentRoute.value.fullPath)
+      await withoutPortrait.wrapper
+        .get('li button[title="Open detailed character sheet"]')
+        .trigger('click')
+      await flushPromises()
+      expect(withoutPortrait.wrapper.find('.appearance-portrait').exists()).toBe(false)
+      const imageButton = withoutPortrait.wrapper.get('button[aria-label="Image"]')
+      expect(imageButton.text()).toBe('')
+      expect(imageButton.find('svg').exists()).toBe(true)
+      await imageButton.trigger('click')
+      await flushPromises()
+      expect(withoutPortrait.wrapper.get('.appearance-portrait img').attributes('src')).toMatch(
+        /\/122\.jpg/,
+      )
     } finally {
       random.mockRestore()
     }

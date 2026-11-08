@@ -47,6 +47,20 @@ function toggleCorpMode(enabled: boolean) {
           text="The name lists have grown over the years from census data, freely available name lists and ideas developed at the gaming table. The generator is always in development. Imagine a 90s “under construction” GIF here and pretend it fits the retro cyberpunk aesthetic."
         />
       </p>
+
+      <p>
+        <UiScrambleText text="Mothership character portraits come from the awesome " />
+        {{ ' '
+        }}<a
+          href="https://ashen-victor.itch.io/sci-fi-character-portraits-poject"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="View Ashen Victor’s character portraits (opens in a new tab)"
+          ><UiScrambleText
+            class="link-label"
+            text="Sci Fi Character portraits project by Ashen Victor" /></a
+        >.
+      </p>
       <p>
         <UiScrambleText text="Everything here is available on" />
         {{ ' '
@@ -59,20 +73,12 @@ function toggleCorpMode(enabled: boolean) {
         >.
       </p>
       <p>
-        <UiScrambleText text="Mothership character portraits by" />
-        {{ ' '
-        }}<a
-          href="https://ashen-victor.itch.io/sci-fi-character-portraits-poject"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="View Ashen Victor’s character portraits (opens in a new tab)"
-          ><UiScrambleText class="link-label" text="Ashen Victor" /></a
-        >.
+        <UiScrambleText
+          text="Do with everything what CC BY-NC 4.0 allows, with one added restriction: I do not allow any of the data in this project to be used for training or developing AI models without my explicit permission."
+        />
       </p>
       <p>
-        <UiScrambleText
-          text="I do not allow any of the data in this project to be used for training or developing AI models without my explicit permission."
-        />
+        <UiScrambleText text="Fuck you, billionaires, really." />
       </p>
     </UiArticle>
   </div>
