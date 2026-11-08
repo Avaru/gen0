@@ -8,6 +8,8 @@ const typing = computed(() => theme.value === 'never-midnight')
 const props = withDefaults(
   defineProps<{
     text: string
+    hasSpaceBefore?: boolean
+    hasSpaceAfter?: boolean
     replayKey?: unknown
     duration?: number
     delay?: number
@@ -93,16 +95,20 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <span class="scramble" :class="{ animating, typing }">
-    <span class="source">{{ text }}</span>
-    <span
-      v-if="animating"
-      class="overlay"
-      :class="{ typing }"
-      aria-hidden="true"
-      :data-resolved="resolvedText"
-      :data-garbled="garbledText"
-    />
+  <span>
+    <template v-if="hasSpaceBefore">{{ ' ' }}</template>
+    <span class="scramble" :class="{ animating, typing }">
+      <span class="source">{{ text }}</span>
+      <span
+        v-if="animating"
+        class="overlay"
+        :class="{ typing }"
+        aria-hidden="true"
+        :data-resolved="resolvedText"
+        :data-garbled="garbledText"
+      />
+    </span>
+    <template v-if="hasSpaceAfter">{{ ' ' }}</template>
   </span>
 </template>
 
@@ -114,11 +120,6 @@ onBeforeUnmount(() => {
 }
 .animating .source {
   opacity: 0;
-}
-.scramble.typing .source::after {
-  content: '';
-  display: inline-block;
-  width: 0.7em;
 }
 .overlay {
   position: absolute;
@@ -137,6 +138,9 @@ onBeforeUnmount(() => {
 .overlay[data-garbled]:not([data-garbled=''])::after {
   background: var(--scramble-fill, transparent);
   text-shadow: var(--scramble-shadow, none);
+}
+.overlay.typing {
+  overflow: visible;
 }
 .overlay.typing::after {
   content: '░';

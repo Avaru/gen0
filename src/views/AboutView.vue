@@ -49,9 +49,11 @@ function toggleCorpMode(enabled: boolean) {
       </p>
 
       <p>
-        <UiScrambleText text="Mothership character portraits come from the awesome " />
-        {{ ' '
-        }}<a
+        <UiScrambleText
+          text="Mothership character portraits come from the awesome"
+          has-space-after
+        />
+        <a
           href="https://ashen-victor.itch.io/sci-fi-character-portraits-poject"
           target="_blank"
           rel="noopener noreferrer"
@@ -62,9 +64,8 @@ function toggleCorpMode(enabled: boolean) {
         >.
       </p>
       <p>
-        <UiScrambleText text="Everything here is available on" />
-        {{ ' '
-        }}<a
+        <UiScrambleText text="Everything here is available on" has-space-after />
+        <a
           href="https://github.com/Avaru/gen0"
           target="_blank"
           rel="noopener noreferrer"
