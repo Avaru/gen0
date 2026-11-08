@@ -69,10 +69,10 @@ async function navigateFromMenu(
   await nextTick()
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
 }
-const navigation = computed(() => {
+const generatorNavigation = computed(() => {
   const settings = settingsFromRoute(route)
   return {
-    path: settingsPath(settings) + (page.value === 'generator' ? '/about' : ''),
+    path: settingsPath(settings),
     query: settingsQuery(settings),
   }
 })
@@ -88,34 +88,34 @@ const aboutNavigation = computed(() => ({
   <div class="shell" :data-theme="theme">
     <header>
       <nav aria-label="Main navigation">
+        <RouterLink
+          v-if="page !== 'generator'"
+          v-slot="{ href, navigate }"
+          :to="generatorNavigation"
+          custom
+        >
+          <a :href="href" @click="navigateFromMenu($event, navigate)"
+            ><span class="link-label">Name generator</span></a
+          >
+        </RouterLink>
+        <RouterLink
+          v-if="setting.characterSheet && !isCharacter"
+          v-slot="{ href, navigate }"
+          :to="setting.characterSheet.path"
+          custom
+        >
+          <a :href="href" @click="navigateFromMenu($event, navigate)"
+            ><span class="link-label">{{ setting.characterSheet.label }}</span></a
+          >
+        </RouterLink>
         <UiSettingPicker
           v-if="settings.length > 1"
           :model-value="selectedSettings.setting"
           @update:model-value="selectSetting"
         />
-        <RouterLink v-slot="{ href, navigate }" :to="navigation" custom>
-          <a :href="href" @click="navigateFromMenu($event, navigate)"
-            ><span class="link-label">{{
-              page === 'generator' ? 'About' : 'Name generator'
-            }}</span></a
-          >
-        </RouterLink>
-        <RouterLink v-if="isCharacter" v-slot="{ href, navigate }" :to="aboutNavigation" custom>
+        <RouterLink v-if="!isAbout" v-slot="{ href, navigate }" :to="aboutNavigation" custom>
           <a :href="href" @click="navigateFromMenu($event, navigate)"
             ><span class="link-label">About</span></a
-          >
-        </RouterLink>
-        <RouterLink
-          v-if="setting.characterSheet"
-          v-slot="{ href, navigate }"
-          :to="setting.characterSheet.path"
-          custom
-        >
-          <a
-            :href="href"
-            :aria-current="isCharacter ? 'page' : undefined"
-            @click="navigateFromMenu($event, navigate)"
-            ><span class="link-label">{{ setting.characterSheet.label }}</span></a
           >
         </RouterLink>
       </nav>
@@ -123,7 +123,11 @@ const aboutNavigation = computed(() => ({
       <h1 v-if="isCharacter" class="caption">
         {{ setting.label === 'Cyberpunk' ? 'CBR+PNK' : setting.label }}
         <span class="caption-line">{{
-          setting.id === 'cyberpunk' ? 'Runner sheet' : 'Student sheet'
+          setting.id === 'cyberpunk'
+            ? 'Runner sheet'
+            : setting.id === 'mothership'
+              ? 'Character sheet'
+              : 'Student sheet'
         }}</span>
       </h1>
       <span v-else class="caption">{{ setting.caption }}</span>
@@ -134,6 +138,12 @@ const aboutNavigation = computed(() => ({
           @click="showCharacterGuide = !showCharacterGuide"
           >guide</UiButton
         >
+      </div>
+      <div
+        v-if="isCharacter && setting.id === 'mothership'"
+        class="character-actions mothership-actions"
+      >
+        <slot name="character-actions" />
       </div>
       <a
         class="version"
@@ -240,6 +250,18 @@ header::before {
   right: 0;
   display: flex;
   gap: var(--space-2);
+}
+.mothership-actions {
+  right: var(--space-2);
+  bottom: calc(var(--space-6) + 0.625rem + var(--space-2));
+}
+@media (max-width: 63.999rem) {
+  .mothership-actions {
+    position: static;
+    flex-basis: 100%;
+    justify-content: flex-end;
+    margin-bottom: calc(var(--space-6) + 0.625rem);
+  }
 }
 @media (max-width: 47.999rem) {
   h1.caption {

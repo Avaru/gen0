@@ -19,18 +19,19 @@ export function useGeneratorSettings() {
     () => route.fullPath,
     () => {
       if (
-        route.path === '/chars/cbrpnk' ||
+        route.meta.characterSheet ||
         route.matched.some((record) => record.path.endsWith('/about'))
       )
         return
-      const query = {
-        ...settingsQuery(settings.value),
-        ...(settings.value.setting === 'mothership' &&
+      if (
+        settings.value.setting === 'mothership' &&
         settings.value.category === 'generic' &&
         route.query.char !== undefined
-          ? { char: route.query.char }
-          : {}),
+      ) {
+        void router.replace({ path: '/chars/mothership', query: { char: route.query.char } })
+        return
       }
+      const query = settingsQuery(settings.value)
       const path = settingsPath(settings.value)
       if (route.path !== path || !matchesSettingsQuery(route.query, query))
         void router.replace({ path, query })

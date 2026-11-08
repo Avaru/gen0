@@ -1,28 +1,18 @@
 <script setup lang="ts">
 import UiScrambleText from './UiScrambleText.vue'
 import UiSheetCard from './UiSheetCard.vue'
-import UiNumberStepper from './UiNumberStepper.vue'
 import { computed } from 'vue'
 import type { MothershipSheet } from '@/helper/mothershipCharacterLink'
-import {
-  mothershipSheetEquipment,
-  mothershipSheetSkills,
-  mothershipSheetTrauma,
-} from '@/helper/mothershipSheetFields'
+import { mothershipSheetEquipment, mothershipSheetSkills } from '@/helper/mothershipSheetFields'
 import { mothershipSkills } from '@/data/characters/mothership-skills'
 
-const sheet = defineModel<MothershipSheet>({ required: true })
-const character = computed(() => sheet.value.mothershipCharacter)
+const props = defineProps<{ sheet: MothershipSheet }>()
+const character = computed(() => props.sheet.mothershipCharacter)
 const resources = [
-  ['stress', 'Stress'],
   ['health', 'Health'],
+  ['stress', 'Stress'],
   ['wounds', 'Wounds'],
 ] as const
-
-function updateCurrent(key: 'health' | 'wounds' | 'stress', current: number) {
-  character.value[key].current = current
-  sheet.value.filledResources = [...new Set([...(sheet.value.filledResources ?? []), key])]
-}
 
 const groups = [
   [
@@ -71,14 +61,13 @@ const groups = [
           <span class="field-label">{{ label }}</span>
         </dt>
         <dd>
-          <UiNumberStepper
-            :label="label"
-            :model-value="character[key].current"
-            :replay-key="character.scores"
-            :min="key === 'stress' ? character.stress.min : 0"
-            :max="key === 'stress' ? undefined : character[key].max"
-            @update:model-value="updateCurrent(key, $event)"
-          />
+          <output :aria-label="`${key === 'health' ? 'Maximum' : 'Current'} ${label}`">
+            <UiScrambleText
+              :text="String(key === 'health' ? character.health.max : character[key].current)"
+              :duration="400"
+              symbols="0123456789"
+            />
+          </output>
         </dd>
       </div>
     </dl>
@@ -109,10 +98,6 @@ const groups = [
           {{ entry }}
         </li>
       </ul>
-    </div>
-    <div class="trauma-response">
-      <h3 class="field-label">Trauma Response</h3>
-      <p>{{ mothershipSheetTrauma(sheet) }}</p>
     </div>
     <div v-if="sheet.appearance" class="appearance">
       <h3 class="field-label">Appearance</h3>
@@ -186,7 +171,7 @@ const groups = [
 }
 .resources {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-2);
   margin: var(--space-3) 0 0;
 }
@@ -196,9 +181,7 @@ const groups = [
   gap: 2px;
 }
 .stress {
-  grid-column: 1 / -1;
-  justify-self: center;
-  width: calc((100% - var(--space-2)) / 2);
+  width: 100%;
 }
 .resource dt {
   min-width: 0;
@@ -211,8 +194,29 @@ const groups = [
   overflow-wrap: anywhere;
 }
 .resource dd {
+  display: grid;
+  justify-items: center;
   min-width: 0;
   margin: 0;
+}
+.resources output {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--mothership-stat-diameter);
+  border: var(--theme-panel-border-width) solid var(--color-text);
+  border-radius: 2rem;
+  font-size: 1.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: center;
+}
+.health output,
+.wounds output {
+  width: var(--mothership-stat-diameter);
+  border-radius: 50%;
 }
 .credits {
   display: flex;
@@ -226,7 +230,6 @@ const groups = [
 }
 .skills,
 .starting-gear,
-.trauma-response,
 .appearance {
   margin-top: var(--space-4);
 }
@@ -260,7 +263,6 @@ const groups = [
 .starting-gear li + li {
   margin-top: var(--space-1);
 }
-.trauma-response p,
 .appearance p {
   margin: var(--space-2) 0 0;
   font-size: 0.875rem;

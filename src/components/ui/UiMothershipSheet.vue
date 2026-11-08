@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from 'vue'
+import { computed } from 'vue'
 import type { MothershipSheet } from '@/helper/mothershipCharacterLink'
 import { mothershipClasses } from '@/data/mothership-classes'
 import { mothershipPortraitCount } from '@/data/mothership-portraits'
@@ -9,19 +9,14 @@ import {
   mothershipSheetSkills,
   mothershipSheetTrauma,
 } from '@/helper/mothershipSheetFields'
-import UiModal from './UiModal.vue'
+import type { MothershipReroll } from '@/patterns/mothership/character'
 import UiButton from './UiButton.vue'
 import UiSheetCard from './UiSheetCard.vue'
 import UiSheetField from './UiSheetField.vue'
 
 const sheet = defineModel<MothershipSheet>({ required: true })
 const character = computed(() => sheet.value.mothershipCharacter)
-const modal = useTemplateRef<InstanceType<typeof UiModal>>('modal')
-defineExpose({ showModal: () => modal.value?.showModal() })
-
-function printSheet() {
-  window.print()
-}
+const emit = defineEmits<{ reroll: [field: MothershipReroll] }>()
 
 function textField(
   key: 'playerName' | 'pronouns' | 'highScore' | 'appearance' | 'conditions' | 'notes',
@@ -145,28 +140,10 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
 </script>
 
 <template>
-  <UiModal
-    id="mothership-character-modal"
-    ref="modal"
-    class="character-modal"
-    title="Character sheet"
-    close-label="Close character sheet"
-  >
-    <template #actions>
-      <UiButton class="print-button" variant="secondary" @click="printSheet">Print</UiButton>
-    </template>
+  <form id="mothership-character-sheet" aria-label="Mothership character sheet" @submit.prevent>
     <div class="sheet-scroll">
       <div class="profile-sheet">
         <div class="sheet-column">
-          <UiSheetCard
-            title="Mothership Character Profile"
-            heading-id="ms-profile-heading"
-            class="profile-card"
-          >
-            <label class="field-label" for="ms-player">Player Name</label>
-            <UiSheetField id="ms-player" v-model="playerName" />
-          </UiSheetCard>
-
           <UiSheetCard
             title="Personal Details"
             heading-id="ms-personal-heading"
@@ -188,6 +165,7 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
                     multiline
                     :rows="8"
                     variant="boxed"
+                    class="ruled-field"
                   />
                   <div class="appearance-actions">
                     <UiButton
@@ -208,7 +186,15 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
                       @click="removePortrait"
                     />
                     <UiButton
-                      v-else
+                      v-if="!portraitUrl"
+                      appearance="icon"
+                      icon="reroll"
+                      aria-label="Reroll appearance"
+                      title="Reroll appearance"
+                      @click="emit('reroll', 'appearance')"
+                    />
+                    <UiButton
+                      v-if="!portraitUrl"
                       appearance="icon"
                       icon="portrait"
                       aria-label="Image"
@@ -221,7 +207,23 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
               <div class="identity-fields">
                 <div>
                   <label class="field-label" for="ms-name">Character Name</label>
-                  <UiSheetField id="ms-name" v-model="sheet.primary" variant="boxed" />
+                  <div class="name-control">
+                    <UiSheetField
+                      id="ms-name"
+                      v-model="sheet.primary"
+                      variant="boxed"
+                      multiline
+                      auto-grow
+                      :rows="1"
+                    />
+                    <UiButton
+                      appearance="icon"
+                      icon="reroll"
+                      aria-label="Reroll character name"
+                      title="Reroll character name"
+                      @click="emit('reroll', 'name')"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label class="field-label" for="ms-pronouns">Pronouns</label>
@@ -238,6 +240,10 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
                   <label class="field-label" for="ms-high-score">High Score</label>
                   <UiSheetField id="ms-high-score" v-model="highScore" variant="boxed" />
                 </div>
+                <div>
+                  <label class="field-label" for="ms-player">Player Name</label>
+                  <UiSheetField id="ms-player" v-model="playerName" variant="boxed" />
+                </div>
               </div>
             </div>
           </UiSheetCard>
@@ -249,6 +255,16 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
             :heading-id="`ms-${group.title}-heading`"
             class="score-card"
           >
+            <template #actions>
+              <UiButton
+                appearance="icon"
+                icon="reroll"
+                class="card-reroll"
+                :aria-label="`Reroll ${group.title.toLowerCase()}`"
+                :title="`Reroll ${group.title.toLowerCase()}`"
+                @click="emit('reroll', group.title === 'Stats' ? 'stats' : 'saves')"
+              />
+            </template>
             <div class="scores" :style="{ '--score-count': group.fields.length }">
               <label v-for="[key, label] in group.fields" :key="key" class="score">
                 <span class="print-value">{{ character.scores[key] }}</span>
@@ -269,7 +285,17 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
           <UiSheetCard title="Status Report" heading-id="ms-status-heading" class="status-card">
             <div class="resources">
               <div v-for="[key, label] in resources" :key="key" class="resource">
-                <h3 class="field-label">{{ label }}</h3>
+                <div class="field-heading resource-heading">
+                  <h3 class="field-label">{{ label }}</h3>
+                  <UiButton
+                    v-if="key === 'health'"
+                    appearance="icon"
+                    icon="reroll"
+                    aria-label="Reroll maximum health"
+                    title="Reroll maximum health"
+                    @click="emit('reroll', 'health')"
+                  />
+                </div>
                 <div class="resource-pair">
                   <label>
                     <span class="print-value">{{ currentValue(key) }}</span>
@@ -307,6 +333,7 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
               v-model="conditions"
               aria-labelledby="ms-conditions-heading"
               multiline
+              auto-grow
               :rows="3"
               class="ruled-field fixed-lines"
             />
@@ -315,19 +342,41 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
 
         <div class="sheet-column">
           <UiSheetCard title="Skills" heading-id="ms-skills-heading" class="skills-card">
+            <template #actions>
+              <UiButton
+                appearance="icon"
+                icon="reroll"
+                class="card-reroll"
+                aria-label="Reroll skills"
+                title="Reroll skills"
+                @click="emit('reroll', 'skills')"
+              />
+            </template>
             <UiSheetField
               v-model="skills"
               aria-label="Skills"
               multiline
+              auto-grow
               :rows="8"
               class="ruled-field fixed-lines"
             />
           </UiSheetCard>
           <UiSheetCard title="Equipment" heading-id="ms-equipment-heading" class="equipment-card">
+            <template #actions>
+              <UiButton
+                appearance="icon"
+                icon="reroll"
+                class="card-reroll"
+                aria-label="Reroll equipment"
+                title="Reroll equipment"
+                @click="emit('reroll', 'equipment')"
+              />
+            </template>
             <UiSheetField
               v-model="equipment"
               aria-label="Equipment"
               multiline
+              auto-grow
               :rows="10"
               class="ruled-field fixed-lines"
             />
@@ -343,17 +392,26 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
                   :value="mothershipSheetArmor(sheet)"
                   @input="updateAmount('armorPoints', $event)"
               /></label>
-              <label
-                ><span class="field-label">Credits</span
+              <div>
+                <span class="field-heading"
+                  ><label class="field-label" for="ms-credits">Credits</label
+                  ><UiButton
+                    appearance="icon"
+                    icon="reroll"
+                    aria-label="Reroll credits"
+                    title="Reroll credits"
+                    @click="emit('reroll', 'credits')" /></span
                 ><span class="print-value">{{ character.credits }}</span
                 ><input
                   type="number"
                   min="0"
                   inputmode="numeric"
+                  id="ms-credits"
                   aria-label="Credits"
                   :value="character.credits"
                   @input="updateAmount('credits', $event)"
-              /></label>
+                />
+              </div>
             </div>
           </UiSheetCard>
           <UiSheetCard title="Notes" heading-id="ms-notes-heading" class="notes-card">
@@ -361,6 +419,7 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
               v-model="notes"
               aria-label="Notes"
               multiline
+              auto-grow
               :rows="7"
               class="ruled-field fixed-lines"
             />
@@ -368,43 +427,46 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
         </div>
       </div>
     </div>
-  </UiModal>
+  </form>
 </template>
 
 <style scoped>
-.character-modal {
-  width: min(76rem, calc(100% - 3rem));
-  height: calc(100dvh - 3rem);
-  margin: auto;
-  border: var(--theme-panel-border-width) solid var(--color-text);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+.field-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
 }
-.character-modal :deep(header) {
-  flex-shrink: 0;
+.field-heading .field-label {
+  margin: 0;
 }
-.character-modal :deep(.panel > header) {
-  flex-wrap: wrap;
+.field-heading > button {
+  flex: 0 0 auto;
 }
-.character-modal :deep(.panel > header h2) {
-  flex: 1 1 10rem;
-  font-size: clamp(1rem, 2.4vw, 1.5rem);
-  line-height: 1.4;
+.field-heading {
+  margin-bottom: var(--space-2);
+}
+.resource-heading {
+  justify-content: center;
+}
+.resource-heading button {
+  --button-min-height: 1.75rem;
+  --button-padding-block: 0;
 }
 .sheet-scroll {
-  min-height: 0;
-  overflow-y: auto;
-  padding: 0 var(--space-6) var(--space-6);
+  min-width: 0;
 }
 .profile-sheet {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-5, 1.25rem);
-  max-width: 68rem;
+  gap: var(--space-6);
+  max-width: none;
   margin: auto;
   --font-control-size: 1rem;
   --font-sheet-heading-size: 1rem;
   --sheet-card-padding: var(--space-4);
+  --card-heading-gap: var(--space-2);
 }
 .sheet-column {
   display: flex;
@@ -428,13 +490,6 @@ function updateAmount(key: 'credits' | 'armorPoints', event: Event) {
   font-size: 0.875rem;
   font-weight: 700;
   margin-bottom: var(--space-1);
-}
-.profile-card :deep(h2) {
-  text-align: left;
-  font-size: 1.125rem;
-}
-.profile-card :deep(.card-heading) {
-  justify-content: start;
 }
 .profile-sheet .personal-card {
   background: var(--color-text);
@@ -647,78 +702,126 @@ select:focus-visible {
   line-height: var(--control-height);
 }
 @media screen {
-  .profile-sheet :deep(.ruled-field:hover) {
-    background-image: repeating-linear-gradient(
-      transparent 0 calc(2rem - 2px),
-      var(--color-border) calc(2rem - 2px) 2rem
-    );
+  .profile-sheet :deep(.ruled-field) {
+    resize: vertical;
+    line-height: 1.75rem;
+    font-weight: 400;
+    border: 0;
+    border-radius: 0;
+    padding: 0 var(--space-2);
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    background-image:
+      repeating-linear-gradient(to right, transparent 0 5px, var(--color-surface) 5px 9px),
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0 calc(1lh - 1px),
+        color-mix(in srgb, currentColor 18%, transparent) calc(1lh - 1px) 1lh
+      );
+    background-attachment: local;
+  }
+  .profile-sheet :deep(.sheet-field:not(:focus):not(:hover)) {
+    border-color: transparent;
+  }
+  .personal-card :deep(.sheet-field),
+  .personal-card select {
+    font-family: var(--font-choice, inherit);
+    font-size: var(--font-choice-size, inherit);
+    font-weight: var(--font-choice-weight, inherit);
+    line-height: var(--line-height-choice, normal);
+  }
+  .name-control {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--space-1);
+  }
+  .name-control :deep(textarea) {
+    resize: none;
+  }
+  .profile-sheet :deep(.card-heading) {
+    justify-content: start;
+    align-items: start;
+    gap: var(--space-2);
+  }
+  .score-card :deep(.card-heading),
+  .skills-card :deep(.card-heading),
+  .equipment-card :deep(.card-heading) {
+    padding-inline-end: var(--control-height);
+  }
+  .card-reroll {
+    position: absolute;
+    top: var(--space-1);
+    right: var(--space-1);
+  }
+  .profile-sheet :deep(h2) {
+    text-align: left;
+    text-box-trim: none;
+  }
+  .score span {
+    font-family: var(--font-result-name);
+    font-size: clamp(0.5625rem, 0.9vw, 0.75rem);
+    line-height: 1.4;
+  }
+  .field-heading {
+    position: relative;
+    min-height: 1.5rem;
+    margin-bottom: var(--space-1);
+    padding-inline-end: 2rem;
+  }
+  .field-heading > button {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: 2rem;
+    height: 2rem;
+    min-height: 2rem;
+  }
+  .amounts > label > .field-label {
+    min-height: 1.5rem;
+    margin-bottom: var(--space-1);
+    align-content: center;
+  }
+  .notes-card :deep(textarea) {
+    min-height: 17.5rem;
   }
 }
-.profile-sheet :deep(.fixed-lines) {
-  resize: none;
-}
-.profile-sheet :deep(.ruled-field) {
-  line-height: 2rem;
-  font-weight: 400;
-  border: 0;
-  border-radius: 0;
-  padding: 0 var(--space-2);
-  background: repeating-linear-gradient(
-    transparent 0 calc(2rem - 1px),
-    var(--color-border) calc(2rem - 1px) 2rem
-  );
+@media screen and (min-width: 64rem) {
+  .name-control {
+    display: block;
+  }
+  .name-control :deep(textarea) {
+    padding-inline-end: calc(var(--control-height) + var(--space-2));
+  }
+  .name-control > button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: var(--color-text);
+  }
 }
 .amounts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
-  margin-top: var(--space-5, 1.25rem);
+  margin-top: var(--space-3);
   text-align: center;
 }
 .notes-card :deep(textarea) {
   margin-bottom: var(--space-3);
 }
 @media screen and (min-width: 50rem) {
-  .status-card,
-  .notes-card {
-    display: flex;
-    flex-direction: column;
-    flex: 1 0 auto;
-  }
-  .status-card :deep(textarea),
-  .notes-card :deep(textarea) {
-    flex: 1 0 auto;
-  }
   .notes-card :deep(textarea) {
     margin-bottom: 0;
   }
 }
-@media screen and (max-width: 74.999rem) {
-  .profile-card :deep(.card-heading) {
-    display: none;
-  }
-}
-@media screen and (max-width: 47.999rem) {
-  .print-button {
-    display: none;
-  }
-}
 @media (max-width: 49.999rem) {
-  .character-modal {
-    width: 100%;
-    height: 100dvh;
-    margin: 0;
-    border-radius: 0;
-  }
-  .sheet-scroll {
-    padding: 0 var(--space-3) var(--space-4);
-  }
   .profile-sheet {
     grid-template-columns: minmax(0, 1fr);
-    max-width: 36rem;
-  }
-  .score span {
-    font-size: 0.5rem;
+    max-width: 42rem;
+    gap: var(--space-4);
   }
 }
 @media (max-width: 24rem) {

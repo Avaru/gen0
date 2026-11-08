@@ -4,6 +4,11 @@ import { neverMidnightEnabled } from '@/generator/settingRegistry'
 export const routes: RouteRecordRaw[] = [
   { path: '/', component: () => import('@/views/GeneratorView.vue') },
   {
+    path: '/chars/mothership',
+    meta: { setting: 'mothership', characterSheet: true },
+    component: () => import('@/views/MothershipCharacterView.vue'),
+  },
+  {
     path: '/mothership/:category/about',
     meta: { setting: 'mothership' },
     component: () => import('@/views/AboutView.vue'),

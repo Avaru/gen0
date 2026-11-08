@@ -28,7 +28,7 @@ const cyberpunkSetting = {
   defaultFlavor: 'cyberpunk',
   defaultCategory: 'runners',
   categories: cyberpunkCategories,
-  characterSheet: { label: 'CBR+PNK', path: '/chars/cbrpnk' },
+  characterSheet: { label: 'Char sheet', path: '/chars/cbrpnk' },
 } as const satisfies SettingDefinition
 
 const neverMidnightSetting = {
@@ -50,6 +50,7 @@ const mothershipSetting = {
   flavors: [],
   defaultCategory: 'generic',
   categories: mothershipCategories,
+  characterSheet: { label: 'Char sheet', path: '/chars/mothership' },
 } as const satisfies SettingDefinition
 
 export type SettingId =

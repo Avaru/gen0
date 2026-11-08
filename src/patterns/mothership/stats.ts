@@ -65,12 +65,25 @@ function applyClassModifiers(scores: Scores, characterClass: MothershipClass): v
   }
 }
 
+export function rollMothershipScores(characterClass: MothershipClass): Scores {
+  const scores = rollScores()
+  applyClassModifiers(scores, characterClass)
+  return scores
+}
+
+export function rollMothershipHealth(): number {
+  return rollD10() + 10
+}
+
+export function rollMothershipCredits(): number {
+  return (rollD10() + rollD10()) * 10
+}
+
 export function rollMothershipCharacter(
   characterClass: MothershipClass = randomFrom(mothershipClasses),
 ): MothershipCharacter {
-  const scores = rollScores()
-  applyClassModifiers(scores, characterClass)
-  const maxHealth = rollD10() + 10
+  const scores = rollMothershipScores(characterClass)
+  const maxHealth = rollMothershipHealth()
   const maxWounds = characterClass === 'Marine' || characterClass === 'Android' ? 3 : 2
   return {
     characterClass,
@@ -78,7 +91,7 @@ export function rollMothershipCharacter(
     health: { current: maxHealth, max: maxHealth },
     wounds: { current: 0, max: maxWounds },
     stress: { current: 2, min: 2 },
-    credits: (rollD10() + rollD10()) * 10,
+    credits: rollMothershipCredits(),
     skills: rollMothershipSkills(characterClass),
     gear: rollMothershipGear(characterClass),
   }

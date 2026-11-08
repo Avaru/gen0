@@ -11,6 +11,9 @@ import GeneratorView from '../views/GeneratorView.vue'
 import { decodeMothershipCharacter } from '@/helper/mothershipCharacterLink'
 import AboutView from '../views/AboutView.vue'
 import CharacterView from '../views/CharacterView.vue'
+import MothershipCharacterView from '../views/MothershipCharacterView.vue'
+import { encodeMothershipCharacter } from '@/helper/mothershipCharacterLink'
+import { generateMothershipSheet } from '@/patterns/mothership/character'
 import { neverMidnightEnabled } from '@/generator/settingRegistry'
 import { createTestPinia as createPinia } from './helpers/pinia'
 
@@ -52,7 +55,9 @@ const routes = appRoutes.map((route) =>
           ? AboutView
           : route.path === '/chars/cbrpnk'
             ? CharacterView
-            : GeneratorView,
+            : route.path === '/chars/mothership'
+              ? MothershipCharacterView
+              : GeneratorView,
       },
 )
 
@@ -87,7 +92,14 @@ describe('name generator interface', () => {
     expect(wrapper.get('#category').text()).toBe('Characters')
     expect(wrapper.find('input[name="flavor"]').exists()).toBe(false)
     expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(false)
-    expect(wrapper.get('nav a').attributes('href')).toBe('/mothership/generic/about')
+    expect(wrapper.get('nav a[href*="/about"]').attributes('href')).toBe(
+      '/mothership/generic/about',
+    )
+    expect(wrapper.findAll('nav > a, nav > button').map((item) => item.text())).toEqual([
+      'Char sheet',
+      'Setting',
+      'About',
+    ])
     router.back()
     await flushPromises()
     expect(router.currentRoute.value.path).toBe('/cyberpunk/shadowrun/runners')
@@ -95,7 +107,7 @@ describe('name generator interface', () => {
     expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(true)
   })
 
-  it('rolls a Mothership sheet on click and saves it in the URL', async () => {
+  it('rolls temporary Mothership mini sheets without saving them in the URL', async () => {
     const { wrapper, router } = await setup('/mothership/generic', document.body)
     const actions = wrapper.findAll('li button[title="Open character sheet"]')
     expect(actions).toHaveLength(10)
@@ -128,8 +140,7 @@ describe('name generator interface', () => {
     )
     await flushPromises()
     const firstLink = router.currentRoute.value.fullPath
-    expect(router.currentRoute.value.query.char).toEqual(expect.any(String))
-    const firstSheet = sheet.text()
+    expect(router.currentRoute.value.query.char).toBeUndefined()
     expect(sheet.findAll('.skills li').length).toBeGreaterThanOrEqual(3)
     expect(
       sheet.findAll('.skill-tier').every((tier) => /^(trained|expert|master)$/.test(tier.text())),
@@ -139,12 +150,9 @@ describe('name generator interface', () => {
     expect(sheet.get('h2').text()).toBe(wrapper.findAll('li strong')[1]!.text())
     await actions[0]!.trigger('click')
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).not.toBe(firstLink)
-    await router.push(firstLink)
-    await flushPromises()
-    expect(sheet.text()).toBe(firstSheet)
+    expect(router.currentRoute.value.fullPath).toBe(firstLink)
     const restored = await setup(firstLink)
-    expect(restored.wrapper.get('#mothership-mini-sheet').text()).toBe(firstSheet)
+    expect(restored.wrapper.find('#mothership-mini-sheet').exists()).toBe(false)
 
     await chooseCategory(wrapper, 'ships')
     await flushPromises()
@@ -152,37 +160,143 @@ describe('name generator interface', () => {
     expect(wrapper.find('li button[title="Open character sheet"]').exists()).toBe(false)
   })
 
-  it('shares minimum Stress with the mini card and keeps it fixed when stepping current Stress', async () => {
+  it('carries the mini card resource rolls into the dedicated sheet page', async () => {
     const { wrapper, router } = await setup('/mothership/generic')
+    await wrapper.get('li button[title="Open character sheet"]').trigger('click')
+    const name = wrapper.get('#mothership-mini-sheet h2').text()
+    const mini = wrapper.get('#mothership-mini-sheet')
+    const stress = Number(mini.get('output[aria-label="Current Stress"]').text())
+    const wounds = Number(mini.get('output[aria-label="Current Wounds"]').text())
+    const health = Number(mini.get('output[aria-label="Maximum Health"]').text())
+    const credits = Number(mini.get('.credits dd').text())
+    expect(router.currentRoute.value.query.char).toBeUndefined()
     await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
     await flushPromises()
-    const modal = wrapper.get('#mothership-character-modal')
-    expect(modal.find('input[aria-label="Maximum Stress"]').exists()).toBe(false)
-    await modal.get('input[aria-label="Minimum Stress"]').setValue('3')
-    await modal.get('button[aria-label="Close character sheet"]').trigger('click')
-    const mini = wrapper.get('#mothership-mini-sheet')
-    await mini.get('button[aria-label="Increase Stress"]').trigger('click')
+    expect(router.currentRoute.value.path).toBe('/chars/mothership')
+    expect(wrapper.find('dialog[open]').exists()).toBe(false)
+    expect(wrapper.find('#mothership-mini-sheet').exists()).toBe(false)
+    expect(wrapper.findAll('nav > a, nav > button').map((item) => item.text())).toEqual([
+      'Name generator',
+      'Setting',
+      'About',
+    ])
+    expect(wrapper.find('nav a[href="/chars/mothership"]').exists()).toBe(false)
+    const saved = decodeMothershipCharacter(router.currentRoute.value.query.char as string)
+    expect(saved.primary).toBe(name)
+    expect(saved.mothershipCharacter.stress).toEqual({ current: stress, min: 2 })
+    expect(saved.mothershipCharacter.wounds.current).toBe(wounds)
+    expect(saved.mothershipCharacter.health.max).toBe(health)
+    expect(saved.mothershipCharacter.credits).toBe(credits)
+    expect(
+      (wrapper.get('input[aria-label="Current Stress"]').element as HTMLInputElement).value,
+    ).toBe(String(stress))
+    expect(
+      (wrapper.get('input[aria-label="Current Wounds"]').element as HTMLInputElement).value,
+    ).toBe(String(wounds))
+    await wrapper.get('input[aria-label="Minimum Stress"]').setValue('4')
+    await wrapper.get('input[aria-label="Current Stress"]').setValue('5')
     await flushPromises()
     expect(
       decodeMothershipCharacter(router.currentRoute.value.query.char as string).mothershipCharacter
         .stress,
-    ).toEqual({ current: 4, min: 3 })
-    await mini.get('button[aria-label="Decrease Stress"]').trigger('click')
+    ).toEqual({ current: 5, min: 4 })
+  })
+
+  it('generates directly on the Mothership page, saves rerolls and restores browser history', async () => {
+    const { wrapper, router } = await setup('/chars/mothership')
+    expect(wrapper.get('h1').text()).toContain('Character sheet')
+    expect((wrapper.get('#ms-name').element as HTMLInputElement).value).toBe('')
+    const generate = wrapper.findAll('button').find((button) => button.text() === 'Generate')!
+    await generate.trigger('click')
     await flushPromises()
-    expect(
-      decodeMothershipCharacter(router.currentRoute.value.query.char as string).mothershipCharacter
-        .stress,
-    ).toEqual({ current: 3, min: 3 })
-    expect(mini.get('[aria-label="Minimum Stress"]').text()).toBe('3')
-    expect(mini.find('button[aria-label="Decrease Stress"]').exists()).toBe(false)
+    expect(wrapper.find('dialog[open]').exists()).toBe(false)
+    const first = decodeMothershipCharacter(router.currentRoute.value.query.char as string)
+    expect(first.primary.length).toBeGreaterThan(0)
+    expect(first.portrait).toBeGreaterThan(0)
+    await wrapper.get('textarea[aria-label="Notes"]').setValue('Keep my notes')
+    await wrapper.get('button[aria-label="Reroll stats"]').trigger('click')
+    await flushPromises()
+    const edited = decodeMothershipCharacter(router.currentRoute.value.query.char as string)
+    expect(edited.notes).toBe('Keep my notes')
+    expect(edited.primary).toBe(first.primary)
+    expect(edited.mothershipCharacter.skills).toEqual(first.mothershipCharacter.skills)
+    expect(edited.mothershipCharacter.gear).toEqual(first.mothershipCharacter.gear)
+    const savedPath = router.currentRoute.value.fullPath
+    const next = { ...edited, primary: 'Another character' }
+    await router.push({
+      path: '/chars/mothership',
+      query: { char: encodeMothershipCharacter(next) },
+    })
+    await flushPromises()
+    expect((wrapper.get('#ms-name').element as HTMLInputElement).value).toBe('Another character')
+    router.back()
+    await flushPromises()
+    expect(router.currentRoute.value.fullPath).toBe(savedPath)
+    expect((wrapper.get('#ms-name').element as HTMLInputElement).value).toBe(edited.primary)
+    router.forward()
+    await flushPromises()
+    expect((wrapper.get('#ms-name').element as HTMLInputElement).value).toBe('Another character')
+    const print = vi.spyOn(window, 'print').mockImplementation(() => {})
+    await wrapper.get('button.print-button').trigger('click')
+    expect(print).toHaveBeenCalledOnce()
+    print.mockRestore()
+  })
+
+  it('confirms Mothership reset before clearing the saved sheet and URL', async () => {
+    const { wrapper, router } = await setup('/chars/mothership')
+    const button = (label: string) =>
+      wrapper.findAll('.sheet-toolbar button').find((button) => button.text() === label)!
+    expect(button('Reset')).toBeUndefined()
+    await button('Generate').trigger('click')
+    await wrapper.get('#ms-player').setValue('Keep player')
+    await wrapper.get('textarea[aria-label="Notes"]').setValue('Keep notes')
+    await flushPromises()
+    const saved = router.currentRoute.value.query.char
+    await button('Reset').trigger('click')
+    expect(button('Generate')).toBeUndefined()
+    expect(button('really?')).toBeDefined()
+    expect((wrapper.get('#ms-player').element as HTMLInputElement).value).toBe('Keep player')
+    expect(router.currentRoute.value.query.char).toBe(saved)
+    await button('nah.').trigger('click')
+    expect(button('Generate')).toBeDefined()
+    expect(router.currentRoute.value.query.char).toBe(saved)
+    await button('Reset').trigger('click')
+    await button('really?').trigger('click')
+    await flushPromises()
+    const reset = decodeMothershipCharacter(router.currentRoute.value.query.char as string)
+    expect(reset.primary).toBe('')
+    expect(reset.playerName).toBeUndefined()
+    expect(reset.notes).toBeUndefined()
+    expect(reset.mothershipCharacter.skills).toEqual([])
+    expect(JSON.parse(localStorage.getItem('gen0.character.mothership')!)).toEqual(reset)
+    expect(button('Reset')).toBeUndefined()
+    expect(button('Generate')).toBeDefined()
+    const restored = await setup(router.currentRoute.value.fullPath)
+    expect((restored.wrapper.get('#ms-name').element as HTMLInputElement).value).toBe('')
+  })
+
+  it('restores local Mothership edits and gives a character URL priority over them', async () => {
+    const saved = { ...generateMothershipSheet(), primary: 'Locally saved' }
+    localStorage.setItem('gen0.character.mothership', JSON.stringify(saved))
+    const local = await setup('/chars/mothership')
+    expect((local.wrapper.get('#ms-name').element as HTMLInputElement).value).toBe('Locally saved')
+    await local.wrapper.get('#ms-name').setValue('Latest edit')
+    await flushPromises()
+    window.dispatchEvent(new Event('pagehide'))
+    local.wrapper.unmount()
+    const reloaded = await setup('/chars/mothership')
+    expect((reloaded.wrapper.get('#ms-name').element as HTMLInputElement).value).toBe('Latest edit')
+    const linked = { ...saved, primary: 'From a link' }
+    const fromLink = await setup(`/chars/mothership?char=${encodeMothershipCharacter(linked)}`)
+    expect((fromLink.wrapper.get('#ms-name').element as HTMLInputElement).value).toBe('From a link')
   })
 
   it('edits the full Mothership sheet, keeps edits on reopening and restores them from its URL', async () => {
     const { wrapper, router } = await setup('/mothership/generic', document.body)
     await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
     await flushPromises()
-    const modal = wrapper.get('#mothership-character-modal')
-    expect(modal.attributes()).toHaveProperty('open')
+    const modal = wrapper.get('#mothership-character-sheet')
+    expect(router.currentRoute.value.path).toBe('/chars/mothership')
     expect((modal.get('#ms-high-score').element as HTMLInputElement).value).toBe('')
     expect((modal.get('#ms-pronouns').element as HTMLInputElement).value).toMatch(
       /^(he\/him|she\/her|they\/them)$/,
@@ -258,21 +372,14 @@ describe('name generator interface', () => {
         credits: 123,
       },
     })
-    await modal.get('button[aria-label="Close character sheet"]').trigger('click')
-    expect(modal.attributes()).not.toHaveProperty('open')
-    const mini = wrapper.get('#mothership-mini-sheet')
-    expect(mini.get('h2').text()).toBe('Edited name')
-    expect(mini.get('[aria-label="Minimum Stress"]').text()).toBe('3')
-    expect(mini.get('.skills').text()).toContain('Edited skill')
-    expect(mini.get('.starting-gear').text()).toContain('Edited equipment')
-    expect(mini.get('.appearance').text()).toContain('Edited appearance')
-    await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
+    await router.push('/mothership/generic')
     await flushPromises()
-    expect((modal.get('#ms-high-score').element as HTMLInputElement).value).toBe('42')
+    await wrapper.get('nav a[href="/chars/mothership"]').trigger('click')
+    await flushPromises()
+    expect((wrapper.get('#ms-high-score').element as HTMLInputElement).value).toBe('42')
     expect(router.currentRoute.value.fullPath).toBe(savedLink)
 
     const restored = await setup(savedLink)
-    await restored.wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
     await flushPromises()
     expect((restored.wrapper.get('#ms-name').element as HTMLInputElement).value).toBe('Edited name')
     expect((restored.wrapper.get('#ms-high-score').element as HTMLInputElement).value).toBe('42')
@@ -288,8 +395,8 @@ describe('name generator interface', () => {
       (restored.wrapper.get('input[aria-label="Current Wounds"]').element as HTMLInputElement)
         .value,
     ).toBe('')
-    await modal.get('input[aria-label="Current Health"]').setValue('')
-    await modal.get('input[aria-label="Current Stress"]').setValue('')
+    await wrapper.get('input[aria-label="Current Health"]').setValue('')
+    await wrapper.get('input[aria-label="Current Stress"]').setValue('')
     await flushPromises()
     expect(
       decodeMothershipCharacter(router.currentRoute.value.query.char as string).filledResources,
@@ -305,7 +412,7 @@ describe('name generator interface', () => {
     try {
       await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
       await flushPromises()
-      const modal = wrapper.get('#mothership-character-modal')
+      const modal = wrapper.get('#mothership-character-sheet')
       const appearance = decodeMothershipCharacter(
         router.currentRoute.value.query.char as string,
       ).appearance
@@ -331,15 +438,9 @@ describe('name generator interface', () => {
       expect(modal.get('.appearance-portrait img').attributes('src')).toMatch(/\/121\.jpg/)
 
       const savedLink = router.currentRoute.value.fullPath
-      await modal.get('button[aria-label="Close character sheet"]').trigger('click')
-      await wrapper.get('li button[title="Open detailed character sheet"]').trigger('click')
-      expect(modal.get('.appearance-portrait img').attributes('src')).toMatch(/\/121\.jpg/)
       const restored = await setup(savedLink)
-      await restored.wrapper
-        .get('li button[title="Open detailed character sheet"]')
-        .trigger('click')
       await flushPromises()
-      const restoredModal = restored.wrapper.get('#mothership-character-modal')
+      const restoredModal = restored.wrapper.get('#mothership-character-sheet')
       expect(restoredModal.get('.appearance-portrait img').attributes('src')).toMatch(/\/121\.jpg/)
       const remove = restoredModal.get('button[aria-label="Remove image"]')
       expect(remove.text()).toBe('')
@@ -356,9 +457,6 @@ describe('name generator interface', () => {
       expect(saved.portrait).toBeUndefined()
       expect(saved.appearance).toBe(appearance)
       const withoutPortrait = await setup(restored.router.currentRoute.value.fullPath)
-      await withoutPortrait.wrapper
-        .get('li button[title="Open detailed character sheet"]')
-        .trigger('click')
       await flushPromises()
       expect(withoutPortrait.wrapper.find('.appearance-portrait').exists()).toBe(false)
       const imageButton = withoutPortrait.wrapper.get('button[aria-label="Image"]')
@@ -374,97 +472,52 @@ describe('name generator interface', () => {
     }
   })
 
-  it('keeps a Mothership card when a link is invalid and clears it when leaving the generator', async () => {
-    const { wrapper, router } = await setup('/mothership/generic?gender=f')
-    await wrapper.get('li button[title="Open character sheet"]').trigger('click')
-    await flushPromises()
-    const saved = router.currentRoute.value.fullPath
-    const card = wrapper.get('#mothership-mini-sheet').text()
-    await router.push({ query: { ...router.currentRoute.value.query, char: 'invalid' } })
+  it('opens old character links on the full page and keeps edits when a link is invalid', async () => {
+    const character = generateMothershipSheet()
+    const { wrapper, router } = await setup(
+      `/mothership/generic?char=${encodeMothershipCharacter(character)}`,
+    )
+    expect(router.currentRoute.value.path).toBe('/chars/mothership')
+    expect((wrapper.get('#ms-name').element as HTMLInputElement).value).toBe(character.primary)
+    await router.push({ path: '/chars/mothership', query: { char: 'invalid' } })
     await flushPromises()
     expect(wrapper.get('[role="alert"]').text()).toContain('Could not load this character URL')
-    expect(wrapper.get('#mothership-mini-sheet').text()).toBe(card)
-    await router.push('/cyberpunk/generic/handles')
+    expect((wrapper.get('#ms-name').element as HTMLInputElement).value).toBe(character.primary)
+    await router.push('/mothership/generic')
     await flushPromises()
     expect(router.currentRoute.value.query.char).toBeUndefined()
     expect(wrapper.find('#mothership-mini-sheet').exists()).toBe(false)
-    router.back()
-    await flushPromises()
-    await router.replace(saved)
-    await flushPromises()
-    expect(wrapper.get('#mothership-mini-sheet').text()).toBe(card)
-    await router.push('/mothership/generic')
-    await flushPromises()
-    expect(wrapper.find('#mothership-mini-sheet').exists()).toBe(false)
-    router.back()
-    await flushPromises()
-    expect(wrapper.get('#mothership-mini-sheet').text()).toBe(card)
   })
 
-  it('saves Mothership resource edits in the URL and rerolls on another click', async () => {
+  it('shows read-only mini resources and credits without limits or trauma response', async () => {
     const { wrapper, router } = await setup('/mothership/generic')
     const actions = wrapper.findAll('li button[title="Open character sheet"]')
-    await actions[0]!.trigger('click')
-    const sheet = wrapper.get('#mothership-mini-sheet')
-    const current = (label: string) =>
-      Number(sheet.get(`output[aria-label="Current ${label}"]`).text())
-    const button = (action: string) => sheet.get(`button[aria-label="${action}"]`)
-    const hasButton = (action: string) => sheet.find(`button[aria-label="${action}"]`).exists()
-    const health = current('Health')
-    expect(health).toBeGreaterThanOrEqual(11)
-    expect(health).toBeLessThanOrEqual(20)
-    expect(hasButton('Increase Health')).toBe(false)
-    expect(current('Wounds')).toBe(0)
-    expect(current('Stress')).toBe(2)
-    expect(hasButton('Decrease Wounds')).toBe(false)
-    expect(hasButton('Decrease Stress')).toBe(false)
-
-    await button('Decrease Health').trigger('click')
-    await button('Increase Wounds').trigger('click')
-    await button('Increase Stress').trigger('click')
-    expect(current('Health')).toBe(health - 1)
-    expect(current('Wounds')).toBe(1)
-    expect(current('Stress')).toBe(3)
-    expect(sheet.find('output .overlay').exists()).toBe(false)
-    const edited = sheet.text()
-    await flushPromises()
-    const editedLink = router.currentRoute.value.fullPath
-    await actions[1]!.trigger('click')
-    expect(current('Wounds')).toBe(0)
-    expect(current('Stress')).toBe(2)
-    await actions[0]!.trigger('click')
-    expect(current('Wounds')).toBe(0)
-    expect(current('Stress')).toBe(2)
-    await flushPromises()
-    await router.push(editedLink)
-    await flushPromises()
-    expect(sheet.text()).toBe(edited)
-    for (let count = 1; count < health; count++) await button('Decrease Health').trigger('click')
-    expect(current('Health')).toBe(0)
-    expect(hasButton('Decrease Health')).toBe(false)
-    const characterClass = sheet.get('.character-class').text()
-    const maxWounds = ['Marine', 'Android'].includes(characterClass) ? 3 : 2
-    for (let count = 1; count < maxWounds; count++) await button('Increase Wounds').trigger('click')
-    expect(current('Wounds')).toBe(maxWounds)
-    expect(hasButton('Increase Wounds')).toBe(false)
-    await button('Decrease Stress').trigger('click')
-    expect(current('Stress')).toBe(2)
-    expect(hasButton('Decrease Stress')).toBe(false)
-    expect(Number(sheet.get('.credits dd').text()) % 10).toBe(0)
-    const trauma = {
-      Marine: 'Whenever you panic, every close friendly player must make a Fear save.',
-      Android: 'Fear saves made by close friendly players are at disadvantage.',
-      Scientist: 'Whenever you fail a Sanity save, all close friendly players gain 1 Stress.',
-      Teamster: 'Once per session, you may take advantage on a Panic Check.',
+    for (const action of [actions[0]!, actions[1]!, actions[0]!]) {
+      await action.trigger('click')
+      const sheet = wrapper.get('#mothership-mini-sheet')
+      const value = (label: string) => Number(sheet.get(`output[aria-label="${label}"]`).text())
+      expect(value('Maximum Health')).toBeGreaterThanOrEqual(11)
+      expect(value('Maximum Health')).toBeLessThanOrEqual(20)
+      expect(value('Current Stress')).toBeGreaterThanOrEqual(2)
+      expect(value('Current Stress')).toBeLessThanOrEqual(19)
+      expect(value('Current Wounds')).toBeGreaterThanOrEqual(0)
+      expect(value('Current Wounds')).toBeLessThanOrEqual(2)
+      expect(sheet.findAll('.resources output')).toHaveLength(3)
+      expect(sheet.find('button, input').exists()).toBe(false)
+      expect(sheet.find('[aria-label="Minimum Stress"]').exists()).toBe(false)
+      expect(sheet.find('[aria-label="Maximum Wounds"]').exists()).toBe(false)
+      expect(sheet.find('[aria-label="Current Health"]').exists()).toBe(false)
+      expect(sheet.find('.trauma-response').exists()).toBe(false)
+      expect(sheet.text()).not.toContain('Trauma Response')
+      const credits = Number(sheet.get('.credits dd').text())
+      expect(credits).toBeGreaterThanOrEqual(50)
+      expect(credits).toBeLessThanOrEqual(100_000)
+      const gear = sheet.get('.starting-gear')
+      expect(gear.get('h3').text()).toBe('Equipment')
+      expect(gear.findAll('li').length).toBeGreaterThanOrEqual(2)
+      await flushPromises()
+      expect(router.currentRoute.value.query.char).toBeUndefined()
     }
-    expect(sheet.get('.trauma-response p').text()).toBe(
-      trauma[characterClass as keyof typeof trauma],
-    )
-    const gear = sheet.get('.starting-gear')
-    expect(gear.get('h3').text()).toBe('Equipment')
-    expect(gear.findAll('li').length).toBeGreaterThanOrEqual(2)
-    expect(gear.findAll('li').every((item) => item.text().length > 0)).toBe(true)
-    expect(gear.element.nextElementSibling).toBe(sheet.get('.trauma-response').element)
   })
 
   it('shows ship class as secondary text and maintenance issues under Details', async () => {
@@ -554,7 +607,7 @@ describe('name generator interface', () => {
     },
   )
 
-  it('scrolls to the top only for top-menu navigation, including the current page', async () => {
+  it('scrolls to the top only for top-menu navigation', async () => {
     const { wrapper, router } = await setup('/cyberpunk/generic/german', document.body)
     const focus = vi.spyOn(wrapper.get('main').element as HTMLElement, 'focus')
     try {
@@ -562,7 +615,13 @@ describe('name generator interface', () => {
       await chooseCategory(wrapper, 'russian')
       await flushPromises()
       expect(scrollTo).not.toHaveBeenCalled()
-      for (const label of ['About', 'CBR+PNK', 'CBR+PNK', 'About', 'Name generator']) {
+      for (const label of [
+        'About',
+        'Char sheet',
+        'Name generator',
+        'Char sheet',
+        'Name generator',
+      ]) {
         const link = wrapper.findAll('nav a').find((link) => link.text() === label)!
         await link.trigger('click')
         await flushPromises()
@@ -596,7 +655,7 @@ describe('name generator interface', () => {
     ['/cyberpunk/cp77/german?gender=f', '/chars/cbrpnk'],
   ])('switches to Generic from %s when opening the sheet', async (url, expected) => {
     const { wrapper, router } = await setup(url)
-    const link = wrapper.findAll('nav a').find((item) => item.text() === 'CBR+PNK')!
+    const link = wrapper.findAll('nav a').find((item) => item.text() === 'Char sheet')!
     expect(link.attributes('href')).toBe(expected)
     await link.trigger('click')
     await flushPromises()
@@ -604,6 +663,12 @@ describe('name generator interface', () => {
     expect(typeof router.currentRoute.value.query.char).toBe('string')
     expect(wrapper.get('[data-theme]').attributes('data-theme')).toBe('cyberpunk')
     expect(wrapper.find('nav a[href="/cyberpunk/generic/runners"]').exists()).toBe(true)
+    expect(wrapper.findAll('nav > a, nav > button').map((item) => item.text())).toEqual([
+      'Name generator',
+      'Setting',
+      'About',
+    ])
+    expect(wrapper.find('nav a[href="/chars/cbrpnk"]').exists()).toBe(false)
     wrapper.unmount()
   })
 
@@ -695,7 +760,7 @@ describe('name generator interface', () => {
       await router.push('/cyberpunk/generic/russian')
       await flushPromises()
       expect(document.activeElement).toBe(flavor)
-      await wrapper.get('nav a').trigger('click')
+      await wrapper.get('nav a[href*="/about"]').trigger('click')
       await flushPromises()
       expect(wrapper.get('h1').text()).toBe('About gen 0')
       expect(document.activeElement).toBe(wrapper.get('main').element)
@@ -866,9 +931,14 @@ describe('name generator interface', () => {
       '/?flavor=cyberpunk2020-2077&category=german&gender=f&details=false',
     )
     const query = { ...router.currentRoute.value.query }
-    await wrapper.get('nav a').trigger('click')
+    await wrapper.get('nav a[href*="/about"]').trigger('click')
     await flushPromises()
     expect(router.currentRoute.value.path).toBe('/cyberpunk/cp77/german/about')
+    expect(wrapper.findAll('nav > a, nav > button').map((item) => item.text())).toEqual([
+      'Name generator',
+      'Char sheet',
+      'Setting',
+    ])
     expect(wrapper.get('h1').text()).toBe('About gen 0')
     expect(wrapper.text()).toContain('Anton Katzer')
     expect(wrapper.get('.shell').attributes('data-theme')).toBe('cyberpunk')
@@ -1197,7 +1267,7 @@ describe('name generator interface', () => {
       (wrapper.get('input[type="checkbox"]:not([name])').element as HTMLInputElement).checked,
     ).toBe(true)
     await wrapper.get('input[type="checkbox"]:not([name])').setValue(false)
-    await wrapper.get('nav a').trigger('click')
+    await wrapper.get('nav a[href*="/about"]').trigger('click')
     await flushPromises()
     await wrapper.get('nav a').trigger('click')
     await flushPromises()

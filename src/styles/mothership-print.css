@@ -5,13 +5,13 @@
 }
 
 @media print {
-  :root:has(#mothership-character-modal[open]) {
+  :root:has(#mothership-character-sheet) {
     color-scheme: light;
     background: white;
     overflow: visible;
   }
 
-  body:has(#mothership-character-modal[open]) {
+  body:has(#mothership-character-sheet) {
     page: mothership-character;
     min-width: 0;
     margin: 0;
@@ -20,8 +20,7 @@
     > :not(#app),
     .skip,
     .shell > header,
-    main > :not(#mothership-character-modal),
-    #mothership-character-modal .panel > header {
+    main > :not(#mothership-character-sheet) {
       display: none !important;
     }
 
@@ -33,7 +32,7 @@
     }
   }
 
-  #mothership-character-modal[open] {
+  #mothership-character-sheet {
     display: block !important;
     position: static;
     inset: auto;
@@ -131,6 +130,10 @@
       --card-title: var(--color-surface);
     }
 
+    .field-heading {
+      margin: 0;
+    }
+
     .personal-card .print-value {
       padding-inline: 1mm;
       border: 0.2mm solid var(--color-border);
@@ -182,13 +185,15 @@
       -webkit-print-color-adjust: exact;
     }
 
+    .identity-fields .print-value {
+      line-height: inherit;
+      border: 0.2mm solid var(--color-border);
+      background-image: none !important;
+    }
+
     .field-label,
     .trauma-response {
       font-size: 7pt;
-    }
-
-    .profile-card h2 {
-      font-size: 7.5pt;
     }
 
     .personal-grid {
