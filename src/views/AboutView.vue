@@ -74,7 +74,7 @@ function toggleCorpMode(enabled: boolean) {
       </p>
       <p>
         <UiScrambleText
-          text="Do with everything what CC BY-NC 4.0 allows, with one added restriction: I do not allow any of the data in this project to be used for training or developing AI models without my explicit permission."
+          text="Do with everything here what CC BY-NC 4.0 allows, with one added restriction: I do not allow any of the data in this project to be used for training or developing AI models without my explicit permission."
         />
       </p>
       <p>
